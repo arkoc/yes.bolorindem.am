@@ -8,9 +8,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
-import { Phone, ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import L, { t } from "@/lib/labels";
 
 type Step = "phone" | "otp";
@@ -32,7 +31,6 @@ export default function LoginPage() {
     setLoading(true);
 
     const normalized = `+374${phoneDigits}`;
-
     const { error } = await supabase.auth.signInWithOtp({ phone: normalized });
 
     if (error) {
@@ -61,7 +59,6 @@ export default function LoginPage() {
       return;
     }
 
-    // Check if profile is set up (has a real name)
     if (data.user) {
       const { data: profile } = await supabase
         .from("profiles")
@@ -74,27 +71,69 @@ export default function LoginPage() {
       } else {
         router.push("/dashboard");
       }
-      return; // keep spinner while navigating
+      return;
     }
     setLoading(false);
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-sm shadow-lg">
-        <CardHeader className="text-center pb-4">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white">
-            <Phone className="h-7 w-7" />
-          </div>
-          <CardTitle className="text-2xl font-bold">{L.auth.login.title}</CardTitle>
-          <CardDescription>
-            {step === "phone"
-              ? L.auth.login.subtitlePhone
-              : t(L.auth.login.subtitleOtp, { phone })}
-          </CardDescription>
-        </CardHeader>
+    <div className="min-h-screen flex flex-col">
+      {/* Hero / branding section */}
+      <div className="flex-1 bg-[#cc0000] flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
+        {/* Background texture — subtle diagonal stripes */}
+        <div
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: "repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)",
+            backgroundSize: "12px 12px",
+          }}
+        />
 
-        <CardContent>
+        <div className="relative z-10 text-center space-y-4 max-w-sm">
+          {/* YES badge */}
+          <div className="inline-flex items-center gap-2 bg-white/15 border border-white/30 rounded-full px-4 py-1.5">
+            <span className="text-white font-black text-sm tracking-widest">{L.brand.name}</span>
+            <span className="text-white/60 text-xs">·</span>
+            <span className="text-white/80 text-xs">{L.brand.subtitle}</span>
+          </div>
+
+          {/* Campaign name */}
+          <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight leading-none uppercase">
+            {L.brand.campaign}
+          </h1>
+
+          {/* Slogan */}
+          <p className="text-white/75 text-sm sm:text-base italic leading-snug">
+            &ldquo;{L.brand.slogan}&rdquo;
+          </p>
+
+          {/* Decorative bar */}
+          <div className="flex items-center gap-2 justify-center pt-2">
+            <div className="h-px w-12 bg-white/30" />
+            <div className="h-1.5 w-1.5 rounded-full bg-white/50" />
+            <div className="h-px w-12 bg-white/30" />
+          </div>
+
+          <p className="text-white/60 text-xs uppercase tracking-widest">
+            Աջակիցների պորտալ
+          </p>
+        </div>
+      </div>
+
+      {/* Form section */}
+      <div className="bg-background rounded-t-3xl -mt-6 relative z-10 shadow-2xl px-6 pt-8 pb-10">
+        <div className="max-w-sm mx-auto">
+          <div className="mb-6">
+            <h2 className="text-xl font-bold">
+              {step === "phone" ? L.auth.login.title : L.auth.login.otpLabel}
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              {step === "phone"
+                ? L.auth.login.subtitlePhone
+                : t(L.auth.login.subtitleOtp, { phone })}
+            </p>
+          </div>
+
           {step === "phone" ? (
             <form onSubmit={handleSendOtp} className="space-y-4">
               <div className="space-y-2">
@@ -128,9 +167,7 @@ export default function LoginPage() {
                 {loading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  <>
-                    {L.auth.login.sendCode} <ArrowRight className="h-5 w-5" />
-                  </>
+                  <>{L.auth.login.sendCode} <ArrowRight className="h-5 w-5" /></>
                 )}
               </Button>
             </form>
@@ -160,9 +197,7 @@ export default function LoginPage() {
                 {loading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  <>
-                    {L.auth.login.verify} <ArrowRight className="h-5 w-5" />
-                  </>
+                  <>{L.auth.login.verify} <ArrowRight className="h-5 w-5" /></>
                 )}
               </Button>
               <Button
@@ -175,8 +210,8 @@ export default function LoginPage() {
               </Button>
             </form>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

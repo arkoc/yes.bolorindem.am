@@ -9,8 +9,9 @@ const L = {
     subtitle: "bolorindem.am",
     adminSubtitle: "bolorindem.am · Ադմին",
     adminMobileTitle: "YES · Ադմին",
+    campaign: "ԲՈԼՈՐԻՆ ԴԵՄ ԵՄ",
+    slogan: "Get your shit together and get something done!",
   },
-
   auth: {
     login: {
       title: "Բարի գալուստ",
