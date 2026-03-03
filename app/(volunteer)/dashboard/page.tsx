@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Trophy, Star, FolderOpen, CheckCircle, ArrowRight, Zap, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
-import { BadgeIcon } from "@/components/ui/badge-icon";
+import { BadgeZoom } from "@/components/ui/badge-zoom";
 
 export default async function DashboardPage() {
   const supabase = await createServerClient();
@@ -145,7 +145,7 @@ export default async function DashboardPage() {
                 b.earned ? "bg-primary/10 border-primary/20" : "opacity-40 bg-muted border-transparent"
               )}
             >
-              <BadgeIcon src={b.image_url} fallback={b.icon} alt={b.name_hy} size={88} />
+              <BadgeZoom src={b.image_url} fallback={b.icon} name={b.name_hy} size={88} earned={b.earned} />
             </div>
           ))}
         </div>

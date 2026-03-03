@@ -11,7 +11,7 @@ import { SignOutButton } from "@/components/volunteer/SignOutButton";
 import { Trophy, Zap, CheckCircle, Star, Settings, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
-import { BadgeIcon } from "@/components/ui/badge-icon";
+import { BadgeZoom } from "@/components/ui/badge-zoom";
 
 // Thresholds must stay in sync with check_and_award_badges() in SQL migrations.
 // isRank = progress is the user's leaderboard rank (shown as "#N", not a bar)
@@ -185,7 +185,14 @@ export default async function ProfilePage() {
                         : "opacity-50 bg-muted border-transparent"
                     )}
                   >
-                    <BadgeIcon src={badge.image_url} fallback={badge.icon} alt={badge.name_hy} size={140} />
+                    <BadgeZoom
+                      src={badge.image_url}
+                      fallback={badge.icon}
+                      name={badge.name_hy}
+                      description={badge.description_hy}
+                      size={140}
+                      earned={earned}
+                    />
                     <span className={cn(
                       "text-[10px] font-bold leading-tight",
                       earned ? "text-primary" : "text-muted-foreground"

@@ -350,6 +350,14 @@ const L = {
       emptyConfig: "Այս առաջադրանքի համար լոկացյոն տվյալներ չկան",
       toastSuccess: "+{points} միավոր վաստակված է",
       toastNetworkError: "Ցանցային սխալ։ Խնդրում ենք կրկին փորձել",
+      targetLocations: "Target Locations",
+      viewAllOnMap: "View all on Yandex Maps",
+      getLocationBtn: "Get My Location",
+      updateLocationBtn: "Update My Location",
+      confirmBtn: "Confirm Location & Complete Task",
+      withinRange: "Within range ({distance}m away)",
+      tooFar: "Too far — {distance}m from target (max {radius}m)",
+      pointFull: "Full",
     },
 
     photo: {

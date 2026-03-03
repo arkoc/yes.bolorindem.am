@@ -3,6 +3,17 @@ import { createServerClient } from "@/lib/supabase/server";
 import { completionSchema } from "@/lib/validations/completion";
 import { type FormSchema, type TaskLocationData } from "@/lib/db/schema";
 
+/** Haversine distance in meters between two lat/lng coordinates. */
+function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLng = (lng2 - lng1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -116,6 +127,24 @@ export async function POST(
         { error: `You can only complete this task ${periodLimit - periodCompletions} more time(s) ${task.period_type === "day" ? "today" : "this week"}.` },
         { status: 409 }
       );
+    }
+  }
+
+  // Validate proximity for location tasks
+  if (task.task_type === "location" && payload.taskType === "location") {
+    const locationData = task.location_data as TaskLocationData | null;
+    const submitted = payload.locationData;
+    if (locationData?.targetPoints?.length && submitted?.selectedPointId) {
+      const point = locationData.targetPoints.find((p) => p.id === submitted.selectedPointId);
+      if (point?.radiusMeters) {
+        const dist = haversineMeters(submitted.lat, submitted.lng, point.lat, point.lng);
+        if (dist > point.radiusMeters) {
+          return NextResponse.json(
+            { error: `You are ${Math.round(dist)}m from the target location (max ${point.radiusMeters}m allowed).` },
+            { status: 422 }
+          );
+        }
+      }
     }
   }
 

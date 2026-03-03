@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Plus, Trash2, ExternalLink } from "lucide-react";
 import { type TaskLocationData, type LocationTargetPoint } from "@/lib/db/schema";
 
-const DEFAULT_RADIUS = 100;
+const DEFAULT_RADIUS = 20;
 
 /**
  * Parse coordinates from a Google Maps or Yandex Maps URL.
