@@ -286,6 +286,7 @@ const L = {
       descriptionLabel: "Նկարագրություն (ցուցադրվում է կամավորներին)",
       descriptionPlaceholder: "Գրանցվեք գրասենյակում...",
       targetPointsHeading: "Թիրախային կետեր",
+      pasteHint: "Տեղադրեք Yandex կամ Google Maps-ի հղումը",
       pasteUrlPlaceholder: "Տեղադրեք Yandex կամ Google Maps-ի հղումը այստեղ...",
       invalidUrl: "Այս հղումում կոորդինատներ չգտնվեցին",
       pointLabelPlaceholder: "Կետի պիտակը",
