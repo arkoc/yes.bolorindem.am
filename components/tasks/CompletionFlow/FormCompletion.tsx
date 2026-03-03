@@ -154,6 +154,18 @@ export function FormCompletion({
     );
   }
 
+  if (isDone && isRepeatable) {
+    return (
+      <Card className="border-green-200 bg-green-50">
+        <CardContent className="py-6 text-center">
+          <CheckCircle className="h-10 w-10 text-green-500 mx-auto mb-2" />
+          <p className="font-semibold text-green-700">{t(L.completion.form.allDoneTitle, { max: maxCompletions })}</p>
+          <p className="text-sm text-green-600 mt-1">{L.completion.form.allDoneText}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (!formSchema || !formSchema.fields?.length) {
     return (
       <Card>
@@ -209,7 +221,7 @@ export function FormCompletion({
                     <SelectValue placeholder={t(L.completion.form.selectPlaceholder, { label: field.label })} />
                   </SelectTrigger>
                   <SelectContent>
-                    {field.options.map((opt) => (
+                    {field.options.filter((opt) => opt !== "").map((opt) => (
                       <SelectItem key={opt} value={opt}>{opt}</SelectItem>
                     ))}
                   </SelectContent>

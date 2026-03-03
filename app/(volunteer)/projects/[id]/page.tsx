@@ -152,7 +152,7 @@ export default async function ProjectDetailPage({
             return (
               <Link key={task.id} href={`/tasks/${task.id}`}>
                 <Card className={`hover:shadow-md transition-all cursor-pointer ${isDone ? "opacity-75" : ""}`}>
-                  <CardContent className="py-3 px-4">
+                  <CardContent className="py-4 px-4">
                     <div className="flex items-center gap-3">
                       {isDone ? (
                         <div className="p-2 rounded-lg bg-green-100 shrink-0">

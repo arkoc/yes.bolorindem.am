@@ -14,9 +14,14 @@ export function TaskFormWrapper({ task }: { task: Task }) {
         <TaskForm
           projectId={task.projectId}
           task={task}
-          onSuccess={() => {
-            router.push(`/admin/projects/${task.projectId}/tasks`);
-            router.refresh();
+          onSuccess={(isDelete) => {
+            const url = `/admin/projects/${task.projectId}/tasks`;
+            if (isDelete) {
+              window.location.href = url;
+            } else {
+              router.push(url);
+              router.refresh();
+            }
           }}
         />
       </CardContent>

@@ -1,6 +1,8 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+
+export const dynamic = "force-dynamic";
 import { ArrowLeft } from "lucide-react";
 import { TaskFormWrapper } from "@/components/admin/TaskFormWrapper";
 import { type Task } from "@/lib/db/schema";
@@ -37,6 +39,9 @@ export default async function EditTaskPage({
     locationData: raw.location_data ?? null,
     isActive: raw.is_active,
     orderIndex: raw.order_index,
+    periodType: raw.period_type ?? null,
+    periodLimit: raw.period_limit ?? null,
+    allowBatchSubmission: raw.allow_batch_submission ?? false,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
   } as unknown as Task;

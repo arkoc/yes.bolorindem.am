@@ -23,11 +23,15 @@ export default function LoginPage() {
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const phoneDigits = phone.replace(/\D/g, "");
+  const phoneValid = phoneDigits.length === 8;
+
   async function handleSendOtp(e: React.FormEvent) {
     e.preventDefault();
+    if (!phoneValid) return;
     setLoading(true);
 
-    const normalized = `+374${phone.replace(/\D/g, "")}`;
+    const normalized = `+374${phoneDigits}`;
 
     const { error } = await supabase.auth.signInWithOtp({ phone: normalized });
 
@@ -70,6 +74,7 @@ export default function LoginPage() {
       } else {
         router.push("/dashboard");
       }
+      return; // keep spinner while navigating
     }
     setLoading(false);
   }
@@ -94,7 +99,7 @@ export default function LoginPage() {
             <form onSubmit={handleSendOtp} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="phone">{L.auth.login.phoneLabel}</Label>
-                <div className="flex h-12 rounded-md border border-input overflow-hidden">
+                <div className={`flex h-12 rounded-md border overflow-hidden ${phone && !phoneValid ? "border-destructive" : "border-input"}`}>
                   <span className="flex items-center px-3 bg-muted text-muted-foreground text-sm font-medium border-r border-input select-none">
                     +374
                   </span>
@@ -104,17 +109,21 @@ export default function LoginPage() {
                     inputMode="numeric"
                     placeholder={L.auth.login.phonePlaceholder}
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                    maxLength={8}
                     required
                     autoFocus
                     className="text-lg h-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                 </div>
+                {phone && !phoneValid && (
+                  <p className="text-xs text-destructive">{L.auth.login.phoneInvalid}</p>
+                )}
               </div>
               <Button
                 type="submit"
                 className="w-full h-12 text-base"
-                disabled={loading || !phone}
+                disabled={loading || !phoneValid}
               >
                 {loading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />

@@ -10,20 +10,65 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Plus, Trash2, ExternalLink } from "lucide-react";
 import { type TaskLocationData, type LocationTargetPoint } from "@/lib/db/schema";
 
-// Yandex Maps URL uses lng,lat order for both ll= and pt= params
-function parseYandexUrl(url: string): { lat: number; lng: number } | null {
+const DEFAULT_RADIUS = 100;
+
+/**
+ * Parse coordinates from a Google Maps or Yandex Maps URL.
+ *
+ * Google formats:
+ *   https://www.google.com/maps/@lat,lng,15z
+ *   https://www.google.com/maps/place/Name/@lat,lng,15z
+ *   https://www.google.com/maps?q=lat,lng
+ *   https://maps.google.com/?ll=lat,lng   (lat,lng order)
+ *
+ * Yandex formats:
+ *   https://yandex.com/maps/?pt=lng,lat   (lng first!)
+ *   https://yandex.com/maps/?ll=lng,lat   (lng first!)
+ */
+function parseMapUrl(url: string): { lat: number; lng: number } | null {
   try {
     const u = new URL(url);
-    const pt = u.searchParams.get("pt");
-    if (pt) {
-      const [lng, lat] = pt.split(",").map(Number);
-      if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
+    const host = u.hostname;
+
+    // ── Google Maps ────────────────────────────────────────────
+    if (host.includes("google.com") || host.includes("maps.app.goo.gl")) {
+      // @lat,lng,zoom pattern (most common share URL)
+      const atMatch = u.pathname.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+      if (atMatch) {
+        const lat = parseFloat(atMatch[1]);
+        const lng = parseFloat(atMatch[2]);
+        if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
+      }
+      // ?q=lat,lng
+      const q = u.searchParams.get("q");
+      if (q) {
+        const [lat, lng] = q.split(",").map(Number);
+        if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
+      }
+      // ?ll=lat,lng (Google uses lat,lng order here)
+      const ll = u.searchParams.get("ll");
+      if (ll) {
+        const [lat, lng] = ll.split(",").map(Number);
+        if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
+      }
     }
-    const ll = u.searchParams.get("ll");
-    if (ll) {
-      const [lng, lat] = ll.split(",").map(Number);
-      if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
+
+    // ── Yandex Maps ────────────────────────────────────────────
+    if (host.includes("yandex.")) {
+      // pt=lng,lat (Yandex uses lng first)
+      const pt = u.searchParams.get("pt");
+      if (pt) {
+        const [lng, lat] = pt.split(",").map(Number);
+        if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
+      }
+      // ll=lng,lat
+      const ll = u.searchParams.get("ll");
+      if (ll) {
+        const [lng, lat] = ll.split(",").map(Number);
+        if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
+      }
     }
+
     return null;
   } catch {
     return null;
@@ -36,44 +81,51 @@ interface LocationDataBuilderProps {
 }
 
 export function LocationDataBuilder({ data, onChange }: LocationDataBuilderProps) {
-  const [newPoint, setNewPoint] = useState({ label: "", radius: "100", lat: "", lng: "", maxCompletions: "" });
-  const [yandexUrl, setYandexUrl] = useState("");
+  const [newLabel, setNewLabel] = useState("");
+  const [mapUrl, setMapUrl] = useState("");
+  const [lat, setLat] = useState("");
+  const [lng, setLng] = useState("");
+  const [maxCompletions, setMaxCompletions] = useState("");
   const [urlError, setUrlError] = useState("");
 
-  function handleYandexUrl(url: string) {
-    setYandexUrl(url);
+  function handleMapUrl(url: string) {
+    setMapUrl(url);
     setUrlError("");
     if (!url.trim()) return;
-    const coords = parseYandexUrl(url);
+    const coords = parseMapUrl(url);
     if (coords) {
-      setNewPoint((p) => ({ ...p, lat: coords.lat.toFixed(6), lng: coords.lng.toFixed(6) }));
+      setLat(coords.lat.toFixed(6));
+      setLng(coords.lng.toFixed(6));
     } else if (url.length > 10) {
       setUrlError(L.forms.locationBuilder.invalidUrl);
     }
   }
 
   function addPoint() {
-    const lat = parseFloat(newPoint.lat);
-    const lng = parseFloat(newPoint.lng);
-    if (!newPoint.label.trim() || isNaN(lat) || isNaN(lng)) return;
+    const parsedLat = parseFloat(lat);
+    const parsedLng = parseFloat(lng);
+    if (!newLabel.trim() || isNaN(parsedLat) || isNaN(parsedLng)) return;
 
     const point: LocationTargetPoint = {
       id: `p_${Date.now()}`,
-      lat,
-      lng,
-      label: newPoint.label.trim(),
-      radiusMeters: parseInt(newPoint.radius) || 100,
-      ...(newPoint.maxCompletions ? { maxCompletions: parseInt(newPoint.maxCompletions) } : {}),
+      lat: parsedLat,
+      lng: parsedLng,
+      label: newLabel.trim(),
+      radiusMeters: DEFAULT_RADIUS,
+      ...(maxCompletions ? { maxCompletions: parseInt(maxCompletions) } : {}),
     };
 
     onChange({
       ...data,
       targetPoints: [...(data.targetPoints ?? []), point],
-      center: [lat, lng],
+      center: [parsedLat, parsedLng],
     });
 
-    setNewPoint({ label: "", radius: "100", lat: "", lng: "", maxCompletions: "" });
-    setYandexUrl("");
+    setNewLabel("");
+    setMapUrl("");
+    setLat("");
+    setLng("");
+    setMaxCompletions("");
     setUrlError("");
   }
 
@@ -81,7 +133,7 @@ export function LocationDataBuilder({ data, onChange }: LocationDataBuilderProps
     onChange({ ...data, targetPoints: data.targetPoints.filter((p) => p.id !== id) });
   }
 
-  const hasCoords = newPoint.lat && newPoint.lng && !isNaN(parseFloat(newPoint.lat)) && !isNaN(parseFloat(newPoint.lng));
+  const hasCoords = lat && lng && !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lng));
 
   return (
     <div className="space-y-4">
@@ -97,7 +149,7 @@ export function LocationDataBuilder({ data, onChange }: LocationDataBuilderProps
       </div>
 
       <div className="space-y-2">
-        <Label className="text-xs font-semibold">Target Points</Label>
+        <Label className="text-xs font-semibold">{L.forms.locationBuilder.targetPointsHeading}</Label>
 
         {(data.targetPoints ?? []).map((point) => (
           <Card key={point.id} className="border border-border/50">
@@ -108,18 +160,18 @@ export function LocationDataBuilder({ data, onChange }: LocationDataBuilderProps
                   <div>
                     <p className="text-sm font-medium">{point.label}</p>
                     <p className="text-xs text-muted-foreground">
-                      {point.lat.toFixed(5)}, {point.lng.toFixed(5)} · {point.radiusMeters}m
+                      {point.lat.toFixed(5)}, {point.lng.toFixed(5)}
                       {point.maxCompletions ? ` · max ${point.maxCompletions}×` : ""}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
                   <a
-                    href={`https://yandex.com/maps/?pt=${point.lng},${point.lat}&z=16`}
+                    href={`https://www.google.com/maps?q=${point.lat},${point.lng}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-1 text-muted-foreground hover:text-primary"
-                    title="Preview on Yandex Maps"
+                    title="Preview on Google Maps"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
                   </a>
@@ -141,40 +193,19 @@ export function LocationDataBuilder({ data, onChange }: LocationDataBuilderProps
         {/* Add new point */}
         <Card className="border-dashed">
           <CardContent className="py-3 px-3 space-y-2.5">
-            <div className="grid grid-cols-2 gap-2">
-              <Input
-                value={newPoint.label}
-                onChange={(e) => setNewPoint((p) => ({ ...p, label: e.target.value }))}
-                placeholder="Point label"
-                className="h-8 text-sm"
-              />
-              <Input
-                type="number"
-                value={newPoint.radius}
-                onChange={(e) => setNewPoint((p) => ({ ...p, radius: e.target.value }))}
-                placeholder="Radius (m)"
-                className="h-8 text-sm"
-              />
-            </div>
+            <Input
+              value={newLabel}
+              onChange={(e) => setNewLabel(e.target.value)}
+              placeholder={L.forms.locationBuilder.pointLabelPlaceholder}
+              className="h-8 text-sm"
+            />
 
             <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <a
-                  href="https://yandex.com/maps/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 h-8 px-3 text-xs rounded-md border border-input bg-background hover:bg-accent transition-colors"
-                >
-                  <MapPin className="h-3.5 w-3.5" />
-                  Open Yandex Maps
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-                <span className="text-xs text-muted-foreground">right-click a spot → copy URL → paste below</span>
-              </div>
+              <p className="text-xs text-muted-foreground">{L.forms.locationBuilder.pasteHint}</p>
               <Input
-                value={yandexUrl}
-                onChange={(e) => handleYandexUrl(e.target.value)}
-                placeholder="Paste Yandex Maps URL here..."
+                value={mapUrl}
+                onChange={(e) => handleMapUrl(e.target.value)}
+                placeholder={L.forms.locationBuilder.pasteUrlPlaceholder}
                 className="h-8 text-sm"
               />
               {urlError && <p className="text-xs text-destructive">{urlError}</p>}
@@ -184,25 +215,25 @@ export function LocationDataBuilder({ data, onChange }: LocationDataBuilderProps
               <Input
                 type="number"
                 step="any"
-                value={newPoint.lat}
-                onChange={(e) => setNewPoint((p) => ({ ...p, lat: e.target.value }))}
-                placeholder="Latitude"
+                value={lat}
+                onChange={(e) => setLat(e.target.value)}
+                placeholder={L.forms.locationBuilder.latPlaceholder}
                 className="h-8 text-sm"
               />
               <Input
                 type="number"
                 step="any"
-                value={newPoint.lng}
-                onChange={(e) => setNewPoint((p) => ({ ...p, lng: e.target.value }))}
-                placeholder="Longitude"
+                value={lng}
+                onChange={(e) => setLng(e.target.value)}
+                placeholder={L.forms.locationBuilder.lngPlaceholder}
                 className="h-8 text-sm"
               />
               <Input
                 type="number"
                 min="1"
-                value={newPoint.maxCompletions}
-                onChange={(e) => setNewPoint((p) => ({ ...p, maxCompletions: e.target.value }))}
-                placeholder="Max check-ins"
+                value={maxCompletions}
+                onChange={(e) => setMaxCompletions(e.target.value)}
+                placeholder={L.forms.locationBuilder.maxCheckinsPlaceholder}
                 className="h-8 text-sm"
               />
             </div>
@@ -212,10 +243,10 @@ export function LocationDataBuilder({ data, onChange }: LocationDataBuilderProps
               variant="outline"
               className="w-full h-8 text-sm"
               onClick={addPoint}
-              disabled={!newPoint.label.trim() || !hasCoords}
+              disabled={!newLabel.trim() || !hasCoords}
             >
               <Plus className="h-3.5 w-3.5" />
-              Add Point
+              {L.forms.locationBuilder.addPointBtn}
             </Button>
           </CardContent>
         </Card>

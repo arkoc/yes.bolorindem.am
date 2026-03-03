@@ -84,7 +84,7 @@ export default async function LeaderboardPage() {
                   <div
                     key={entry.id}
                     className={cn(
-                      "flex items-center gap-3 px-4 py-3",
+                      "flex items-center gap-3 px-4 py-4",
                       isMe && "bg-primary/5"
                     )}
                   >
@@ -100,7 +100,7 @@ export default async function LeaderboardPage() {
                       <p className="text-xs text-muted-foreground">{t(L.volunteer.leaderboard.completions, { count: entry.total_completions })}</p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="font-semibold text-sm flex items-center gap-1 justify-end">
+                      <p className="font-semibold text-sm flex items-center gap-1 justify-end whitespace-nowrap">
                         <Zap className="h-3 w-3 text-yellow-500" />
                         {formatPoints(entry.total_points)}
                       </p>

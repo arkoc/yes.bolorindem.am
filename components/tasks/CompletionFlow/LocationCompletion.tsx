@@ -14,25 +14,25 @@ import { type TaskLocationData } from "@/lib/db/schema";
 interface LocationCompletionProps {
   taskId: string;
   projectId: string;
-  points: number;
   locationData: TaskLocationData | null;
   isDone: boolean;
   isRepeatable: boolean;
   userCompletions: number;
   maxCompletions: number;
   perPointCompletions: Record<string, number>;
+  allowBatchSubmission?: boolean;
 }
 
 export function LocationCompletion({
   taskId,
   projectId,
-  points,
   locationData,
   isDone,
   isRepeatable,
   userCompletions,
   maxCompletions,
   perPointCompletions,
+  allowBatchSubmission = false,
 }: LocationCompletionProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -53,7 +53,7 @@ export function LocationCompletion({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           taskType: "location",
-          count: batchCount,
+          count: allowBatchSubmission ? batchCount : 1,
           locationData: {
             ...data,
             timestamp: new Date().toISOString(),
@@ -115,6 +115,18 @@ export function LocationCompletion({
     );
   }
 
+  if (isDone && isRepeatable) {
+    return (
+      <Card className="border-green-200 bg-green-50">
+        <CardContent className="py-6 text-center">
+          <CheckCircle className="h-10 w-10 text-green-500 mx-auto mb-2" />
+          <p className="font-semibold text-green-700">{t(L.completion.location.allDoneTitle, { max: maxCompletions })}</p>
+          <p className="text-sm text-green-600 mt-1">{L.completion.location.allDoneText}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (!locationData) {
     return (
       <Card>
@@ -139,7 +151,7 @@ export function LocationCompletion({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {isRepeatable && (
+        {isRepeatable && allowBatchSubmission && (
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground shrink-0">{L.completion.location.batchLabel}</span>
             <div className="flex items-center gap-1">

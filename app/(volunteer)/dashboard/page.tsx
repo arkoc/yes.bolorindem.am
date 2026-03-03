@@ -3,11 +3,13 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { formatPoints, getRankSuffix } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, Star, FolderOpen, CheckCircle, ArrowRight, Zap } from "lucide-react";
+import { Trophy, Star, FolderOpen, CheckCircle, ArrowRight, Zap, Award } from "lucide-react";
+import { cn } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
+import { BadgeIcon } from "@/components/ui/badge-icon";
 
 export default async function DashboardPage() {
   const supabase = await createServerClient();
@@ -16,8 +18,7 @@ export default async function DashboardPage() {
 
   const adminClient = await createAdminClient();
 
-  // Fetch profile + rank in one go using the leaderboard view
-  const [profileRes, rankRes, recentRes, activeProjectsRes] = await Promise.all([
+  const [profileRes, rankRes, recentRes, activeProjectsRes, earnedBadgesRes, allBadgesRes] = await Promise.all([
     supabase
       .from("profiles")
       .select("full_name, total_points, role")
@@ -40,12 +41,27 @@ export default async function DashboardPage() {
       .select("id, title, completion_bonus_points, tasks(count)")
       .eq("status", "active")
       .limit(4),
+    supabase
+      .from("user_badges")
+      .select("badge_id, badges(icon, name_hy, image_url)")
+      .eq("user_id", user.id)
+      .order("awarded_at", { ascending: true }),
+    supabase
+      .from("badges")
+      .select("id, icon, name_hy, image_url")
+      .order("sort_order"),
   ]);
 
   const profile = profileRes.data;
   const rank = rankRes.data?.rank;
   const recent = recentRes.data ?? [];
   const activeProjects = activeProjectsRes.data ?? [];
+  const earnedBadges = (earnedBadgesRes.data ?? []) as unknown as { badge_id: string; badges: { icon: string; name_hy: string; image_url: string | null } }[];
+  const allBadges = (allBadgesRes.data ?? []) as { id: string; icon: string; name_hy: string; image_url: string | null }[];
+  const totalBadges = allBadges.length;
+  const badgeDisplayList = earnedBadges.length > 0
+    ? earnedBadges.slice(0, 5).map(b => ({ id: b.badge_id, ...b.badges, earned: true }))
+    : allBadges.slice(0, 5).map(b => ({ ...b, earned: false }));
 
   if (!profile) redirect("/register");
 
@@ -77,34 +93,75 @@ export default async function DashboardPage() {
       </Card>
 
       {/* Quick stats */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <Card>
           <CardContent className="pt-4 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-yellow-100">
-                <Star className="h-5 w-5 text-yellow-600" />
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-yellow-100 shrink-0">
+                <Star className="h-4 w-4 text-yellow-600" />
               </div>
-              <div>
-                <p className="text-2xl font-bold">{formatPoints(profile.total_points)}</p>
-                <p className="text-xs text-muted-foreground">{L.volunteer.dashboard.statPoints}</p>
+              <div className="min-w-0">
+                <p className="text-xl font-bold truncate">{formatPoints(profile.total_points)}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{L.volunteer.dashboard.statPoints}</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-100">
-                <Trophy className="h-5 w-5 text-blue-600" />
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-blue-100 shrink-0">
+                <Trophy className="h-4 w-4 text-blue-600" />
               </div>
-              <div>
-                <p className="text-2xl font-bold">{rank ? getRankSuffix(Number(rank)) : "—"}</p>
-                <p className="text-xs text-muted-foreground">{L.volunteer.dashboard.statLeaderboard}</p>
+              <div className="min-w-0">
+                <p className="text-xl font-bold truncate">{rank ? getRankSuffix(Number(rank)) : "—"}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{L.volunteer.dashboard.statLeaderboard}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-4">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-orange-100 shrink-0">
+                <Award className="h-4 w-4 text-orange-600" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xl font-bold">{earnedBadges.length}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{L.volunteer.dashboard.statBadges}</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Badges section */}
+      <section>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="font-semibold text-base">
+            {L.volunteer.dashboard.badgesSection}
+            <span className="ml-2 text-sm font-normal text-muted-foreground">
+              {earnedBadges.length}/{totalBadges}
+            </span>
+          </h2>
+          <Link href="/profile" className="text-xs text-primary hover:underline">
+            {earnedBadges.length > 0 ? L.volunteer.dashboard.badgesShowAll : L.volunteer.dashboard.badgesEarnFirst}
+          </Link>
+        </div>
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {badgeDisplayList.map((b) => (
+            <div
+              key={b.id}
+              className={cn(
+                "flex flex-col items-center shrink-0 rounded-xl border p-2 text-center w-28",
+                b.earned ? "bg-primary/10 border-primary/20" : "opacity-40 bg-muted border-transparent"
+              )}
+            >
+              <BadgeIcon src={b.image_url} fallback={b.icon} alt={b.name_hy} size={88} />
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* Active projects */}
       {activeProjects.length > 0 && (
@@ -127,11 +184,11 @@ export default async function DashboardPage() {
             }) => (
               <Link key={project.id} href={`/projects/${project.id}`}>
                 <Card className="hover:shadow-md transition-shadow">
-                  <CardContent className="py-3 px-4">
+                  <CardContent className="py-5 px-5">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium text-sm">{project.title}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
+                        <p className="font-semibold text-lg truncate">{project.title}</p>
+                        <p className="text-sm text-muted-foreground mt-1">
                           {t(L.volunteer.dashboard.taskCount, { count: project.tasks?.[0]?.count ?? 0 })}
                         </p>
                       </div>
@@ -160,12 +217,12 @@ export default async function DashboardPage() {
             {recent.map((c) => {
               const item = c as unknown as { id: string; points_awarded: number; tasks: { title: string; projects: { title: string } | null } | null };
               return (
-                <div key={item.id} className="flex items-center justify-between py-2 border-b last:border-0">
+                <div key={item.id} className="flex items-center justify-between py-1 border-b last:border-0">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">{item.tasks?.title}</p>
-                    <p className="text-xs text-muted-foreground truncate">{item.tasks?.projects?.title}</p>
+                    <p className="text-[11px] font-medium truncate">{item.tasks?.title}</p>
+                    <p className="text-[9px] text-muted-foreground truncate">{item.tasks?.projects?.title}</p>
                   </div>
-                  <span className="text-sm font-semibold text-green-600 shrink-0 ml-2">
+                  <span className="text-[10px] font-semibold text-green-600 shrink-0 ml-2">
                     +{item.points_awarded} pts
                   </span>
                 </div>

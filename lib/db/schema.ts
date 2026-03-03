@@ -67,6 +67,9 @@ export const tasks = pgTable("tasks", {
   requiresEvidence: boolean("requires_evidence").notNull().default(false),
   formSchema: jsonb("form_schema"), // { fields: [...] }
   locationData: jsonb("location_data"), // { center, target_points, area_polygon }
+  periodType: text("period_type"), // 'day' | 'week' | null
+  periodLimit: integer("period_limit").default(1), // completions allowed per period
+  allowBatchSubmission: boolean("allow_batch_submission").notNull().default(false),
   isActive: boolean("is_active").notNull().default(true),
   orderIndex: integer("order_index").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true })

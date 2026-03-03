@@ -42,7 +42,7 @@ export function CompletionsFilter({ projects, users, selectedProjectId, selected
         value={selectedProjectId || "all"}
         onValueChange={(v) => applyFilter("project", v === "all" ? "" : v)}
       >
-        <SelectTrigger className="w-48 h-9">
+        <SelectTrigger className="w-full sm:w-48 h-9">
           <SelectValue placeholder={L.filter.allProjects} />
         </SelectTrigger>
         <SelectContent>
@@ -58,7 +58,7 @@ export function CompletionsFilter({ projects, users, selectedProjectId, selected
         value={selectedUserId}
         onChange={(id) => applyFilter("user", id)}
         placeholder={L.filter.searchVolunteer}
-        className="w-48"
+        className="w-full sm:w-48"
       />
 
       {hasFilters && (

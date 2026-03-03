@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
-import { MapPin, FileText, ClipboardList, Camera, Pencil, Repeat } from "lucide-react";
+import { MapPin, FileText, ClipboardList, Camera, Pencil, Repeat, ChevronUp, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -28,6 +28,7 @@ interface TaskListProps {
 
 export function TaskList({ projectId, initialTasks }: TaskListProps) {
   const [tasks, setTasks] = useState(initialTasks);
+  const [reordering, setReordering] = useState(false);
   const supabase = createClient();
   const router = useRouter();
 
@@ -66,6 +67,40 @@ export function TaskList({ projectId, initialTasks }: TaskListProps) {
     router.refresh();
   }
 
+  async function handleMove(fromIndex: number, toIndex: number) {
+    if (reordering) return;
+    setReordering(true);
+
+    const prev = tasks;
+    const newTasks = [...tasks];
+    const [moved] = newTasks.splice(fromIndex, 1);
+    newTasks.splice(toIndex, 0, moved);
+
+    // Normalize order_index to match new array positions
+    const reindexed = newTasks.map((t, i) => ({ ...t, order_index: i }));
+    setTasks(reindexed);
+
+    // Only update rows whose order_index actually changed
+    const originalIndex = Object.fromEntries(prev.map((t) => [t.id, t.order_index]));
+    const changed = reindexed.filter((t) => t.order_index !== originalIndex[t.id]);
+
+    const results = await Promise.all(
+      changed.map((t) =>
+        supabase.from("tasks").update({ order_index: t.order_index }).eq("id", t.id)
+      )
+    );
+
+    const failed = results.find((r) => r.error);
+    if (failed) {
+      toast.error("Failed to reorder tasks.");
+      setTasks(prev);
+    } else {
+      router.refresh();
+    }
+
+    setReordering(false);
+  }
+
   if (tasks.length === 0) {
     return (
       <Card>
@@ -78,10 +113,34 @@ export function TaskList({ projectId, initialTasks }: TaskListProps) {
 
   return (
     <div className="space-y-2">
-      {tasks.map((task) => (
+      {tasks.map((task, index) => (
         <Card key={task.id} className={!task.is_active ? "opacity-60" : ""}>
           <CardContent className="py-3 px-4">
             <div className="flex items-center gap-3">
+              {/* Reorder arrows */}
+              <div className="flex flex-col shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  disabled={index === 0 || reordering}
+                  onClick={() => handleMove(index, index - 1)}
+                  aria-label="Move up"
+                >
+                  <ChevronUp className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  disabled={index === tasks.length - 1 || reordering}
+                  onClick={() => handleMove(index, index + 1)}
+                  aria-label="Move down"
+                >
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+
               <div className={`p-2 rounded-lg ${taskTypeBg(task.task_type)} shrink-0`}>
                 {taskTypeIcon(task.task_type)}
               </div>

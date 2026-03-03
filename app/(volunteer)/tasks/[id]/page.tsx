@@ -1,7 +1,9 @@
 import { createServerClient } from "@/lib/supabase/server";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, MapPin, ClipboardList, FileText, Camera, Repeat } from "lucide-react";
+
+export const dynamic = "force-dynamic";
+import { ArrowLeft, MapPin, ClipboardList, FileText, Camera, Repeat, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { StandardCompletion } from "@/components/tasks/CompletionFlow/StandardCompletion";
@@ -23,7 +25,7 @@ export default async function TaskDetailPage({
 
   const { data: task } = await supabase
     .from("tasks")
-    .select("id, title, description, task_type, completion_points, max_completions_per_user, requires_evidence, form_schema, location_data, is_active, project_id, projects(id, title)")
+    .select("id, title, description, task_type, completion_points, max_completions_per_user, requires_evidence, form_schema, location_data, is_active, project_id, allow_batch_submission, period_type, period_limit, projects(id, title)")
     .eq("id", id)
     .single();
 
@@ -48,6 +50,7 @@ export default async function TaskDetailPage({
   const maxCompletions = task.max_completions_per_user ?? 1;
   const isDone = userCompletions >= maxCompletions;
   const isRepeatable = maxCompletions > 1;
+  const allowBatchSubmission = task.allow_batch_submission === true;
 
   const taskTypeLabel = {
     standard: L.volunteer.taskDetail.typeStandard,
@@ -98,6 +101,18 @@ export default async function TaskDetailPage({
                     {userCompletions}/{maxCompletions}
                   </Badge>
                 )}
+                {task.period_type === "day" && (
+                  <Badge variant="outline" className="text-xs flex items-center gap-1 text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    {t(L.volunteer.taskDetail.periodDay, { limit: task.period_limit ?? 1 })}
+                  </Badge>
+                )}
+                {task.period_type === "week" && (
+                  <Badge variant="outline" className="text-xs flex items-center gap-1 text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    {t(L.volunteer.taskDetail.periodWeek, { limit: task.period_limit ?? 1 })}
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
@@ -120,6 +135,7 @@ export default async function TaskDetailPage({
           isRepeatable={isRepeatable}
           userCompletions={userCompletions}
           maxCompletions={maxCompletions}
+          allowBatchSubmission={allowBatchSubmission}
         />
       )}
 
@@ -140,13 +156,13 @@ export default async function TaskDetailPage({
         <LocationCompletion
           taskId={task.id}
           projectId={project?.id ?? ""}
-          points={task.completion_points}
           locationData={task.location_data as TaskLocationData}
           isDone={isDone}
           isRepeatable={isRepeatable}
           userCompletions={userCompletions}
           maxCompletions={maxCompletions}
           perPointCompletions={perPointCompletions}
+          allowBatchSubmission={allowBatchSubmission}
         />
       )}
 
@@ -159,6 +175,7 @@ export default async function TaskDetailPage({
           isRepeatable={isRepeatable}
           userCompletions={userCompletions}
           maxCompletions={maxCompletions}
+          allowBatchSubmission={allowBatchSubmission}
         />
       )}
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import L, { t } from "@/lib/labels";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ interface PhotoCompletionProps {
   isRepeatable: boolean;
   userCompletions: number;
   maxCompletions: number;
+  allowBatchSubmission?: boolean;
 }
 
 export function PhotoCompletion({
@@ -27,6 +28,7 @@ export function PhotoCompletion({
   isRepeatable,
   userCompletions,
   maxCompletions,
+  allowBatchSubmission = false,
 }: PhotoCompletionProps) {
   const router = useRouter();
   const supabase = createClient();
@@ -37,7 +39,12 @@ export function PhotoCompletion({
   const [justCompleted, setJustCompleted] = useState(false);
   const [awardedPoints, setAwardedPoints] = useState(0);
   const remaining = maxCompletions - userCompletions;
-  const batchCount = Math.min(selectedFiles.length || 1, remaining);
+  const batchCount = allowBatchSubmission ? Math.min(selectedFiles.length || 1, remaining) : 1;
+
+  // Keep a ref to current previews so the cleanup effect always sees the latest URLs
+  const previewsRef = useRef<string[]>([]);
+  previewsRef.current = previews;
+  useEffect(() => () => previewsRef.current.forEach(URL.revokeObjectURL), []);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -184,7 +191,7 @@ export function PhotoCompletion({
           type="file"
           accept="image/*"
           capture="environment"
-          multiple
+          multiple={allowBatchSubmission}
           className="hidden"
           onChange={handleFileChange}
         />

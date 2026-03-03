@@ -75,7 +75,7 @@ export default async function AdminCompletionsPage({
           <div className="divide-y">
             {completions.length > 0 ? (
               completions.map((c) => (
-                <div key={c.id} className="px-5 py-4">
+                <div key={c.id} className="px-3 md:px-5 py-3">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
                       <div className="mt-0.5">
@@ -109,7 +109,7 @@ export default async function AdminCompletionsPage({
                             <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
                               {L.admin.completions.formData}
                             </summary>
-                            <pre className="mt-1 text-xs bg-muted p-2 rounded overflow-x-auto max-w-sm">
+                            <pre className="mt-1 text-[10px] md:text-xs bg-muted p-2 rounded overflow-x-auto max-w-[calc(100vw-6rem)] md:max-w-sm">
                               {JSON.stringify(c.form_data, null, 2)}
                             </pre>
                           </details>

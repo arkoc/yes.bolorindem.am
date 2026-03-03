@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { CheckCircle, Loader2, Zap, RefreshCw } from "lucide-react";
 
 interface StandardCompletionProps {
@@ -17,6 +19,7 @@ interface StandardCompletionProps {
   isRepeatable: boolean;
   userCompletions: number;
   maxCompletions: number;
+  allowBatchSubmission?: boolean;
 }
 
 export function StandardCompletion({
@@ -27,19 +30,22 @@ export function StandardCompletion({
   isRepeatable,
   userCompletions,
   maxCompletions,
+  allowBatchSubmission = false,
 }: StandardCompletionProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
   const [awardedPoints, setAwardedPoints] = useState(0);
+  const [batchCount, setBatchCount] = useState(1);
 
   async function handleComplete() {
     setLoading(true);
     try {
+      const count = allowBatchSubmission ? batchCount : 1;
       const res = await fetch(`/api/tasks/${taskId}/complete`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ taskType: "standard" }),
+        body: JSON.stringify({ taskType: "standard", count }),
       });
 
       const data = await res.json();
@@ -116,6 +122,20 @@ export function StandardCompletion({
             ? t(L.completion.standard.progressText, { count: userCompletions, max: maxCompletions })
             : L.completion.standard.progressTextOnce}
         </p>
+        {allowBatchSubmission && (
+          <div className="space-y-1.5">
+            <Label htmlFor="batch_count">{L.completion.standard.batchLabel}</Label>
+            <Input
+              id="batch_count"
+              type="number"
+              min="1"
+              max={maxCompletions - userCompletions}
+              value={batchCount}
+              onChange={(e) => setBatchCount(Math.min(maxCompletions - userCompletions, Math.max(1, parseInt(e.target.value) || 1)))}
+              className="text-center text-lg font-semibold"
+            />
+          </div>
+        )}
         <Button
           onClick={handleComplete}
           disabled={loading}
@@ -127,7 +147,9 @@ export function StandardCompletion({
           ) : (
             <>
               {isRepeatable ? <RefreshCw className="h-5 w-5" /> : <CheckCircle className="h-5 w-5" />}
-              {t(L.completion.standard.completeBtn, { points })}
+              {allowBatchSubmission && batchCount > 1
+                ? t(L.completion.standard.completeBatchBtn, { count: batchCount, points: points * batchCount })
+                : t(L.completion.standard.completeBtn, { points })}
             </>
           )}
         </Button>

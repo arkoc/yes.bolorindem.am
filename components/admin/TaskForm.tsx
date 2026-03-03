@@ -40,7 +40,7 @@ type TaskFormValues = z.infer<typeof taskSchema>;
 interface TaskFormProps {
   projectId: string;
   task?: Task;
-  onSuccess?: () => void;
+  onSuccess?: (isDelete?: boolean) => void;
 }
 
 export function TaskForm({ projectId, task, onSuccess }: TaskFormProps) {
@@ -60,6 +60,11 @@ export function TaskForm({ projectId, task, onSuccess }: TaskFormProps) {
   );
 
   const [unlimited, setUnlimited] = useState(task?.maxCompletionsPerUser === null);
+  const [periodType, setPeriodType] = useState<"none" | "day" | "week">(
+    (task?.periodType as "day" | "week" | null) ?? "none"
+  );
+  const [periodLimit, setPeriodLimit] = useState<number>(task?.periodLimit ?? 1);
+  const [allowBatch, setAllowBatch] = useState(task?.allowBatchSubmission ?? false);
 
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
@@ -86,6 +91,9 @@ export function TaskForm({ projectId, task, onSuccess }: TaskFormProps) {
         task_type: data.task_type,
         completion_points: data.completion_points,
         max_completions_per_user: unlimited ? null : data.max_completions_per_user,
+        period_type: periodType !== "none" ? periodType : null,
+        period_limit: periodType !== "none" ? periodLimit : null,
+        allow_batch_submission: allowBatch,
         requires_evidence: false,
         is_active: data.is_active,
         order_index: data.order_index,
@@ -121,7 +129,7 @@ export function TaskForm({ projectId, task, onSuccess }: TaskFormProps) {
       toast.error(L.forms.task.toastDeleteFailed);
     } else {
       toast.success(L.forms.task.toastDeleted);
-      onSuccess?.();
+      onSuccess?.(true);
     }
     setDeleting(false);
   }
@@ -165,21 +173,7 @@ export function TaskForm({ projectId, task, onSuccess }: TaskFormProps) {
         </div>
 
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="max_completions">{L.forms.task.maxPerUserLabel}</Label>
-            <div className="flex items-center gap-1.5">
-              <Switch
-                id="unlimited"
-                checked={unlimited}
-                onCheckedChange={(v) => {
-                  setUnlimited(v);
-                  if (v) setValue("max_completions_per_user", null);
-                  else setValue("max_completions_per_user", 1);
-                }}
-              />
-              <Label htmlFor="unlimited" className="text-xs font-normal text-muted-foreground cursor-pointer">{L.forms.task.unlimitedLabel}</Label>
-            </div>
-          </div>
+          <Label htmlFor="max_completions">{L.forms.task.maxPerUserLabel}</Label>
           <Input
             id="max_completions"
             type="number"
@@ -189,7 +183,60 @@ export function TaskForm({ projectId, task, onSuccess }: TaskFormProps) {
             {...register("max_completions_per_user")}
             className={unlimited ? "opacity-40" : ""}
           />
+          <div className="flex items-center gap-2 pt-0.5">
+            <Switch
+              id="unlimited"
+              checked={unlimited}
+              onCheckedChange={(v) => {
+                setUnlimited(v);
+                if (v) setValue("max_completions_per_user", null);
+                else setValue("max_completions_per_user", 1);
+              }}
+            />
+            <Label htmlFor="unlimited" className="text-xs font-normal text-muted-foreground cursor-pointer">{L.forms.task.unlimitedLabel}</Label>
+          </div>
         </div>
+      </div>
+
+      {/* Period limit */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <Label>{L.forms.task.periodTypeLabel}</Label>
+          <Select
+            value={periodType}
+            onValueChange={(v) => setPeriodType(v as "none" | "day" | "week")}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={L.forms.task.periodTypeNone} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">{L.forms.task.periodTypeNone}</SelectItem>
+              <SelectItem value="day">{L.forms.task.periodTypeDay}</SelectItem>
+              <SelectItem value="week">{L.forms.task.periodTypeWeek}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {periodType !== "none" && (
+          <div className="space-y-1.5">
+            <Label htmlFor="period_limit">{L.forms.task.periodLimitLabel}</Label>
+            <Input
+              id="period_limit"
+              type="number"
+              min="1"
+              value={periodLimit}
+              onChange={(e) => setPeriodLimit(Math.max(1, parseInt(e.target.value) || 1))}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Batch submission */}
+      <div className="flex items-center gap-3">
+        <Switch id="allow_batch" checked={allowBatch} onCheckedChange={setAllowBatch} />
+        <Label htmlFor="allow_batch" className="font-normal cursor-pointer">
+          {L.forms.task.batchSubmissionLabel}
+        </Label>
       </div>
 
       <div className="flex items-center gap-3">

@@ -31,12 +31,29 @@ export async function POST(
 
   const payload = parsed.data;
 
-  // Fetch task
-  const { data: task, error: taskError } = await supabase
-    .from("tasks")
-    .select("id, project_id, task_type, completion_points, max_completions_per_user, total_completions_allowed, requires_evidence, form_schema, location_data, is_active")
-    .eq("id", taskId)
-    .single();
+  // Fetch task + completion counts in parallel (3 independent DB round-trips → 1)
+  const [
+    { data: task, error: taskError },
+    { count: userCompletionCount },
+    { count: userTotalCount },
+  ] = await Promise.all([
+    supabase
+      .from("tasks")
+      .select("id, project_id, task_type, completion_points, max_completions_per_user, total_completions_allowed, requires_evidence, form_schema, location_data, is_active, period_type, period_limit, allow_batch_submission")
+      .eq("id", taskId)
+      .single(),
+    supabase
+      .from("task_completions")
+      .select("id", { count: "exact" })
+      .eq("task_id", taskId)
+      .eq("user_id", user.id)
+      .eq("status", "approved"),
+    supabase
+      .from("task_completions")
+      .select("id", { count: "exact" })
+      .eq("task_id", taskId)
+      .eq("user_id", user.id),
+  ]);
 
   if (taskError || !task) {
     return NextResponse.json({ error: "Task not found" }, { status: 404 });
@@ -45,21 +62,6 @@ export async function POST(
   if (!task.is_active) {
     return NextResponse.json({ error: "Task is not active" }, { status: 400 });
   }
-
-  // Check user's approved completion count (for limit enforcement)
-  const { count: userCompletionCount } = await supabase
-    .from("task_completions")
-    .select("id", { count: "exact" })
-    .eq("task_id", taskId)
-    .eq("user_id", user.id)
-    .eq("status", "approved");
-
-  // Total completion count across all statuses (for unique completion_number)
-  const { count: userTotalCount } = await supabase
-    .from("task_completions")
-    .select("id", { count: "exact" })
-    .eq("task_id", taskId)
-    .eq("user_id", user.id);
 
   const currentCount = userCompletionCount ?? 0;
   const nextNumber = userTotalCount ?? 0;
@@ -79,6 +81,44 @@ export async function POST(
     );
   }
 
+  // Check period-based limit (per day or per week)
+  if (task.period_type) {
+    const periodLimit = task.period_limit ?? 1;
+    const now = new Date();
+    let windowStart: Date;
+    if (task.period_type === "day") {
+      windowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    } else {
+      // week: Monday-based
+      const day = now.getDay(); // 0=Sun
+      const diff = (day === 0 ? -6 : 1 - day);
+      windowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff);
+    }
+
+    const { count: periodCount } = await supabase
+      .from("task_completions")
+      .select("id", { count: "exact" })
+      .eq("task_id", taskId)
+      .eq("user_id", user.id)
+      .eq("status", "approved")
+      .gte("completed_at", windowStart.toISOString());
+
+    const periodCompletions = periodCount ?? 0;
+    if (periodCompletions >= periodLimit) {
+      const periodLabel = task.period_type === "day" ? "today" : "this week";
+      return NextResponse.json(
+        { error: `You have reached the limit of ${periodLimit} completion(s) ${periodLabel} for this task.` },
+        { status: 409 }
+      );
+    }
+    if (batchCount > 1 && periodCompletions + batchCount > periodLimit) {
+      return NextResponse.json(
+        { error: `You can only complete this task ${periodLimit - periodCompletions} more time(s) ${task.period_type === "day" ? "today" : "this week"}.` },
+        { status: 409 }
+      );
+    }
+  }
+
   // Check per-point limit for location tasks
   if (task.task_type === "location" && payload.taskType === "location") {
     const selectedPointId = payload.locationData?.selectedPointId;
@@ -86,19 +126,16 @@ export async function POST(
       const locationData = task.location_data as TaskLocationData | null;
       const point = locationData?.targetPoints?.find((p) => p.id === selectedPointId);
       if (point?.maxCompletions) {
-        // Count this user's approved completions at this specific point
-        const { data: prevCompletions } = await supabase
+        // Count completions at this specific point using DB-side JSONB filter
+        const { count: pointCount } = await supabase
           .from("task_completions")
-          .select("location_data")
+          .select("id", { count: "exact" })
           .eq("task_id", taskId)
           .eq("user_id", user.id)
-          .eq("status", "approved");
+          .eq("status", "approved")
+          .filter("location_data->>'selectedPointId'", "eq", selectedPointId);
 
-        const pointCount = (prevCompletions ?? []).filter(
-          (c) => (c.location_data as { selectedPointId?: string } | null)?.selectedPointId === selectedPointId
-        ).length;
-
-        if (pointCount >= point.maxCompletions) {
+        if ((pointCount ?? 0) >= point.maxCompletions) {
           return NextResponse.json(
             { error: `You've reached the limit of ${point.maxCompletions} check-in(s) at "${point.label}".` },
             { status: 409 }
@@ -171,7 +208,7 @@ export async function POST(
     lastCompletion = data;
   }
 
-  // Fetch updated profile points
+  // Fetch updated profile points (trigger has already updated total_points atomically)
   const { data: profile } = await supabase
     .from("profiles")
     .select("total_points")

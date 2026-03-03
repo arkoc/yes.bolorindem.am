@@ -84,7 +84,8 @@ export function AdminNav() {
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 h-14 border-b bg-background flex items-center px-4 gap-3">
         <button
           onClick={() => setOpen(true)}
-          className="p-1.5 rounded-md hover:bg-accent"
+          className="p-2.5 -m-1 rounded-md hover:bg-accent"
+          aria-label="Open navigation"
         >
           <Menu className="h-5 w-5" />
         </button>
