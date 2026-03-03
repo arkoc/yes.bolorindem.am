@@ -1,14 +1,9 @@
 -- ============================================================
--- Performance: consolidate badge-check queries 7 → 3
+-- Remove podium badge (badge deleted from table)
 -- ============================================================
 
--- Replace the badge award function so it uses conditional aggregation
--- instead of 7 separate SELECT statements.
---
--- Before: 7 round-trips per task completion (total, form, location, photo
---         completions each separately + points + project_completions + rank)
--- After:  3 round-trips (all completion counts together, points +
---         project_completions together, rank separately)
+-- Drop podium check from badge award function.
+-- Also drops the now-unnecessary leaderboard rank query (round-trip 3 → 2).
 
 CREATE OR REPLACE FUNCTION check_and_award_badges(p_user_id uuid)
 RETURNS void AS $$

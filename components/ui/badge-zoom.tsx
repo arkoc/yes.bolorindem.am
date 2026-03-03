@@ -38,7 +38,7 @@ export function BadgeZoom({ src, fallback, name, description, size = 40, earned 
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={cn("focus:outline-none active:scale-95 transition-transform cursor-zoom-in", className)}
+        className={cn("focus:outline-none active:scale-95 transition-transform cursor-pointer", className)}
         aria-label={name}
       >
         <BadgeIcon src={src} fallback={fallback} alt={name} size={size} />

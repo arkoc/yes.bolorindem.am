@@ -14,8 +14,7 @@ import L, { t } from "@/lib/labels";
 import { BadgeZoom } from "@/components/ui/badge-zoom";
 
 // Thresholds must stay in sync with check_and_award_badges() in SQL migrations.
-// isRank = progress is the user's leaderboard rank (shown as "#N", not a bar)
-const BADGE_REQS: Record<string, { max: number; isRank?: true }> = {
+const BADGE_REQS: Record<string, { max: number }> = {
   "first-step":        { max: 1 },
   "activist":          { max: 10 },
   "political-machine": { max: 50 },
@@ -26,7 +25,6 @@ const BADGE_REQS: Record<string, { max: number; isRank?: true }> = {
   "novice":            { max: 100 },
   "reliable":          { max: 500 },
   "political-giant":   { max: 5000 },
-  "podium":            { max: 3, isRank: true },
   "first-mission":     { max: 1 },
   "veteran":           { max: 5 },
 };
@@ -74,7 +72,6 @@ export default async function ProfilePage() {
   const bp = progressRes.data?.[0];
   const totalCompletions = Number(rank?.total_completions ?? 0);
   const totalPoints = profile?.total_points ?? 0;
-  const currentRank = rank?.rank ? Number(rank.rank) : null;
   const formCount = Number(bp?.form_completions ?? 0);
   const locationCount = Number(bp?.location_completions ?? 0);
   const photoCount = Number(bp?.photo_completions ?? 0);
@@ -92,7 +89,6 @@ export default async function ProfilePage() {
     "novice":            totalPoints,
     "reliable":          totalPoints,
     "political-giant":   totalPoints,
-    "podium":            currentRank ?? 0,
     "first-mission":     projectCount,
     "veteran":           projectCount,
   };
@@ -171,9 +167,7 @@ export default async function ProfilePage() {
                 const earned = earnedIds.has(badge.id);
                 const req = BADGE_REQS[badge.id];
                 const current = badgeCurrent[badge.id] ?? 0;
-                const pct = req && !req.isRank
-                  ? Math.min(100, (current / req.max) * 100)
-                  : 0;
+                const pct = req ? Math.min(100, (current / req.max) * 100) : 0;
 
                 return (
                   <div
@@ -205,11 +199,6 @@ export default async function ProfilePage() {
 
                     {/* Progress indicator — only for unearned badges */}
                     {!earned && req && (
-                      req.isRank ? (
-                        <span className="text-[9px] text-muted-foreground tabular-nums mt-0.5">
-                          {currentRank ? `#${currentRank}` : "—"}
-                        </span>
-                      ) : (
                         <div className="w-full mt-0.5 space-y-0.5">
                           <div className="h-1 w-full rounded-full bg-background/50 overflow-hidden">
                             <div
@@ -221,7 +210,6 @@ export default async function ProfilePage() {
                             {Math.min(current, req.max)}/{req.max}
                           </span>
                         </div>
-                      )
                     )}
                   </div>
                 );

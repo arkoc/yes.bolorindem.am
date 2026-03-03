@@ -40,8 +40,7 @@ INSERT INTO badges (id, name_hy, name_en, description_hy, icon, sort_order) VALU
   ('novice',            'Սկսնակ',             'Novice',            'Կուտակիր 100 միավոր',            '🌱', 8),
   ('reliable',          'Վստահելի',           'Reliable',          'Կուտակիր 500 միավոր',            '🛡', 9),
   ('political-giant',   'Քաղաքական Գիգանտ',  'Political Giant',   'Կուտակիր 5,000 միավոր',          '👑', 10),
-  ('podium',            'Պատվո Հարթակ',       'The Podium',        'Հայտնվիր լավագույն 3-ի մեջ',    '🏆', 11),
-  ('first-mission',     'Առաջին Ծրագիր',      'First Mission',     'Ավարտիր առաջին ծրագիրդ',         '🎯', 12),
+  ('first-mission',     'Առաջին Ծրագիր',      'First Mission',     'Ավարտիր առաջին ծրագիրդ',         '🎯', 11),
   ('veteran',           'Վետերան',            'Veteran',           'Ավարտիր 5 ծրագիր',               '🎖', 13);
 
 -- ─── Badge award function ─────────────────────────────────────
@@ -54,7 +53,6 @@ DECLARE
   v_photo_completions    integer;
   v_total_points         integer;
   v_project_completions  integer;
-  v_rank                 bigint;
 BEGIN
   SELECT COUNT(*) INTO v_total_completions
   FROM task_completions
@@ -117,11 +115,6 @@ BEGIN
   END IF;
   IF v_total_points >= 5000 THEN
     INSERT INTO user_badges(user_id, badge_id) VALUES (p_user_id, 'political-giant') ON CONFLICT DO NOTHING;
-  END IF;
-
-  -- Leaderboard badge (top 3 ever reached)
-  IF v_rank IS NOT NULL AND v_rank <= 3 THEN
-    INSERT INTO user_badges(user_id, badge_id) VALUES (p_user_id, 'podium') ON CONFLICT DO NOTHING;
   END IF;
 
   -- Project completion badges
