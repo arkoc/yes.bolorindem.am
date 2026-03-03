@@ -112,7 +112,7 @@ const L = {
       title: "Պրոֆիլ",
       statPoints: "Միավորներ",
       statRank: "Հորիզոնական",
-      statTasksDone: "Կատարված առաջադրանքներ",
+      statTasksDone: "Արված առաջադրանքներ",
       recentPoints: "Վերջին միավորները",
       adminPanel: "Ադմին վահանակ",
       badgesTitle: "Կրծքանշաններ",
