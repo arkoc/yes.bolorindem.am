@@ -1,0 +1,11 @@
+{
+  "name": "YES — bolorindem.am",
+  "short_name": "YES",
+  "description": "Campaign volunteer management platform",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#cc0000",
+  "orientation": "portrait-primary",
+  "icons": []
+}
