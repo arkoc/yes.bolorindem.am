@@ -95,42 +95,30 @@ export default async function DashboardPage() {
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-3">
         <Card>
-          <CardContent className="pt-4 pb-4">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-yellow-100 shrink-0">
-                <Star className="h-4 w-4 text-yellow-600" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xl font-bold truncate">{formatPoints(profile.total_points)}</p>
-                <p className="text-[10px] text-muted-foreground truncate">{L.volunteer.dashboard.statPoints}</p>
-              </div>
+          <CardContent className="pt-4 pb-4 text-center">
+            <div className="p-1.5 rounded-lg bg-yellow-100 w-fit mx-auto mb-1">
+              <Star className="h-4 w-4 text-yellow-600" />
             </div>
+            <p className="text-xl font-bold">{formatPoints(profile.total_points)}</p>
+            <p className="text-[10px] text-muted-foreground leading-tight">{L.volunteer.dashboard.statPoints}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-4 pb-4">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-blue-100 shrink-0">
-                <Trophy className="h-4 w-4 text-blue-600" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xl font-bold truncate">{rank ? getRankSuffix(Number(rank)) : "—"}</p>
-                <p className="text-[10px] text-muted-foreground truncate">{L.volunteer.dashboard.statLeaderboard}</p>
-              </div>
+          <CardContent className="pt-4 pb-4 text-center">
+            <div className="p-1.5 rounded-lg bg-blue-100 w-fit mx-auto mb-1">
+              <Trophy className="h-4 w-4 text-blue-600" />
             </div>
+            <p className="text-xl font-bold">{rank ? getRankSuffix(Number(rank)) : "—"}</p>
+            <p className="text-[10px] text-muted-foreground leading-tight">{L.volunteer.dashboard.statLeaderboard}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-4 pb-4">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-orange-100 shrink-0">
-                <Award className="h-4 w-4 text-orange-600" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xl font-bold">{earnedBadges.length}</p>
-                <p className="text-[10px] text-muted-foreground truncate">{L.volunteer.dashboard.statBadges}</p>
-              </div>
+          <CardContent className="pt-4 pb-4 text-center">
+            <div className="p-1.5 rounded-lg bg-orange-100 w-fit mx-auto mb-1">
+              <Award className="h-4 w-4 text-orange-600" />
             </div>
+            <p className="text-xl font-bold">{earnedBadges.length}</p>
+            <p className="text-[10px] text-muted-foreground leading-tight">{L.volunteer.dashboard.statBadges}</p>
           </CardContent>
         </Card>
       </div>
@@ -183,20 +171,26 @@ export default async function DashboardPage() {
               tasks: { count: number }[];
             }) => (
               <Link key={project.id} href={`/projects/${project.id}`}>
-                <Card className="hover:shadow-md transition-shadow">
-                  <CardContent className="py-5 px-5">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold text-lg truncate">{project.title}</p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {t(L.volunteer.dashboard.taskCount, { count: project.tasks?.[0]?.count ?? 0 })}
-                        </p>
+                <Card className="hover:shadow-md transition-all active:scale-[0.99] border-l-4 border-l-primary">
+                  <CardContent className="py-4 px-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-base truncate">{project.title}</p>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          <p className="text-sm text-muted-foreground">
+                            {t(L.volunteer.dashboard.taskCount, { count: project.tasks?.[0]?.count ?? 0 })}
+                          </p>
+                          {project.completion_bonus_points > 0 && (
+                            <Badge variant="success" className="shrink-0 text-xs">
+                              {t(L.volunteer.dashboard.bonus, { points: project.completion_bonus_points })}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                      {project.completion_bonus_points > 0 && (
-                        <Badge variant="success" className="shrink-0">
-                          {t(L.volunteer.dashboard.bonus, { points: project.completion_bonus_points })}
-                        </Badge>
-                      )}
+                      <div className="flex items-center gap-1 text-primary shrink-0">
+                        <span className="text-xs font-semibold">{L.volunteer.dashboard.startBtn}</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
