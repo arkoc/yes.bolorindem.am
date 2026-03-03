@@ -129,24 +129,24 @@ export default async function ProfilePage() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
         <Card>
-          <CardContent className="pt-4 pb-4 text-center">
+          <CardContent className="p-3 text-center">
             <Zap className="h-5 w-5 mx-auto text-yellow-500 mb-1" />
-            <p className="text-xl font-bold">{formatPoints(profile.total_points)}</p>
-            <p className="text-xs text-muted-foreground">{L.volunteer.profile.statPoints}</p>
+            <p className="text-lg font-bold truncate">{formatPoints(profile.total_points)}</p>
+            <p className="text-[10px] text-muted-foreground leading-tight line-clamp-2">{L.volunteer.profile.statPoints}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-4 pb-4 text-center">
+          <CardContent className="p-3 text-center">
             <Trophy className="h-5 w-5 mx-auto text-blue-500 mb-1" />
-            <p className="text-xl font-bold">{rank?.rank ? getRankSuffix(Number(rank.rank)) : "—"}</p>
-            <p className="text-xs text-muted-foreground">{L.volunteer.profile.statRank}</p>
+            <p className="text-lg font-bold truncate">{rank?.rank ? getRankSuffix(Number(rank.rank)) : "—"}</p>
+            <p className="text-[10px] text-muted-foreground leading-tight line-clamp-2">{L.volunteer.profile.statRank}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-4 pb-4 text-center">
+          <CardContent className="p-3 text-center">
             <CheckCircle className="h-5 w-5 mx-auto text-green-500 mb-1" />
-            <p className="text-xl font-bold">{rank?.total_completions ?? 0}</p>
-            <p className="text-xs text-muted-foreground">{L.volunteer.profile.statTasksDone}</p>
+            <p className="text-lg font-bold truncate">{rank?.total_completions ?? 0}</p>
+            <p className="text-[10px] text-muted-foreground leading-tight line-clamp-2">{L.volunteer.profile.statTasksDone}</p>
           </CardContent>
         </Card>
       </div>

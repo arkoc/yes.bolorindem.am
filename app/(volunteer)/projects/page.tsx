@@ -42,7 +42,7 @@ export default async function ProjectsPage() {
             tasks: { count: number }[];
           }) => (
             <Link key={project.id} href={`/projects/${project.id}`}>
-              <Card className="hover:shadow-md transition-all hover:-translate-y-0.5 cursor-pointer">
+              <Card className="hover:shadow-md transition-all active:scale-[0.99] cursor-pointer border-l-4 border-l-primary">
                 {project.banner_url && (
                   <div className="h-32 w-full overflow-hidden rounded-t-lg">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -87,7 +87,10 @@ export default async function ProjectsPage() {
                         </span>
                       )}
                     </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex items-center gap-1 text-primary shrink-0">
+                      <span className="text-xs font-semibold">{L.volunteer.dashboard.startBtn}</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
