@@ -21,24 +21,35 @@ export function PushNotificationCard() {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    if (!("serviceWorker" in navigator)) { setState("unsupported"); return; }
-    if (!("Notification" in window)) { setState("unsupported"); return; }
+    async function detect() {
+      if (!("serviceWorker" in navigator)) { setState("unsupported"); return; }
+      if (!("Notification" in window)) { setState("unsupported"); return; }
 
-    const isIOS =
-      /iPad|iPhone|iPod/.test(navigator.userAgent) &&
-      !(window as { MSStream?: unknown }).MSStream;
+      const isIOS =
+        /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+        !(window as { MSStream?: unknown }).MSStream;
 
-    if (isIOS) {
-      const isStandalone =
-        window.matchMedia("(display-mode: standalone)").matches ||
-        (navigator as { standalone?: boolean }).standalone === true;
-      if (!isStandalone) { setState("ios-guide"); return; }
+      if (isIOS) {
+        const isStandalone =
+          window.matchMedia("(display-mode: standalone)").matches ||
+          (navigator as { standalone?: boolean }).standalone === true;
+        if (!isStandalone) { setState("ios-guide"); return; }
+      }
+
+      const perm = Notification.permission;
+      if (perm === "denied") { setState("denied"); return; }
+      if (perm === "default") { setState("default"); return; }
+
+      // Permission is granted — verify there's an actual active subscription
+      try {
+        const reg = await navigator.serviceWorker.getRegistration();
+        const sub = reg ? await reg.pushManager.getSubscription() : null;
+        setState(sub ? "granted" : "default");
+      } catch {
+        setState("default");
+      }
     }
-
-    const perm = Notification.permission;
-    if (perm === "granted") setState("granted");
-    else if (perm === "denied") setState("denied");
-    else setState("default");
+    detect();
   }, []);
 
   async function handleEnable() {
