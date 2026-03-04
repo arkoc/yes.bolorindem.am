@@ -45,7 +45,19 @@ export function PushNotificationCard() {
       try {
         const reg = await navigator.serviceWorker.getRegistration();
         const sub = reg ? await reg.pushManager.getSubscription() : null;
-        setState(sub ? "granted" : "default");
+        if (!sub) { setState("default"); return; }
+
+        // Re-sync subscription to DB in case it was never saved or expired
+        const { endpoint, keys } = sub.toJSON() as {
+          endpoint: string;
+          keys: { p256dh: string; auth: string };
+        };
+        await fetch("/api/push/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ endpoint, p256dh: keys.p256dh, auth: keys.auth }),
+        });
+        setState("granted");
       } catch {
         setState("default");
       }
