@@ -19,6 +19,8 @@ export const profiles = pgTable("profiles", {
   phone: text("phone"),
   totalPoints: integer("total_points").notNull().default(0),
   role: text("role").notNull().default("volunteer"), // volunteer | leader | admin
+  referralCode: text("referral_code"),
+  referredBy: uuid("referred_by"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -157,7 +159,7 @@ export const pointTransactions = pgTable(
       .notNull()
       .references(() => profiles.id),
     amount: integer("amount").notNull(), // positive = award, negative = reversal
-    sourceType: text("source_type").notNull(), // task_completion | project_completion | admin_grant | reversal
+    sourceType: text("source_type").notNull(), // task_completion | project_completion | admin_grant | reversal | referral
     sourceId: uuid("source_id"),
     description: text("description"),
     createdBy: uuid("created_by").references(() => profiles.id),

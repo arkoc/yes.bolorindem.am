@@ -1,4 +1,4 @@
-import { createServerClient } from "@/lib/supabase/server";
+import { createServerClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { formatPoints, getRankSuffix } from "@/lib/utils";
@@ -8,10 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SignOutButton } from "@/components/volunteer/SignOutButton";
-import { Trophy, Zap, CheckCircle, Star, Settings, Award } from "lucide-react";
+import { Trophy, Zap, CheckCircle, Star, Settings, Award, Users, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
 import { BadgeZoom } from "@/components/ui/badge-zoom";
+import { CopyReferralButton } from "@/components/volunteer/ReferralLinkCopy";
 
 // Thresholds must stay in sync with check_and_award_badges() in SQL migrations.
 const BADGE_REQS: Record<string, { max: number }> = {
@@ -34,7 +35,9 @@ export default async function ProfilePage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [profileRes, rankRes, statsRes, allBadgesRes, userBadgesRes, progressRes] = await Promise.all([
+  const adminClient = await createAdminClient();
+
+  const [profileRes, rankRes, statsRes, allBadgesRes, userBadgesRes, progressRes, referralCodeRes, referralCountRes] = await Promise.all([
     supabase
       .from("profiles")
       .select("full_name, phone, total_points, role, created_at")
@@ -60,6 +63,8 @@ export default async function ProfilePage() {
       .select("badge_id, awarded_at")
       .eq("user_id", user.id),
     supabase.rpc("get_badge_progress", { p_user_id: user.id }),
+    adminClient.from("profiles").select("referral_code").eq("id", user.id).single(),
+    adminClient.from("profiles").select("id", { count: "exact", head: true }).eq("referred_by", user.id),
   ]);
 
   const profile = profileRes.data;
@@ -92,6 +97,9 @@ export default async function ProfilePage() {
     "first-mission":     projectCount,
     "veteran":           projectCount,
   };
+
+  const referralCode = (referralCodeRes.data as { referral_code: string | null } | null)?.referral_code ?? null;
+  const referralCount = referralCountRes.count ?? 0;
 
   if (!profile) redirect("/register");
 
@@ -146,6 +154,11 @@ export default async function ProfilePage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Referral */}
+      {referralCode && (
+        <ReferralCard referralCode={referralCode} referralCount={referralCount} />
+      )}
 
       {/* Badges */}
       {allBadges.length > 0 && (
@@ -268,5 +281,22 @@ export default async function ProfilePage() {
 
       <SignOutButton />
     </div>
+  );
+}
+
+function ReferralCard({ referralCode, referralCount }: { referralCode: string; referralCount: number }) {
+  return (
+    <Card>
+      <CardContent className="py-4 flex items-center gap-4">
+        <div className="p-2.5 rounded-full bg-green-100 shrink-0">
+          <Users className="h-5 w-5 text-green-600" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-sm">{t(L.volunteer.profile.referralCount, { count: referralCount })}</p>
+          <p className="text-xs text-muted-foreground">{L.volunteer.profile.referralDesc}</p>
+        </div>
+        <CopyReferralButton referralCode={referralCode} label={L.volunteer.profile.referralTitle} />
+      </CardContent>
+    </Card>
   );
 }

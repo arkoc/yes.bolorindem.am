@@ -39,6 +39,19 @@ const L = {
       saveFailed: "Չհաջողվեց պահպանել պրոֆիլը։ Խնդրում ենք կրկին փորձել",
       welcome: "Բարի գալուստ",
     },
+    push: {
+      title: "Ծանուցումներ",
+      description: "Ակտիվ եղեք. ստացեք ծանուցումներ նոր առաջադրանքների և հաշիվների մասին:",
+      enable: "Միացնել ծանուցումները",
+      skip: "Բաց թողնել",
+      iosTitle: "Ավելացրեք հավելվածը",
+      iosDescription: "iOS-ում ծանուցումներ ստանալու համար ավելացրեք հավելվածը գլխավոր էկրանին:",
+      iosStep1a: "Safari-ում սեղմեք",
+      iosStep1b: "(Կիսվել)",
+      iosStep2a: "Ընտրեք «Ավելացնել գլխ. էկրանին»",
+      iosStep2b: "",
+      iosStep3: "Բացեք հավելվածը գլխավոր էկրանից և կրկին մուտք գործեք",
+    },
   },
 
   volunteer: {
@@ -59,6 +72,9 @@ const L = {
       badgesShowAll: "Տեսնել բոլորը",
       badgesEarnFirst: "Ստացիր առաջինդ →",
       startBtn: "Սկսել",
+      referralStat: "{count} հոգի է միացել ձեր հղումով",
+      referralCopyLink: "Կիսվել",
+      referralLinkCopied: "Հղումը պատճենված է",
     },
 
     projects: {
@@ -118,6 +134,9 @@ const L = {
       adminPanel: "Ադմին վահանակ",
       badgesTitle: "Կրծքանշաններ",
       badgesEarned: "{count} ձեռք բերված",
+      referralTitle: "Հրավիրեք ընկերներ",
+      referralDesc: "Կիսվեք ձեր հղումով: Յուրաքանչյուր հրավիրված անդամի համար կստանաք 50 միավոր:",
+      referralCount: "{count} հոգի է միացել ձեր հղումով",
     },
   },
 
@@ -128,7 +147,25 @@ const L = {
       users: "Օգտատերեր",
       completions: "Կատարումներ",
       pointGrants: "Միավորների հատկացում",
+      notifications: "Ծանուցումներ",
       backToApp: "Վերադառնալ հավելված",
+    },
+
+    notifications: {
+      title: "Ծանուցումներ",
+      subtitle: "Ուղարկեք push ծանուցում բոլոր բաժանորդներին",
+      formTitle: "Նոր ծանուցում",
+      formDesc: "Ծանուցումը կուղարկվի բոլոր կամավորներին ովքեր միացրել են push ծանուցումները",
+      titleLabel: "Վերնագիր",
+      titlePlaceholder: "Նոր առաջադրանք",
+      messageLabel: "Հաղորդագրություն",
+      messagePlaceholder: "Ավելացվել է նոր առաջադրանք։ Ստուգեք հիմա!",
+      urlLabel: "Հղում (ըստ ցանկության)",
+      urlHint: "Ինչ էջ կբացվի ծանուցման վրա սեղմելիս",
+      sendBtn: "Ուղարկել բոլորին",
+      sendSuccess: "Ծանուցումն ուղարկված է",
+      sendFailed: "Ծանուցումը չի ուղարկվել",
+      recipients: "ստացող",
     },
 
     dashboard: {

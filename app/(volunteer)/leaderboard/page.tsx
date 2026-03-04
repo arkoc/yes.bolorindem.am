@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { formatPoints, getRankSuffix } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Trophy, Medal, Zap } from "lucide-react";
+import { Trophy, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
 
@@ -32,9 +32,9 @@ export default async function LeaderboardPage() {
   const myEntry = entries?.find((e: LeaderboardEntry) => e.id === user.id);
 
   const rankIcon = (rank: number) => {
-    if (rank === 1) return <Trophy className="h-5 w-5 text-yellow-500" />;
-    if (rank === 2) return <Medal className="h-5 w-5 text-gray-400" />;
-    if (rank === 3) return <Medal className="h-5 w-5 text-amber-600" />;
+    if (rank === 1) return <span className="text-xl leading-none">🥇</span>;
+    if (rank === 2) return <span className="text-xl leading-none">🥈</span>;
+    if (rank === 3) return <span className="text-xl leading-none">🥉</span>;
     return <span className="text-sm font-semibold text-muted-foreground w-5 text-center">{rank}</span>;
   };
 
@@ -42,8 +42,7 @@ export default async function LeaderboardPage() {
     <div className="max-w-2xl mx-auto p-4 md:p-6 space-y-4">
       <div className="pt-2">
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Trophy className="h-6 w-6 text-yellow-500" />
-          {L.volunteer.leaderboard.title}
+          🏆 {L.volunteer.leaderboard.title}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">{L.volunteer.leaderboard.subtitle}</p>
       </div>

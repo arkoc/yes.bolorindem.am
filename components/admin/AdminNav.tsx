@@ -10,6 +10,7 @@ import {
   Users,
   ClipboardList,
   Star,
+  Bell,
   ArrowLeft,
   Menu,
   X,
@@ -22,6 +23,7 @@ const navItems = [
   { href: "/admin/users", icon: Users, label: L.admin.nav.users },
   { href: "/admin/completions", icon: ClipboardList, label: L.admin.nav.completions },
   { href: "/admin/points", icon: Star, label: L.admin.nav.pointGrants },
+  { href: "/admin/notifications", icon: Bell, label: L.admin.nav.notifications },
 ];
 
 export function AdminNav() {

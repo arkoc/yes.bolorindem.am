@@ -3,7 +3,7 @@
 export const dynamic = "force-dynamic";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,12 +13,15 @@ import { createClient } from "@/lib/supabase/client";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { Loader2, User } from "lucide-react";
 import L from "@/lib/labels";
+import { PushPermissionStep } from "@/components/volunteer/PushPermissionStep";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPushStep, setShowPushStep] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,10 +43,23 @@ export default function RegisterPage() {
     if (error) {
       toast.error(L.auth.register.saveFailed);
     } else {
+      const ref = searchParams.get("ref");
+      if (ref) {
+        await fetch("/api/referral/record", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: ref }),
+        });
+      }
       toast.success(L.auth.register.welcome);
-      router.push("/dashboard");
+      setShowPushStep(true);
+      return;
     }
     setLoading(false);
+  }
+
+  if (showPushStep) {
+    return <PushPermissionStep />;
   }
 
   return (

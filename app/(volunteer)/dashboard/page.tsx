@@ -6,10 +6,11 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, Star, FolderOpen, CheckCircle, ArrowRight, Zap, Award } from "lucide-react";
+import { Trophy, Star, FolderOpen, CheckCircle, ArrowRight, Zap, Award, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
 import { BadgeZoom } from "@/components/ui/badge-zoom";
+import { CopyReferralButton } from "@/components/volunteer/ReferralLinkCopy";
 
 export default async function DashboardPage() {
   const supabase = await createServerClient();
@@ -18,10 +19,10 @@ export default async function DashboardPage() {
 
   const adminClient = await createAdminClient();
 
-  const [profileRes, rankRes, recentRes, activeProjectsRes, earnedBadgesRes, allBadgesRes] = await Promise.all([
+  const [profileRes, rankRes, recentRes, activeProjectsRes, earnedBadgesRes, allBadgesRes, referralRes] = await Promise.all([
     supabase
       .from("profiles")
-      .select("full_name, total_points, role")
+      .select("full_name, total_points, role, referral_code")
       .eq("id", user.id)
       .single(),
     adminClient
@@ -50,6 +51,7 @@ export default async function DashboardPage() {
       .from("badges")
       .select("id, icon, name_hy, image_url")
       .order("sort_order"),
+    adminClient.from("profiles").select("id", { count: "exact", head: true }).eq("referred_by", user.id),
   ]);
 
   const profile = profileRes.data;
@@ -59,6 +61,8 @@ export default async function DashboardPage() {
   const earnedBadges = (earnedBadgesRes.data ?? []) as unknown as { badge_id: string; badges: { icon: string; name_hy: string; image_url: string | null } }[];
   const allBadges = (allBadgesRes.data ?? []) as { id: string; icon: string; name_hy: string; image_url: string | null }[];
   const totalBadges = allBadges.length;
+  const referralCode = (profile as { referral_code?: string | null } | null)?.referral_code ?? null;
+  const referralCount = referralRes.count ?? 0;
   const badgeDisplayList = earnedBadges.length > 0
     ? earnedBadges.slice(0, 5).map(b => ({ id: b.badge_id, ...b.badges, earned: true }))
     : allBadges.slice(0, 5).map(b => ({ ...b, earned: false }));
@@ -122,6 +126,21 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Referral stat */}
+      {referralCode && (
+        <Card>
+          <CardContent className="py-3 px-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="p-1.5 rounded-lg bg-green-100 shrink-0">
+                <Users className="h-4 w-4 text-green-600" />
+              </div>
+              <p className="text-sm font-medium">{t(L.volunteer.dashboard.referralStat, { count: referralCount })}</p>
+            </div>
+            <CopyReferralButton referralCode={referralCode} label={L.volunteer.dashboard.referralCopyLink} />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Badges section */}
       <section>
