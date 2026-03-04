@@ -44,12 +44,12 @@ export default async function DashboardPage() {
       .limit(4),
     supabase
       .from("user_badges")
-      .select("badge_id, badges(icon, name_hy, image_url)")
+      .select("badge_id, badges(icon, name_hy, description_hy, image_url)")
       .eq("user_id", user.id)
       .order("awarded_at", { ascending: true }),
     supabase
       .from("badges")
-      .select("id, icon, name_hy, image_url")
+      .select("id, icon, name_hy, description_hy, image_url")
       .order("sort_order"),
     adminClient.from("profiles").select("id", { count: "exact", head: true }).eq("referred_by", user.id),
   ]);
@@ -58,8 +58,8 @@ export default async function DashboardPage() {
   const rank = rankRes.data?.rank;
   const recent = recentRes.data ?? [];
   const activeProjects = activeProjectsRes.data ?? [];
-  const earnedBadges = (earnedBadgesRes.data ?? []) as unknown as { badge_id: string; badges: { icon: string; name_hy: string; image_url: string | null } }[];
-  const allBadges = (allBadgesRes.data ?? []) as { id: string; icon: string; name_hy: string; image_url: string | null }[];
+  const earnedBadges = (earnedBadgesRes.data ?? []) as unknown as { badge_id: string; badges: { icon: string; name_hy: string; description_hy: string | null; image_url: string | null } }[];
+  const allBadges = (allBadgesRes.data ?? []) as { id: string; icon: string; name_hy: string; description_hy: string | null; image_url: string | null }[];
   const totalBadges = allBadges.length;
   const referralCode = (profile as { referral_code?: string | null } | null)?.referral_code ?? null;
   const referralCount = referralRes.count ?? 0;
@@ -135,7 +135,10 @@ export default async function DashboardPage() {
               <div className="p-1.5 rounded-lg bg-green-100 shrink-0">
                 <Users className="h-4 w-4 text-green-600" />
               </div>
-              <p className="text-sm font-medium">{t(L.volunteer.dashboard.referralStat, { count: referralCount })}</p>
+              <div className="min-w-0">
+                <p className="text-sm font-medium leading-tight">{t(L.volunteer.dashboard.referralStat, { count: referralCount })}</p>
+                <p className="text-xs text-green-600 font-semibold">{L.volunteer.dashboard.referralIncentive}</p>
+              </div>
             </div>
             <CopyReferralButton referralCode={referralCode} label={L.volunteer.dashboard.referralCopyLink} />
           </CardContent>
@@ -164,7 +167,7 @@ export default async function DashboardPage() {
                 b.earned ? "bg-primary/10 border-primary/20" : "opacity-40 bg-muted border-transparent"
               )}
             >
-              <BadgeZoom src={b.image_url} fallback={b.icon} name={b.name_hy} size={88} earned={b.earned} />
+              <BadgeZoom src={b.image_url} fallback={b.icon} name={b.name_hy} description={b.description_hy ?? undefined} size={88} earned={b.earned} />
             </div>
           ))}
         </div>

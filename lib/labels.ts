@@ -78,6 +78,7 @@ const L = {
       badgesEarnFirst: "Ստացիր առաջինդ →",
       startBtn: "Սկսել",
       referralStat: "{count} հոգի է միացել ձեր հղումով",
+      referralIncentive: "Հրավիրեք ընկեր — ստացեք +50 միավոր",
       referralCopyLink: "Կիսվել",
       referralLinkCopied: "Հղումը պատճենված է",
     },
