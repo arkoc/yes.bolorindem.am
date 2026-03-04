@@ -4,6 +4,8 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import NextTopLoader from "nextjs-toploader";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -35,6 +37,8 @@ export default function RootLayout({
         <QueryProvider>
           {children}
           <Toaster />
+          <SpeedInsights />
+          <Analytics />
         </QueryProvider>
       </body>
     </html>

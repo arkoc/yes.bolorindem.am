@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Bell, BellOff, Check, Loader2, Share, Plus } from "lucide-react";
 import L from "@/lib/labels";
+import { toast } from "sonner";
 
 type State = "detecting" | "unsupported" | "ios-guide" | "default" | "granted" | "denied";
 
@@ -98,7 +99,9 @@ export function PushNotificationCard() {
       setState("granted");
       setDone(true);
     } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
       console.error("Push subscribe error:", err);
+      toast.error(`Failed to enable notifications: ${msg}`);
     }
     setLoading(false);
   }
