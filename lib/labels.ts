@@ -83,6 +83,8 @@ const L = {
       referralLinkCopied: "Հղումը պատճենված է",
       pushBannerText: "Միացրեք ծանուցումները՝ կարևոր թարմացումներ ստանալու համար",
       pushBannerEnable: "Միացնել",
+      pushBannerDeniedText: "Ծանուցումները արգելափակված են: Բրաուզերի կարգավորումներից թույլ տվեք:",
+      pushBannerOpenSettings: "Կարգավորումներ",
     },
 
     projects: {

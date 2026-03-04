@@ -131,52 +131,6 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Referral stat */}
-      {referralCode && (
-        <Card>
-          <CardContent className="py-3 px-4 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="p-1.5 rounded-lg bg-green-100 shrink-0">
-                <Users className="h-4 w-4 text-green-600" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-medium leading-tight">{t(L.volunteer.dashboard.referralStat, { count: referralCount })}</p>
-                <p className="text-xs text-green-600 font-semibold">{L.volunteer.dashboard.referralIncentive}</p>
-              </div>
-            </div>
-            <CopyReferralButton referralCode={referralCode} label={L.volunteer.dashboard.referralCopyLink} />
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Badges section */}
-      <section>
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="font-semibold text-base">
-            {L.volunteer.dashboard.badgesSection}
-            <span className="ml-2 text-sm font-normal text-muted-foreground">
-              {earnedBadges.length}/{totalBadges}
-            </span>
-          </h2>
-          <Link href="/profile" className="text-xs text-primary hover:underline">
-            {earnedBadges.length > 0 ? L.volunteer.dashboard.badgesShowAll : L.volunteer.dashboard.badgesEarnFirst}
-          </Link>
-        </div>
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {badgeDisplayList.map((b) => (
-            <div
-              key={b.id}
-              className={cn(
-                "flex flex-col items-center shrink-0 rounded-xl border p-2 text-center w-28",
-                b.earned ? "bg-primary/10 border-primary/20" : "opacity-40 bg-muted border-transparent"
-              )}
-            >
-              <BadgeZoom src={b.image_url} fallback={b.icon} name={b.name_hy} description={b.description_hy ?? undefined} size={88} earned={b.earned} />
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* Active projects */}
       {activeProjects.length > 0 && (
         <section>
@@ -224,6 +178,52 @@ export default async function DashboardPage() {
             ))}
           </div>
         </section>
+      )}
+
+      {/* Badges section */}
+      <section>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="font-semibold text-base">
+            {L.volunteer.dashboard.badgesSection}
+            <span className="ml-2 text-sm font-normal text-muted-foreground">
+              {earnedBadges.length}/{totalBadges}
+            </span>
+          </h2>
+          <Link href="/profile" className="text-xs text-primary hover:underline">
+            {earnedBadges.length > 0 ? L.volunteer.dashboard.badgesShowAll : L.volunteer.dashboard.badgesEarnFirst}
+          </Link>
+        </div>
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {badgeDisplayList.map((b) => (
+            <div
+              key={b.id}
+              className={cn(
+                "flex flex-col items-center shrink-0 rounded-xl border p-2 text-center w-28",
+                b.earned ? "bg-primary/10 border-primary/20" : "opacity-40 bg-muted border-transparent"
+              )}
+            >
+              <BadgeZoom src={b.image_url} fallback={b.icon} name={b.name_hy} description={b.description_hy ?? undefined} size={88} earned={b.earned} />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Referral stat */}
+      {referralCode && (
+        <Card>
+          <CardContent className="py-3 px-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="p-1.5 rounded-lg bg-green-100 shrink-0">
+                <Users className="h-4 w-4 text-green-600" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium leading-tight">{t(L.volunteer.dashboard.referralStat, { count: referralCount })}</p>
+                <p className="text-xs text-green-600 font-semibold">{L.volunteer.dashboard.referralIncentive}</p>
+              </div>
+            </div>
+            <CopyReferralButton referralCode={referralCode} label={L.volunteer.dashboard.referralCopyLink} />
+          </CardContent>
+        </Card>
       )}
 
       {/* Recent completions */}

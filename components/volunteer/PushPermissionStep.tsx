@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Bell, BellOff, Loader2, Share, Plus } from "lucide-react";
 import L from "@/lib/labels";
+import { subscribeToPush } from "@/lib/push-subscribe";
 
 type Step = "detecting" | "ios-guide" | "push" | "unsupported";
 
@@ -45,39 +46,7 @@ export function PushPermissionStep() {
 
   async function handleEnable() {
     setLoading(true);
-    try {
-      const permission = await Notification.requestPermission();
-      if (permission !== "granted") {
-        router.push("/dashboard");
-        return;
-      }
-
-      await navigator.serviceWorker.register("/sw.js");
-      const reg = await navigator.serviceWorker.ready;
-
-      const existing = await reg.pushManager.getSubscription();
-      if (existing) await existing.unsubscribe();
-
-      const subscription = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(
-          process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
-        ).buffer as ArrayBuffer,
-      });
-
-      const { endpoint, keys } = subscription.toJSON() as {
-        endpoint: string;
-        keys: { p256dh: string; auth: string };
-      };
-
-      await fetch("/api/push/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ endpoint, p256dh: keys.p256dh, auth: keys.auth }),
-      });
-    } catch (err) {
-      console.error("Push subscribe error:", err);
-    }
+    await subscribeToPush();
     router.push("/dashboard");
   }
 
@@ -176,11 +145,4 @@ export function PushPermissionStep() {
       </Card>
     </div>
   );
-}
-
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = window.atob(base64);
-  return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
 }

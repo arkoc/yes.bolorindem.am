@@ -6,15 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Bell, BellOff, Check, Loader2, Share, Plus } from "lucide-react";
 import L from "@/lib/labels";
 import { toast } from "sonner";
+import { subscribeToPush } from "@/lib/push-subscribe";
 
 type State = "detecting" | "unsupported" | "ios-guide" | "default" | "granted" | "denied";
-
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = window.atob(base64);
-  return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
-}
 
 export function PushNotificationCard() {
   const [state, setState] = useState<State>("detecting");
@@ -68,43 +62,14 @@ export function PushNotificationCard() {
 
   async function handleEnable() {
     setLoading(true);
-    try {
-      const permission = await Notification.requestPermission();
-      if (permission !== "granted") { setState("denied"); setLoading(false); return; }
-
-      await navigator.serviceWorker.register("/sw.js");
-      // Use the ready registration (guaranteed active) not the register() result
-      const reg = await navigator.serviceWorker.ready;
-
-      // Always unsubscribe first — stale subscriptions from a different
-      // VAPID key cause "push service error" on resubscribe
-      const existing = await reg.pushManager.getSubscription();
-      if (existing) await existing.unsubscribe();
-
-      const subscription = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(
-          process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
-        ).buffer as ArrayBuffer,
-      });
-
-      const { endpoint, keys } = subscription.toJSON() as {
-        endpoint: string;
-        keys: { p256dh: string; auth: string };
-      };
-
-      await fetch("/api/push/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ endpoint, p256dh: keys.p256dh, auth: keys.auth }),
-      });
-
+    const result = await subscribeToPush();
+    if (result === "granted") {
       setState("granted");
       setDone(true);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.error("Push subscribe error:", err);
-      toast.error(`Failed to enable notifications: ${msg}`);
+    } else if (result === "denied") {
+      setState("denied");
+    } else {
+      toast.error("Failed to enable notifications");
     }
     setLoading(false);
   }
