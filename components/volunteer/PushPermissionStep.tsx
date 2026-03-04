@@ -1,58 +1,33 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Bell, BellOff, Loader2, Share, Plus } from "lucide-react";
 import L from "@/lib/labels";
-import { subscribeToPush } from "@/lib/push-subscribe";
-
-type Step = "detecting" | "ios-guide" | "push" | "unsupported";
-
-function detectEnvironment(): Step {
-  if (!("serviceWorker" in navigator)) return "unsupported";
-
-  const isIOS =
-    /iPad|iPhone|iPod/.test(navigator.userAgent) &&
-    !(window as { MSStream?: unknown }).MSStream;
-
-  if (isIOS) {
-    const isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      (navigator as { standalone?: boolean }).standalone === true;
-    return isStandalone ? "push" : "ios-guide";
-  }
-
-  if (!("Notification" in window)) return "unsupported";
-  return "push";
-}
-// Note: iOS check must come before Notification check — on iOS < 16.4,
-// Notification is not in window, but we still want to show the Add to Home Screen guide.
+import { usePushNotification } from "@/lib/use-push-notification";
 
 export function PushPermissionStep() {
   const router = useRouter();
-  const [step, setStep] = useState<Step>("detecting");
-  const [loading, setLoading] = useState(false);
+  const { state, loading, subscribe } = usePushNotification();
 
   useEffect(() => {
-    const detected = detectEnvironment();
-    if (detected === "unsupported") {
+    if (state === "unsupported" || state === "granted" || state === "denied") {
       router.push("/dashboard");
-    } else {
-      setStep(detected);
     }
-  }, [router]);
+  }, [state, router]);
 
   async function handleEnable() {
-    setLoading(true);
-    await subscribeToPush();
+    await subscribe();
     router.push("/dashboard");
   }
 
-  if (step === "detecting") return null;
+  if (state === "detecting" || state === "unsupported" || state === "granted" || state === "denied") {
+    return null;
+  }
 
-  if (step === "ios-guide") {
+  if (state === "ios-guide") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
         <Card className="w-full max-w-sm shadow-lg">
@@ -103,6 +78,7 @@ export function PushPermissionStep() {
     );
   }
 
+  // state === "default"
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <Card className="w-full max-w-sm shadow-lg">

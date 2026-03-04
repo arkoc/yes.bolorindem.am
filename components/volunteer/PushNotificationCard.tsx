@@ -1,77 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Bell, BellOff, Check, Loader2, Share, Plus } from "lucide-react";
 import L from "@/lib/labels";
 import { toast } from "sonner";
-import { subscribeToPush } from "@/lib/push-subscribe";
-
-type State = "detecting" | "unsupported" | "ios-guide" | "default" | "granted" | "denied";
+import { usePushNotification } from "@/lib/use-push-notification";
 
 export function PushNotificationCard() {
-  const [state, setState] = useState<State>("detecting");
-  const [loading, setLoading] = useState(false);
+  const { state, loading, subscribe } = usePushNotification();
   const [done, setDone] = useState(false);
 
-  useEffect(() => {
-    async function detect() {
-      if (!("serviceWorker" in navigator)) { setState("unsupported"); return; }
-
-      const isIOS =
-        /iPad|iPhone|iPod/.test(navigator.userAgent) &&
-        !(window as { MSStream?: unknown }).MSStream;
-
-      if (isIOS) {
-        const isStandalone =
-          window.matchMedia("(display-mode: standalone)").matches ||
-          (navigator as { standalone?: boolean }).standalone === true;
-        if (!isStandalone) { setState("ios-guide"); return; }
-      }
-
-      if (!("Notification" in window)) { setState("unsupported"); return; }
-
-      const perm = Notification.permission;
-      if (perm === "denied") { setState("denied"); return; }
-      if (perm === "default") { setState("default"); return; }
-
-      // Permission is granted — verify there's an actual active subscription
-      try {
-        const reg = await navigator.serviceWorker.getRegistration();
-        const sub = reg ? await reg.pushManager.getSubscription() : null;
-        if (!sub) { setState("default"); return; }
-
-        // Re-sync subscription to DB in case it was never saved or expired
-        const { endpoint, keys } = sub.toJSON() as {
-          endpoint: string;
-          keys: { p256dh: string; auth: string };
-        };
-        await fetch("/api/push/subscribe", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ endpoint, p256dh: keys.p256dh, auth: keys.auth }),
-        });
-        setState("granted");
-      } catch {
-        setState("default");
-      }
-    }
-    detect();
-  }, []);
-
   async function handleEnable() {
-    setLoading(true);
-    const result = await subscribeToPush();
-    if (result === "granted") {
-      setState("granted");
-      setDone(true);
-    } else if (result === "denied") {
-      setState("denied");
-    } else {
-      toast.error("Failed to enable notifications");
-    }
-    setLoading(false);
+    const result = await subscribe();
+    if (result === "granted") setDone(true);
+    else if (result === "error") toast.error("Failed to enable notifications");
   }
 
   if (state === "detecting" || state === "unsupported") return null;

@@ -1,67 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Bell, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import L from "@/lib/labels";
-import { subscribeToPush } from "@/lib/push-subscribe";
-
-type BannerState = "default" | "denied";
+import { usePushNotification } from "@/lib/use-push-notification";
 
 export function PushNotificationBanner() {
-  const [state, setState] = useState<BannerState | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { state, loading, subscribe } = usePushNotification();
   const [dismissed, setDismissed] = useState(false);
 
-  useEffect(() => {
-    async function detect() {
-      if (!("serviceWorker" in navigator)) return;
-
-      const isIOS =
-        /iPad|iPhone|iPod/.test(navigator.userAgent) &&
-        !(window as { MSStream?: unknown }).MSStream;
-
-      if (isIOS) {
-        const isStandalone =
-          window.matchMedia("(display-mode: standalone)").matches ||
-          (navigator as { standalone?: boolean }).standalone === true;
-        if (!isStandalone) return;
-      }
-
-      if (!("Notification" in window)) return;
-
-      const perm = Notification.permission;
-
-      if (perm === "denied") {
-        setState("denied");
-        return;
-      }
-
-      if (perm === "granted") {
-        // Already granted — check if actually subscribed
-        const reg = await navigator.serviceWorker.getRegistration().catch(() => null);
-        const sub = reg ? await reg.pushManager.getSubscription().catch(() => null) : null;
-        if (sub) return; // subscribed and active — no banner needed
-        // Granted but no subscription — treat as default
-      }
-
-      setState("default");
-    }
-    detect();
-  }, []);
-
-  async function handleEnable() {
-    setLoading(true);
-    const result = await subscribeToPush();
-    if (result === "granted") {
-      setState(null);
-    } else if (result === "denied") {
-      setState("denied");
-    }
-    setLoading(false);
+  // Hide when: still detecting, not applicable (unsupported/ios-guide), or already granted
+  if (dismissed || state === "detecting" || state === "unsupported" || state === "ios-guide" || state === "granted") {
+    return null;
   }
-
-  if (!state || dismissed) return null;
 
   const denied = state === "denied";
 
@@ -86,7 +38,7 @@ export function PushNotificationBanner() {
         <Button
           size="sm"
           className="shrink-0 h-8 text-xs bg-blue-600 hover:bg-blue-700"
-          onClick={handleEnable}
+          onClick={() => subscribe()}
           disabled={loading}
         >
           {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : L.volunteer.dashboard.pushBannerEnable}
