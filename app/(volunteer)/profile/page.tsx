@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
 import { BadgeZoom } from "@/components/ui/badge-zoom";
 import { CopyReferralButton } from "@/components/volunteer/ReferralLinkCopy";
+import { PushNotificationCard } from "@/components/volunteer/PushNotificationCard";
 
 // Thresholds must stay in sync with check_and_award_badges() in SQL migrations.
 const BADGE_REQS: Record<string, { max: number }> = {
@@ -160,6 +161,9 @@ export default async function ProfilePage() {
         <ReferralCard referralCode={referralCode} referralCount={referralCount} />
       )}
 
+      {/* Push notifications */}
+      <PushNotificationCard />
+
       {/* Badges */}
       {allBadges.length > 0 && (
         <Card>
@@ -287,15 +291,17 @@ export default async function ProfilePage() {
 function ReferralCard({ referralCode, referralCount }: { referralCode: string; referralCount: number }) {
   return (
     <Card>
-      <CardContent className="py-4 flex items-center gap-4">
-        <div className="p-2.5 rounded-full bg-green-100 shrink-0">
-          <Users className="h-5 w-5 text-green-600" />
+      <CardContent className="py-4 space-y-3">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-full bg-green-100 shrink-0">
+            <Users className="h-5 w-5 text-green-600" />
+          </div>
+          <div className="min-w-0">
+            <p className="font-medium text-sm">{t(L.volunteer.profile.referralCount, { count: referralCount })}</p>
+            <p className="text-xs text-muted-foreground">{L.volunteer.profile.referralDesc}</p>
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-medium text-sm">{t(L.volunteer.profile.referralCount, { count: referralCount })}</p>
-          <p className="text-xs text-muted-foreground">{L.volunteer.profile.referralDesc}</p>
-        </div>
-        <CopyReferralButton referralCode={referralCode} label={L.volunteer.profile.referralTitle} />
+        <CopyReferralButton referralCode={referralCode} label={L.volunteer.profile.referralTitle} className="w-full" />
       </CardContent>
     </Card>
   );

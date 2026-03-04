@@ -31,7 +31,7 @@ export function ReferralLinkCopy({ referralCode }: ReferralLinkCopyProps) {
   );
 }
 
-export function CopyReferralButton({ referralCode, label }: { referralCode: string; label: string }) {
+export function CopyReferralButton({ referralCode, label, className }: { referralCode: string; label: string; className?: string }) {
   const [copied, setCopied] = useState(false);
 
   function handleCopy() {
@@ -44,7 +44,7 @@ export function CopyReferralButton({ referralCode, label }: { referralCode: stri
   }
 
   return (
-    <Button type="button" variant="outline" size="sm" className="shrink-0 text-xs h-8 gap-1.5" onClick={handleCopy}>
+    <Button type="button" variant="outline" size="sm" className={`text-xs h-8 gap-1.5 ${className ?? ""}`} onClick={handleCopy}>
       {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
       {label}
     </Button>
