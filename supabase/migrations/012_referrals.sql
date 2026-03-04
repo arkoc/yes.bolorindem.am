@@ -9,7 +9,7 @@ ALTER TABLE profiles
 
 -- ─── Generate codes for existing users ────────────────────
 UPDATE profiles
-SET referral_code = UPPER(ENCODE(GEN_RANDOM_BYTES(4), 'hex'))
+SET referral_code = UPPER(SUBSTR(REPLACE(gen_random_uuid()::text, '-', ''), 1, 8))
 WHERE referral_code IS NULL;
 
 -- ─── Update handle_new_user to generate referral code ─────
@@ -21,7 +21,7 @@ BEGIN
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'full_name', 'New Volunteer'),
     NEW.phone,
-    UPPER(ENCODE(GEN_RANDOM_BYTES(4), 'hex'))
+    UPPER(SUBSTR(REPLACE(gen_random_uuid()::text, '-', ''), 1, 8))
   )
   ON CONFLICT (id) DO NOTHING;
   RETURN NEW;

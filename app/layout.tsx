@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Ես բոլորին դեմ եմ",
-  description: "Ես բոլորին դեմ եմ — կամավորների կառավարման հարթակ",
+  description: "Ես բոլորին դեմ եմ — աջակիցների հարթակ",
   manifest: "/manifest.json",
   icons: {
     icon: "/icon.svg",
