@@ -18,10 +18,12 @@ export interface PushSubscriptionData {
   auth: string;
 }
 
+export type SendPushResult = "ok" | "expired" | "error";
+
 export async function sendPush(
   subscription: PushSubscriptionData,
   payload: PushPayload
-): Promise<void> {
+): Promise<SendPushResult> {
   try {
     await webpush.sendNotification(
       {
@@ -30,8 +32,11 @@ export async function sendPush(
       },
       JSON.stringify(payload)
     );
+    return "ok";
   } catch (err) {
-    // 410 Gone = subscription expired — caller should delete it from DB
-    console.error("Push send error:", (err as { statusCode?: number })?.statusCode, err);
+    const status = (err as { statusCode?: number })?.statusCode;
+    if (status === 410 || status === 404) return "expired";
+    console.error("Push send error:", status, err);
+    return "error";
   }
 }

@@ -33,27 +33,46 @@ export async function POST(request: NextRequest) {
   }
 
   const adminClient = await createAdminClient();
-  const { data: subs, error: subsError } = await adminClient
-    .from("push_subscriptions")
-    .select("endpoint, p256dh, auth");
 
-  if (subsError) {
-    return NextResponse.json({ error: "Failed to fetch subscriptions" }, { status: 500 });
+  // Fetch all subscriptions — Supabase default limit is 1000, use range to paginate
+  const allSubs: (PushSubscriptionData & { id: string })[] = [];
+  const pageSize = 1000;
+  let from = 0;
+  while (true) {
+    const { data, error } = await adminClient
+      .from("push_subscriptions")
+      .select("id, endpoint, p256dh, auth")
+      .range(from, from + pageSize - 1);
+    if (error) return NextResponse.json({ error: "Failed to fetch subscriptions" }, { status: 500 });
+    if (!data?.length) break;
+    allSubs.push(...(data as (PushSubscriptionData & { id: string })[]));
+    if (data.length < pageSize) break;
+    from += pageSize;
   }
 
-  if (!subs?.length) {
+  if (!allSubs.length) {
     return NextResponse.json({ sent: 0 });
   }
 
   const payload = { title: title.trim(), body: message.trim(), url: url?.trim() || "/dashboard" };
 
-  // Send in batches of 50 to avoid overwhelming the push service
+  // Send in batches of 50, track expired subscriptions for cleanup
   let sent = 0;
+  const expiredIds: string[] = [];
   const batchSize = 50;
-  for (let i = 0; i < subs.length; i += batchSize) {
-    const batch = subs.slice(i, i + batchSize) as PushSubscriptionData[];
-    await Promise.all(batch.map((sub) => sendPush(sub, payload).then(() => sent++).catch(() => {})));
+  for (let i = 0; i < allSubs.length; i += batchSize) {
+    const batch = allSubs.slice(i, i + batchSize);
+    const results = await Promise.all(batch.map((sub) => sendPush(sub, payload)));
+    results.forEach((result, idx) => {
+      if (result === "ok") sent++;
+      else if (result === "expired") expiredIds.push(batch[idx].id);
+    });
   }
 
-  return NextResponse.json({ sent });
+  // Clean up expired subscriptions
+  if (expiredIds.length > 0) {
+    await adminClient.from("push_subscriptions").delete().in("id", expiredIds);
+  }
+
+  return NextResponse.json({ sent, expired: expiredIds.length });
 }

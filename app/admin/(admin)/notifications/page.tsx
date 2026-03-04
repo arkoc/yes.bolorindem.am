@@ -27,12 +27,13 @@ export default function NotificationsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, message, url }),
       });
-      const data = await res.json() as { sent?: number; error?: string };
+      const data = await res.json() as { sent?: number; expired?: number; error?: string };
 
       if (!res.ok) {
         toast.error(data.error ?? L.admin.notifications.sendFailed);
       } else {
-        toast.success(`${L.admin.notifications.sendSuccess} (${data.sent} ${L.admin.notifications.recipients})`);
+        const msg = `${L.admin.notifications.sendSuccess} (${data.sent} ${L.admin.notifications.recipients}${data.expired ? `, ${data.expired} removed` : ""})`;
+        toast.success(msg);
         setTitle("");
         setMessage("");
         setUrl("/dashboard");
