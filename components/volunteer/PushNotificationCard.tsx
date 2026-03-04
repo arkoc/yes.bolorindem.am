@@ -23,7 +23,6 @@ export function PushNotificationCard() {
   useEffect(() => {
     async function detect() {
       if (!("serviceWorker" in navigator)) { setState("unsupported"); return; }
-      if (!("Notification" in window)) { setState("unsupported"); return; }
 
       const isIOS =
         /iPad|iPhone|iPod/.test(navigator.userAgent) &&
@@ -35,6 +34,8 @@ export function PushNotificationCard() {
           (navigator as { standalone?: boolean }).standalone === true;
         if (!isStandalone) { setState("ios-guide"); return; }
       }
+
+      if (!("Notification" in window)) { setState("unsupported"); return; }
 
       const perm = Notification.permission;
       if (perm === "denied") { setState("denied"); return; }

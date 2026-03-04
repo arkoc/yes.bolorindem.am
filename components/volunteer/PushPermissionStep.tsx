@@ -26,6 +26,8 @@ function detectEnvironment(): Step {
   if (!("Notification" in window)) return "unsupported";
   return "push";
 }
+// Note: iOS check must come before Notification check — on iOS < 16.4,
+// Notification is not in window, but we still want to show the Add to Home Screen guide.
 
 export function PushPermissionStep() {
   const router = useRouter();
