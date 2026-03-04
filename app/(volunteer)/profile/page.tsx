@@ -14,6 +14,7 @@ import L, { t } from "@/lib/labels";
 import { BadgeZoom } from "@/components/ui/badge-zoom";
 import { CopyReferralButton } from "@/components/volunteer/ReferralLinkCopy";
 import { PushNotificationCard } from "@/components/volunteer/PushNotificationCard";
+import { EditNameForm } from "@/components/volunteer/EditNameForm";
 
 // Thresholds must stay in sync with check_and_award_badges() in SQL migrations.
 const BADGE_REQS: Record<string, { max: number }> = {
@@ -116,7 +117,7 @@ export default async function ProfilePage() {
           <div className="flex items-center gap-4">
             <UserAvatar name={profile.full_name} size={80} className="shrink-0" />
             <div>
-              <h2 className="text-xl font-bold">{profile.full_name}</h2>
+              <EditNameForm name={profile.full_name} />
               <p className="text-muted-foreground text-sm">{profile.phone}</p>
               <div className="mt-2 flex items-center gap-2">
                 <Badge variant={profile.role === "admin" ? "default" : profile.role === "leader" ? "secondary" : "outline"}>

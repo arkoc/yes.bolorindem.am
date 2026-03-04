@@ -24,6 +24,7 @@ export default function LoginPage() {
 
   const phoneDigits = phone.replace(/\D/g, "");
   const phoneValid = phoneDigits.length === 8;
+  const normalizedPhone = `+374${phoneDigits}`;
 
   async function handleSendOtp(e: React.FormEvent) {
     e.preventDefault();
@@ -37,7 +38,6 @@ export default function LoginPage() {
       toast.error(error.message);
     } else {
       toast.success(L.auth.login.codeSent);
-      setPhone(normalized);
       setStep("otp");
     }
     setLoading(false);
@@ -48,7 +48,7 @@ export default function LoginPage() {
     setLoading(true);
 
     const { data, error } = await supabase.auth.verifyOtp({
-      phone,
+      phone: normalizedPhone,
       token: otp,
       type: "sms",
     });
@@ -131,7 +131,7 @@ export default function LoginPage() {
             <p className="text-sm text-muted-foreground mt-1">
               {step === "phone"
                 ? L.auth.login.subtitlePhone
-                : t(L.auth.login.subtitleOtp, { phone })}
+                : t(L.auth.login.subtitleOtp, { phone: normalizedPhone })}
             </p>
           </div>
 
