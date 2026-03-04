@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Bell, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import L from "@/lib/labels";
+import { toast } from "sonner";
 import { usePushNotification } from "@/lib/use-push-notification";
 
 export function PushNotificationBanner() {
@@ -38,7 +39,7 @@ export function PushNotificationBanner() {
         <Button
           size="sm"
           className="shrink-0 h-8 text-xs bg-blue-600 hover:bg-blue-700"
-          onClick={() => subscribe()}
+          onClick={async () => { const r = await subscribe(); if (r === "error") toast.error("Failed to enable notifications"); }}
           disabled={loading}
         >
           {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : L.volunteer.dashboard.pushBannerEnable}
