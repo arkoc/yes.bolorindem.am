@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   title: "YES — bolorindem.am",
   description: "Campaign volunteer management platform",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export const viewport: Viewport = {

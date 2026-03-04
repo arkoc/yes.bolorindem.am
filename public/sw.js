@@ -3,6 +3,8 @@ self.addEventListener('push', (event) => {
   const title = data.title || 'YES';
   const options = {
     body: data.body || '',
+    icon: '/icon.svg',
+    badge: '/icon.svg',
     data: { url: data.url || '/dashboard' },
     vibrate: [200, 100, 200],
   };
