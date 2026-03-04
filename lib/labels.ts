@@ -5,11 +5,11 @@
  */
 const L = {
   brand: {
-    name: "YES",
+    name: "ԵՍ",
     subtitle: "bolorindem.am",
     adminSubtitle: "bolorindem.am · Ադմին",
-    adminMobileTitle: "YES · Ադմին",
-    campaign: "ԲՈԼՈՐԻՆ ԴԵՄ ԵՄ",
+    adminMobileTitle: "ԵՍ · Ադմին",
+    campaign: "ԵՍ ԲՈԼՈՐԻՆ ԴԵՄ ԵՄ",
     slogan: "Get your shit together and get something done!",
   },
   auth: {

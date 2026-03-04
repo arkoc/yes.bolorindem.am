@@ -1,7 +1,7 @@
 {
-  "name": "YES — bolorindem.am",
-  "short_name": "YES",
-  "description": "Campaign volunteer management platform",
+  "name": "Ես բոլորին դեմ եմ",
+  "short_name": "ԵՍ",
+  "description": "Ես բոլորին դեմ եմ — կամավորների կառավարման հարթակ",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#ffffff",

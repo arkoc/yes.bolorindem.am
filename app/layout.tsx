@@ -8,8 +8,8 @@ import NextTopLoader from "nextjs-toploader";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "YES — bolorindem.am",
-  description: "Campaign volunteer management platform",
+  title: "Ես բոլորին դեմ եմ",
+  description: "Ես բոլորին դեմ եմ — կամավորների կառավարման հարթակ",
   manifest: "/manifest.json",
   icons: {
     icon: "/icon.svg",
