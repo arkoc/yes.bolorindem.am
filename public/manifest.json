@@ -1,7 +1,7 @@
 {
   "name": "Ես բոլորին դեմ եմ",
   "short_name": "ԵՍ",
-  "description": "Ես բոլորին դեմ եմ — կամավորների կառավարման հարթակ",
+  "description": "Ես բոլորին դեմ եմ — աջակիցների հարթակ",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#ffffff",
