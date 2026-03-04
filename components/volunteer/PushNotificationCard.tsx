@@ -75,15 +75,17 @@ export function PushNotificationCard() {
       const reg = await navigator.serviceWorker.register("/sw.js");
       await navigator.serviceWorker.ready;
 
+      // Always unsubscribe first — stale subscriptions from a different
+      // VAPID key cause "push service error" on resubscribe
       const existing = await reg.pushManager.getSubscription();
-      const subscription =
-        existing ??
-        (await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(
-            process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
-          ).buffer as ArrayBuffer,
-        }));
+      if (existing) await existing.unsubscribe();
+
+      const subscription = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(
+          process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
+        ).buffer as ArrayBuffer,
+      });
 
       const { endpoint, keys } = subscription.toJSON() as {
         endpoint: string;
