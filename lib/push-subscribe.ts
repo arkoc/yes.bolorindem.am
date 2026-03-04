@@ -26,7 +26,7 @@ export async function subscribeToPush(): Promise<"granted" | "denied" | "error">
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(
         process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
-      ).buffer as ArrayBuffer,
+      ),
     });
 
     const { endpoint, keys } = subscription.toJSON() as {
