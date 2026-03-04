@@ -3,7 +3,7 @@
 export const dynamic = "force-dynamic";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,6 @@ type Step = "phone" | "otp";
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const supabase = createClient();
   const [step, setStep] = useState<Step>("phone");
   const [phone, setPhone] = useState("");
@@ -68,7 +67,7 @@ export default function LoginPage() {
         .single();
 
       if (!profile?.full_name || profile.full_name === "New Volunteer") {
-        const ref = searchParams.get("ref");
+        const ref = new URLSearchParams(window.location.search).get("ref");
         router.push(ref ? `/register?ref=${ref}` : "/register");
       } else {
         router.push("/dashboard");

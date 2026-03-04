@@ -3,7 +3,7 @@
 export const dynamic = "force-dynamic";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,6 @@ import { PushPermissionStep } from "@/components/volunteer/PushPermissionStep";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const supabase = createClient();
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -43,7 +42,7 @@ export default function RegisterPage() {
     if (error) {
       toast.error(L.auth.register.saveFailed);
     } else {
-      const ref = searchParams.get("ref");
+      const ref = new URLSearchParams(window.location.search).get("ref");
       if (ref) {
         await fetch("/api/referral/record", {
           method: "POST",
