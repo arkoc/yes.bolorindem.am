@@ -81,6 +81,8 @@ const L = {
       referralIncentive: "Հրավիրեք ընկեր — ստացեք +50 միավոր",
       referralCopyLink: "Կիսվել",
       referralLinkCopied: "Հղումը պատճենված է",
+      pushBannerText: "Միացրեք ծանուցումները՝ կարևոր թարմացումներ ստանալու համար",
+      pushBannerEnable: "Միացնել",
     },
 
     projects: {
@@ -184,6 +186,7 @@ const L = {
       statActiveProjects: "Ակտիվ նախագծեր",
       statCompletionsToday: "Այսօրվա կատարումներ",
       statTotalPoints: "Շնորհված ընդհանուր միավորներ",
+      statPushSubscribers: "Push բաժանորդներ",
       recentCompletions: "Վերջին կատարումները",
       viewAll: "Դիտել բոլորը",
       noCompletions: "Այսօր դեռ կատարումներ չկան",

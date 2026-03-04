@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
 import { BadgeZoom } from "@/components/ui/badge-zoom";
 import { CopyReferralButton } from "@/components/volunteer/ReferralLinkCopy";
+import { PushNotificationBanner } from "@/components/volunteer/PushNotificationBanner";
 
 export default async function DashboardPage() {
   const supabase = await createServerClient();
@@ -95,6 +96,9 @@ export default async function DashboardPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Push notification banner */}
+      <PushNotificationBanner />
 
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-3">

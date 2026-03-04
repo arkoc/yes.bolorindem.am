@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, FolderOpen, CheckCircle, Zap } from "lucide-react";
+import { Users, FolderOpen, CheckCircle, Zap, Bell } from "lucide-react";
 import { formatPoints } from "@/lib/utils";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ export default async function AdminDashboardPage() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const [usersRes, projectsRes, completionsTodayRes, totalPointsRes, recentCompletionsRes] =
+  const [usersRes, projectsRes, completionsTodayRes, totalPointsRes, pushSubsRes, recentCompletionsRes] =
     await Promise.all([
       supabase.from("profiles").select("id", { count: "exact" }).neq("role", "admin"),
       supabase.from("projects").select("id", { count: "exact" }).eq("status", "active"),
@@ -25,6 +25,7 @@ export default async function AdminDashboardPage() {
         .from("point_transactions")
         .select("amount")
         .gt("amount", 0),
+      supabase.from("push_subscriptions").select("id", { count: "exact", head: true }),
       supabase
         .from("task_completions")
         .select("id, points_awarded, completed_at, profiles!task_completions_user_id_fkey(full_name), tasks(title)")
@@ -41,6 +42,7 @@ export default async function AdminDashboardPage() {
     { label: L.admin.dashboard.statActiveProjects, value: projectsRes.count ?? 0, icon: FolderOpen, color: "text-purple-600", bg: "bg-purple-100" },
     { label: L.admin.dashboard.statCompletionsToday, value: completionsTodayRes.count ?? 0, icon: CheckCircle, color: "text-green-600", bg: "bg-green-100" },
     { label: L.admin.dashboard.statTotalPoints, value: formatPoints(totalPoints), icon: Zap, color: "text-yellow-600", bg: "bg-yellow-100" },
+    { label: L.admin.dashboard.statPushSubscribers, value: pushSubsRes.count ?? 0, icon: Bell, color: "text-orange-600", bg: "bg-orange-100" },
   ];
 
   const recentCompletions = recentCompletionsRes.data ?? [];
@@ -57,7 +59,7 @@ export default async function AdminDashboardPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {stats.map((stat) => (
           <Card key={stat.label}>
             <CardContent className="pt-5 pb-5">
