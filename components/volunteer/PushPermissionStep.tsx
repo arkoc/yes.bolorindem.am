@@ -52,8 +52,8 @@ export function PushPermissionStep() {
         return;
       }
 
-      const reg = await navigator.serviceWorker.register("/sw.js");
-      await navigator.serviceWorker.ready;
+      await navigator.serviceWorker.register("/sw.js");
+      const reg = await navigator.serviceWorker.ready;
 
       const existing = await reg.pushManager.getSubscription();
       if (existing) await existing.unsubscribe();

@@ -72,8 +72,9 @@ export function PushNotificationCard() {
       const permission = await Notification.requestPermission();
       if (permission !== "granted") { setState("denied"); setLoading(false); return; }
 
-      const reg = await navigator.serviceWorker.register("/sw.js");
-      await navigator.serviceWorker.ready;
+      await navigator.serviceWorker.register("/sw.js");
+      // Use the ready registration (guaranteed active) not the register() result
+      const reg = await navigator.serviceWorker.ready;
 
       // Always unsubscribe first — stale subscriptions from a different
       // VAPID key cause "push service error" on resubscribe
