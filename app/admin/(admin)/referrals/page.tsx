@@ -26,7 +26,7 @@ export default async function AdminReferralsPage() {
   const [referralsRes, transactionsRes] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id, full_name, created_at, referred_by, referrer:profiles!profiles_referred_by_fkey(full_name)")
+      .select("id, full_name, created_at, referred_by")
       .not("referred_by", "is", null)
       .order("created_at", { ascending: false }),
     supabase
@@ -35,8 +35,22 @@ export default async function AdminReferralsPage() {
       .eq("source_type", "referral"),
   ]);
 
-  const referrals = (referralsRes.data ?? []) as unknown as ReferralRow[];
+  if (referralsRes.error) console.error("Referrals query error:", referralsRes.error);
+
+  const rawReferrals = (referralsRes.data ?? []) as { id: string; full_name: string; created_at: string; referred_by: string }[];
   const transactions = transactionsRes.data ?? [];
+
+  // Fetch referrer names in a single query
+  const referrerIds = [...new Set(rawReferrals.map((r) => r.referred_by))];
+  const { data: referrerProfiles } = referrerIds.length > 0
+    ? await supabase.from("profiles").select("id, full_name").in("id", referrerIds)
+    : { data: [] };
+  const referrerMap = new Map((referrerProfiles ?? []).map((p) => [p.id, p.full_name]));
+
+  const referrals: ReferralRow[] = rawReferrals.map((r) => ({
+    ...r,
+    referrer: referrerMap.has(r.referred_by) ? { full_name: referrerMap.get(r.referred_by)! } : null,
+  }));
 
   // Build per-referrer stats
   const statsMap = new Map<string, ReferrerStat>();
