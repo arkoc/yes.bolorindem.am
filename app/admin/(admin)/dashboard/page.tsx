@@ -23,8 +23,9 @@ export default async function AdminDashboardPage() {
         .gte("completed_at", today.toISOString()),
       supabase
         .from("point_transactions")
-        .select("amount")
-        .gt("amount", 0),
+        .select("amount.sum()")
+        .gt("amount", 0)
+        .single(),
       supabase.from("push_subscriptions").select("id", { count: "exact", head: true }),
       supabase
         .from("task_completions")
@@ -33,9 +34,7 @@ export default async function AdminDashboardPage() {
         .limit(10),
     ]);
 
-  const totalPoints = (totalPointsRes.data ?? []).reduce(
-    (sum: number, t: { amount: number }) => sum + t.amount, 0
-  );
+  const totalPoints = (totalPointsRes.data as { sum: number } | null)?.sum ?? 0;
 
   const stats = [
     { label: L.admin.dashboard.statVolunteers, value: usersRes.count ?? 0, icon: Users, color: "text-blue-600", bg: "bg-blue-100" },

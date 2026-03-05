@@ -52,7 +52,7 @@ export function VolunteerNav({ role }: VolunteerNavProps) {
                 key={href}
                 href={href}
                 className={cn(
-                  "flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg transition-colors min-w-[56px]",
+                  "flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg transition-colors min-w-[56px] min-h-[44px] justify-center",
                   active
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground"

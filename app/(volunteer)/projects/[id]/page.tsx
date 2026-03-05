@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { createServerClient } from "@/lib/supabase/server";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
@@ -95,9 +96,8 @@ export default async function ProjectDetailPage({
     <div className="max-w-2xl mx-auto">
       {/* Banner / Header */}
       {project.banner_url && (
-        <div className="h-40 w-full overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={project.banner_url} alt={project.title} className="w-full h-full object-cover" />
+        <div className="h-40 w-full overflow-hidden relative">
+          <Image src={project.banner_url} alt={project.title} fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" />
         </div>
       )}
 

@@ -180,7 +180,7 @@ export default async function ProfilePage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {allBadges.map((badge: { id: string; name_hy: string; description_hy: string; icon: string; image_url: string | null }) => {
                 const earned = earnedIds.has(badge.id);
                 const req = BADGE_REQS[badge.id];
@@ -206,12 +206,12 @@ export default async function ProfilePage() {
                       earned={earned}
                     />
                     <span className={cn(
-                      "text-[10px] font-bold leading-tight",
+                      "text-xs font-bold leading-tight",
                       earned ? "text-primary" : "text-muted-foreground"
                     )}>
                       {badge.name_hy}
                     </span>
-                    <span className="text-[9px] text-muted-foreground leading-tight">
+                    <span className="text-xs text-muted-foreground leading-tight">
                       {badge.description_hy}
                     </span>
 
@@ -224,7 +224,7 @@ export default async function ProfilePage() {
                               style={{ width: `${pct}%` }}
                             />
                           </div>
-                          <span className="text-[9px] text-muted-foreground tabular-nums">
+                          <span className="text-xs text-muted-foreground tabular-nums">
                             {Math.min(current, req.max)}/{req.max}
                           </span>
                         </div>

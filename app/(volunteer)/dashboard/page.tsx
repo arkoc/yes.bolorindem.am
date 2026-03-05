@@ -108,7 +108,7 @@ export default async function DashboardPage() {
               <Star className="h-4 w-4 text-yellow-600" />
             </div>
             <p className="text-xl font-bold">{formatPoints(profile.total_points)}</p>
-            <p className="text-[10px] text-muted-foreground leading-tight">{L.volunteer.dashboard.statPoints}</p>
+            <p className="text-xs text-muted-foreground leading-tight">{L.volunteer.dashboard.statPoints}</p>
           </CardContent>
         </Card>
         <Card>
@@ -117,7 +117,7 @@ export default async function DashboardPage() {
               <Trophy className="h-4 w-4 text-blue-600" />
             </div>
             <p className="text-xl font-bold">{rank ? getRankSuffix(Number(rank)) : "—"}</p>
-            <p className="text-[10px] text-muted-foreground leading-tight">{L.volunteer.dashboard.statLeaderboard}</p>
+            <p className="text-xs text-muted-foreground leading-tight">{L.volunteer.dashboard.statLeaderboard}</p>
           </CardContent>
         </Card>
         <Card>
@@ -126,7 +126,7 @@ export default async function DashboardPage() {
               <Award className="h-4 w-4 text-orange-600" />
             </div>
             <p className="text-xl font-bold">{earnedBadges.length}</p>
-            <p className="text-[10px] text-muted-foreground leading-tight">{L.volunteer.dashboard.statBadges}</p>
+            <p className="text-xs text-muted-foreground leading-tight">{L.volunteer.dashboard.statBadges}</p>
           </CardContent>
         </Card>
       </div>
@@ -193,18 +193,21 @@ export default async function DashboardPage() {
             {earnedBadges.length > 0 ? L.volunteer.dashboard.badgesShowAll : L.volunteer.dashboard.badgesEarnFirst}
           </Link>
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {badgeDisplayList.map((b) => (
-            <div
-              key={b.id}
-              className={cn(
-                "flex flex-col items-center shrink-0 rounded-xl border p-2 text-center w-28",
-                b.earned ? "bg-primary/10 border-primary/20" : "opacity-40 bg-muted border-transparent"
-              )}
-            >
-              <BadgeZoom src={b.image_url} fallback={b.icon} name={b.name_hy} description={b.description_hy ?? undefined} size={88} earned={b.earned} />
-            </div>
-          ))}
+        <div className="relative">
+          <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {badgeDisplayList.map((b) => (
+              <div
+                key={b.id}
+                className={cn(
+                  "flex flex-col items-center shrink-0 rounded-xl border p-2 text-center w-28",
+                  b.earned ? "bg-primary/10 border-primary/20" : "opacity-40 bg-muted border-transparent"
+                )}
+              >
+                <BadgeZoom src={b.image_url} fallback={b.icon} name={b.name_hy} description={b.description_hy ?? undefined} size={88} earned={b.earned} />
+              </div>
+            ))}
+          </div>
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-background to-transparent" />
         </div>
       </section>
 
@@ -239,10 +242,10 @@ export default async function DashboardPage() {
               return (
                 <div key={item.id} className="flex items-center justify-between py-1 border-b last:border-0">
                   <div className="min-w-0">
-                    <p className="text-[11px] font-medium truncate">{item.tasks?.title}</p>
-                    <p className="text-[9px] text-muted-foreground truncate">{item.tasks?.projects?.title}</p>
+                    <p className="text-xs font-medium truncate">{item.tasks?.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">{item.tasks?.projects?.title}</p>
                   </div>
-                  <span className="text-[10px] font-semibold text-green-600 shrink-0 ml-2">
+                  <span className="text-xs font-semibold text-green-600 shrink-0 ml-2">
                     +{item.points_awarded} pts
                   </span>
                 </div>

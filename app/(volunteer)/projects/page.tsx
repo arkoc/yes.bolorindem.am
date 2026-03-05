@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { createServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -44,12 +45,13 @@ export default async function ProjectsPage() {
             <Link key={project.id} href={`/projects/${project.id}`}>
               <Card className="hover:shadow-md transition-all active:scale-[0.99] cursor-pointer border-l-4 border-l-primary">
                 {project.banner_url && (
-                  <div className="h-32 w-full overflow-hidden rounded-t-lg">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                  <div className="h-32 w-full overflow-hidden rounded-t-lg relative">
+                    <Image
                       src={project.banner_url}
                       alt={project.title}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 672px) 100vw, 672px"
                     />
                   </div>
                 )}
