@@ -54,7 +54,7 @@ export function usePushNotification() {
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token;
 
-        await fetch("/api/push/subscribe", {
+        const res = await fetch("/api/push/subscribe", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -62,6 +62,13 @@ export function usePushNotification() {
           },
           body: JSON.stringify({ endpoint, p256dh: keys.p256dh, auth: keys.auth }),
         });
+
+        if (!res.ok) {
+          // Re-sync failed — fall back to "default" so user can retry
+          console.error("[usePushNotification] re-sync failed:", res.status, await res.json().catch(() => ({})));
+          setState("default");
+          return;
+        }
 
         setState("granted");
       } catch {
