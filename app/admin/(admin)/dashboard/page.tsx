@@ -48,7 +48,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="space-y-6 max-w-5xl">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">{L.admin.dashboard.title}</h1>
           <p className="text-muted-foreground text-sm mt-1">{L.admin.dashboard.subtitle}</p>
@@ -58,7 +58,7 @@ export default async function AdminDashboardPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {stats.map((stat) => (
           <Card key={stat.label}>
             <CardContent className="pt-5 pb-5">
@@ -88,7 +88,7 @@ export default async function AdminDashboardPage() {
             {recentCompletions.length > 0 ? recentCompletions.map((rawC) => {
               const c = rawC as unknown as { id: string; points_awarded: number; completed_at: string; profiles: { full_name: string } | null; tasks: { title: string } | null };
               return (
-                <div key={c.id} className="flex items-center justify-between px-6 py-3">
+                <div key={c.id} className="flex items-center justify-between px-4 py-3">
                   <div>
                     <p className="text-sm font-medium">{c.profiles?.full_name}</p>
                     <p className="text-xs text-muted-foreground">{c.tasks?.title}</p>

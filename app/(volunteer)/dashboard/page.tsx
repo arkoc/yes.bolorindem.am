@@ -102,31 +102,31 @@ export default async function DashboardPage() {
 
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-3">
-        <Card>
+        <Card className="overflow-hidden">
           <CardContent className="pt-4 pb-4 text-center">
             <div className="p-1.5 rounded-lg bg-yellow-100 w-fit mx-auto mb-1">
               <Star className="h-4 w-4 text-yellow-600" />
             </div>
-            <p className="text-xl font-bold">{formatPoints(profile.total_points)}</p>
-            <p className="text-xs text-muted-foreground leading-tight">{L.volunteer.dashboard.statPoints}</p>
+            <p className="text-lg font-bold truncate">{formatPoints(profile.total_points)}</p>
+            <p className="text-[10px] text-muted-foreground leading-tight break-words">{L.volunteer.dashboard.statPoints}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="overflow-hidden">
           <CardContent className="pt-4 pb-4 text-center">
             <div className="p-1.5 rounded-lg bg-blue-100 w-fit mx-auto mb-1">
               <Trophy className="h-4 w-4 text-blue-600" />
             </div>
-            <p className="text-xl font-bold">{rank ? getRankSuffix(Number(rank)) : "—"}</p>
-            <p className="text-xs text-muted-foreground leading-tight">{L.volunteer.dashboard.statLeaderboard}</p>
+            <p className="text-lg font-bold truncate">{rank ? getRankSuffix(Number(rank)) : "—"}</p>
+            <p className="text-[10px] text-muted-foreground leading-tight break-words">{L.volunteer.dashboard.statLeaderboard}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="overflow-hidden">
           <CardContent className="pt-4 pb-4 text-center">
             <div className="p-1.5 rounded-lg bg-orange-100 w-fit mx-auto mb-1">
               <Award className="h-4 w-4 text-orange-600" />
             </div>
-            <p className="text-xl font-bold">{earnedBadges.length}</p>
-            <p className="text-xs text-muted-foreground leading-tight">{L.volunteer.dashboard.statBadges}</p>
+            <p className="text-lg font-bold truncate">{earnedBadges.length}</p>
+            <p className="text-[10px] text-muted-foreground leading-tight break-words">{L.volunteer.dashboard.statBadges}</p>
           </CardContent>
         </Card>
       </div>

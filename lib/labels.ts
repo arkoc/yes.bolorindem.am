@@ -160,6 +160,7 @@ const L = {
       completions: "Կատարումներ",
       pointGrants: "Միավորների հատկացում",
       notifications: "Ծանուցումներ",
+      referrals: "Ռեֆերալներ",
       backToApp: "Վերադառնալ հավելված",
     },
 
@@ -238,6 +239,15 @@ const L = {
       grantCardTitle: "Ավելացնել / Հանել միավորներ",
       recentGrantsTitle: "Վերջին ձեռքով հատկացումները",
       emptyGrants: "Դեռևս ձեռքով հատկացումներ չկան",
+    },
+
+    referrals: {
+      title: "Ռեֆերալներ",
+      subtitle: "{count} ռեֆերալ ընդամենը",
+      topReferrers: "Լավագույն ռեֆերերներ",
+      allReferrals: "Բոլոր ռեֆերալները",
+      referralCount: "{count} ռեֆերալ",
+      empty: "Դեռևս ռեֆերալներ չկան",
     },
   },
 

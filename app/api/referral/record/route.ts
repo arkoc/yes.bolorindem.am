@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
   const supabase = await createServerClient();
+  const adminClient = createAdminClient();
 
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
@@ -33,8 +34,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Already referred" }, { status: 409 });
   }
 
-  // Look up the referrer by code
-  const { data: referrer } = await supabase
+  // Look up the referrer by code (admin client needed — RLS blocks cross-user profile reads)
+  const { data: referrer } = await adminClient
     .from("profiles")
     .select("id")
     .eq("referral_code", code.toUpperCase())
@@ -49,7 +50,6 @@ export async function POST(request: NextRequest) {
   }
 
   // Set referred_by using admin client (trigger will award points to referrer)
-  const adminClient = createAdminClient();
   const { error: updateError } = await adminClient
     .from("profiles")
     .update({ referred_by: referrer.id })

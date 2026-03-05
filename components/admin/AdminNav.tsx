@@ -11,6 +11,7 @@ import {
   ClipboardList,
   Star,
   Bell,
+  Share2,
   ArrowLeft,
   Menu,
   X,
@@ -24,6 +25,7 @@ const navItems = [
   { href: "/admin/completions", icon: ClipboardList, label: L.admin.nav.completions },
   { href: "/admin/points", icon: Star, label: L.admin.nav.pointGrants },
   { href: "/admin/notifications", icon: Bell, label: L.admin.nav.notifications },
+  { href: "/admin/referrals", icon: Share2, label: L.admin.nav.referrals },
 ];
 
 export function AdminNav() {

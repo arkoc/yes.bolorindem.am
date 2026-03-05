@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FolderOpen, Plus, ArrowRight, Star, ClipboardList } from "lucide-react";
+import { FolderOpen, Plus, ArrowRight, Star, ClipboardList, Pencil } from "lucide-react";
 import { formatPoints } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
 
@@ -24,7 +24,7 @@ export default async function AdminProjectsPage() {
 
   return (
     <div className="space-y-5 max-w-4xl">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">{L.admin.projects.title}</h1>
           <p className="text-muted-foreground text-sm">{L.admin.projects.subtitle}</p>
@@ -69,7 +69,8 @@ export default async function AdminProjectsPage() {
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  {/* Desktop action buttons */}
+                  <div className="hidden sm:flex items-center gap-2 shrink-0">
                     <Button asChild size="sm" variant="ghost">
                       <Link href={`/admin/completions?project=${p.id}`}>
                         <ClipboardList className="h-3.5 w-3.5" />
@@ -84,6 +85,24 @@ export default async function AdminProjectsPage() {
                     <Button asChild size="sm" variant="outline">
                       <Link href={`/admin/projects/${p.id}/tasks`}>
                         {L.admin.projects.tasks} <ArrowRight className="h-3 w-3 ml-1" />
+                      </Link>
+                    </Button>
+                  </div>
+                  {/* Mobile icon-only buttons */}
+                  <div className="flex sm:hidden items-center gap-1 shrink-0">
+                    <Button asChild size="icon" variant="ghost" className="h-8 w-8">
+                      <Link href={`/admin/completions?project=${p.id}`} title={L.admin.projects.completions}>
+                        <ClipboardList className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <Button asChild size="icon" variant="ghost" className="h-8 w-8">
+                      <Link href={`/admin/projects/${p.id}`} title={L.admin.projects.edit}>
+                        <Pencil className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <Button asChild size="icon" variant="outline" className="h-8 w-8">
+                      <Link href={`/admin/projects/${p.id}/tasks`} title={L.admin.projects.tasks}>
+                        <ArrowRight className="h-4 w-4" />
                       </Link>
                     </Button>
                   </div>

@@ -33,16 +33,16 @@ export default async function AdminUsersPage() {
               role: string;
               created_at: string;
             }, index: number) => (
-              <div key={u.id} className="flex items-center gap-4 px-5 py-4">
-                <span className="text-sm font-semibold text-muted-foreground w-6 text-center shrink-0">
+              <div key={u.id} className="flex items-center gap-3 px-4 py-3">
+                <span className="hidden sm:inline text-sm font-semibold text-muted-foreground w-6 text-center shrink-0">
                   {index + 1}
                 </span>
                 <UserAvatar name={u.full_name} size={40} className="shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm">{u.full_name}</p>
-                  <p className="text-xs text-muted-foreground">{u.phone}</p>
+                  <p className="font-medium text-sm truncate">{u.full_name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{u.phone}</p>
                 </div>
-                <div className="text-right shrink-0">
+                <div className="hidden sm:flex text-right shrink-0">
                   <p className="text-sm font-semibold flex items-center gap-1">
                     <Zap className="h-3.5 w-3.5 text-yellow-500" />
                     {formatPoints(u.total_points)}
