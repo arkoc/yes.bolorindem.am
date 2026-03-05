@@ -32,7 +32,7 @@ const L = {
       title: "Լրացրեք ձեր պրոֆիլը",
       subtitle: "Գրեք ձեր անունը, այն երևալու է Առաջատարների էջում",
       fullNameLabel: "Անուն Ազգանուն",
-      fullNamePlaceholder: "Աննա Հակոբյան",
+      fullNamePlaceholder: "Անուն Ազգանուն",
       avatarHint: "Ձեր ավատարը ավտոմատ կերպով գեներացվում է ձեր անունից",
       submit: "Միանալ",
       sessionExpired: "Խնդրում ենք նորից մուտք գործել",

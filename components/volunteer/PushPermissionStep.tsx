@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Bell, BellOff, Loader2, Share, Plus } from "lucide-react";
+import { Bell, BellOff, Loader2, Share, SquarePlus } from "lucide-react";
 import L from "@/lib/labels";
 import { usePushNotification } from "@/lib/use-push-notification";
 
@@ -54,7 +54,7 @@ export function PushPermissionStep() {
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-white text-xs font-bold">2</span>
                 <p className="text-sm text-muted-foreground flex items-center gap-1 flex-wrap">
                   {L.auth.push.iosStep2a}
-                  <Plus className="h-4 w-4 inline shrink-0" />
+                  <SquarePlus className="h-4 w-4 inline shrink-0" />
                   {L.auth.push.iosStep2b}
                 </p>
               </div>

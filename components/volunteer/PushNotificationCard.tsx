@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Bell, BellOff, Check, Loader2, Share, Plus } from "lucide-react";
+import { Bell, BellOff, Check, Loader2, Share, SquarePlus } from "lucide-react";
 import L from "@/lib/labels";
 import { toast } from "sonner";
 import { usePushNotification } from "@/lib/use-push-notification";
@@ -40,7 +40,7 @@ export function PushNotificationCard() {
             </div>
             <div className="flex items-start gap-2 p-2.5 rounded-lg bg-muted text-xs text-muted-foreground">
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-white text-[10px] font-bold">2</span>
-              <span className="flex items-center gap-1 flex-wrap">{L.auth.push.iosStep2a} <Plus className="h-3.5 w-3.5 inline shrink-0" /></span>
+              <span className="flex items-center gap-1 flex-wrap">{L.auth.push.iosStep2a} <SquarePlus className="h-3.5 w-3.5 inline shrink-0" /></span>
             </div>
             <div className="flex items-start gap-2 p-2.5 rounded-lg bg-muted text-xs text-muted-foreground">
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-white text-[10px] font-bold">3</span>
