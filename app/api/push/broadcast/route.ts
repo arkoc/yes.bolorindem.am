@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Title and message are required" }, { status: 400 });
   }
 
-  const adminClient = await createAdminClient();
+  const adminClient = createAdminClient();
 
   // Fetch all subscriptions — Supabase default limit is 1000, use range to paginate
   const allSubs: (PushSubscriptionData & { id: string })[] = [];

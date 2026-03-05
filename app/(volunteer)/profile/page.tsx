@@ -37,7 +37,7 @@ export default async function ProfilePage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const adminClient = await createAdminClient();
+  const adminClient = createAdminClient();
 
   const [profileRes, rankRes, statsRes, allBadgesRes, userBadgesRes, progressRes, referralCodeRes, referralCountRes] = await Promise.all([
     supabase

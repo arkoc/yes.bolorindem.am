@@ -15,7 +15,7 @@ const statusVariant: Record<string, "default" | "secondary" | "outline" | "destr
 };
 
 export default async function AdminProjectsPage() {
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
 
   const { data: projects } = await supabase
     .from("projects")

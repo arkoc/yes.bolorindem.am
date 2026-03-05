@@ -20,7 +20,7 @@ export default async function LeaderboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const adminClient = await createAdminClient();
+  const adminClient = createAdminClient();
   const { data: entries, error: lbError } = await adminClient
     .from("leaderboard")
     .select("id, full_name, total_points, rank, total_completions")

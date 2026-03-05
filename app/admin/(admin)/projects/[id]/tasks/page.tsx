@@ -14,7 +14,7 @@ export default async function AdminProjectTasksPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
 
   const [projectRes, tasksRes] = await Promise.all([
     supabase.from("projects").select("id, title, status").eq("id", id).single(),

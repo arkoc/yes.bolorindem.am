@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
   const { userId, amount, description } = parsed.data;
 
   // Use service role to bypass RLS for privileged operations
-  const admin = await createAdminClient();
+  const admin = createAdminClient();
 
   const { data: target } = await admin
     .from("profiles")

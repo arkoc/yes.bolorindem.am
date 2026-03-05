@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import L from "@/lib/labels";
 
 export default async function AdminDashboardPage() {
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);

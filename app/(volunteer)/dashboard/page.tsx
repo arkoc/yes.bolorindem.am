@@ -18,7 +18,7 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const adminClient = await createAdminClient();
+  const adminClient = createAdminClient();
 
   const [profileRes, rankRes, recentRes, activeProjectsRes, earnedBadgesRes, allBadgesRes, referralRes] = await Promise.all([
     supabase

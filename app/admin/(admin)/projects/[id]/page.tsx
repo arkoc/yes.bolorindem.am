@@ -12,7 +12,7 @@ export default async function EditProjectPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
 
   const { data: raw } = await supabase
     .from("projects")

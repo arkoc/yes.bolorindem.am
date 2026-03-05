@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, createAdminClient } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
-  const adminClient = await createAdminClient();
+  const adminClient = createAdminClient();
 
   // Try cookie-based auth first; fall back to Bearer token.
   // Bearer fallback is needed for new users right after registration

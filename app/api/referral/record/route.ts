@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Set referred_by using admin client (trigger will award points to referrer)
-  const adminClient = await createAdminClient();
+  const adminClient = createAdminClient();
   const { error: updateError } = await adminClient
     .from("profiles")
     .update({ referred_by: referrer.id })

@@ -4,7 +4,7 @@ import { ManualPointGrantForm } from "@/components/admin/ManualPointGrantForm";
 import L from "@/lib/labels";
 
 export default async function AdminPointsPage() {
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
 
   const { data: users } = await supabase
     .from("profiles")

@@ -26,7 +26,7 @@ export default async function AdminCompletionsPage({
   searchParams: Promise<{ project?: string; user?: string }>;
 }) {
   const { project: projectId, user: userId } = await searchParams;
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
 
   const [completionsRes, projectsRes, usersRes] = await Promise.all([
     (() => {
