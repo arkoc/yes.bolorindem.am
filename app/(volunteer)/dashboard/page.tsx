@@ -6,7 +6,7 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, Star, FolderOpen, CheckCircle, ArrowRight, Zap, Award, Users } from "lucide-react";
+import { Trophy, Star, FolderOpen, ArrowRight, Zap, Award, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
 import { BadgeZoom } from "@/components/ui/badge-zoom";
@@ -20,7 +20,7 @@ export default async function DashboardPage() {
 
   const adminClient = createAdminClient();
 
-  const [profileRes, rankRes, recentRes, activeProjectsRes, earnedBadgesRes, allBadgesRes, referralRes] = await Promise.all([
+  const [profileRes, rankRes, activeProjectsRes, earnedBadgesRes, allBadgesRes, referralRes] = await Promise.all([
     supabase
       .from("profiles")
       .select("full_name, total_points, role, referral_code")
@@ -31,13 +31,6 @@ export default async function DashboardPage() {
       .select("rank")
       .eq("id", user.id)
       .single(),
-    supabase
-      .from("task_completions")
-      .select("id, points_awarded, completed_at, tasks(title, projects(title))")
-      .eq("user_id", user.id)
-      .eq("status", "approved")
-      .order("completed_at", { ascending: false })
-      .limit(5),
     supabase
       .from("projects")
       .select("id, title, completion_bonus_points, tasks(count)")
@@ -57,7 +50,6 @@ export default async function DashboardPage() {
 
   const profile = profileRes.data;
   const rank = rankRes.data?.rank;
-  const recent = recentRes.data ?? [];
   const activeProjects = activeProjectsRes.data ?? [];
   const earnedBadges = (earnedBadgesRes.data ?? []) as unknown as { badge_id: string; badges: { icon: string; name_hy: string; description_hy: string | null; image_url: string | null } }[];
   const allBadges = (allBadgesRes.data ?? []) as { id: string; icon: string; name_hy: string; description_hy: string | null; image_url: string | null }[];
@@ -229,34 +221,8 @@ export default async function DashboardPage() {
         </Card>
       )}
 
-      {/* Recent completions */}
-      {recent.length > 0 && (
-        <section>
-          <h2 className="font-semibold text-base flex items-center gap-2 mb-3">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            {L.volunteer.dashboard.recentActivity}
-          </h2>
-          <div className="space-y-2">
-            {recent.map((c) => {
-              const item = c as unknown as { id: string; points_awarded: number; tasks: { title: string; projects: { title: string } | null } | null };
-              return (
-                <div key={item.id} className="flex items-center justify-between py-1 border-b last:border-0">
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium truncate">{item.tasks?.title}</p>
-                    <p className="text-xs text-muted-foreground truncate">{item.tasks?.projects?.title}</p>
-                  </div>
-                  <span className="text-xs font-semibold text-green-600 shrink-0 ml-2">
-                    +{item.points_awarded} pts
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
       {/* Empty state */}
-      {activeProjects.length === 0 && recent.length === 0 && (
+      {activeProjects.length === 0 && (
         <Card>
           <CardContent className="py-12 text-center">
             <FolderOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
