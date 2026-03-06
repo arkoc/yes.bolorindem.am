@@ -12,32 +12,40 @@ import { createClient } from "@/lib/supabase/client";
 import { ArrowRight, Loader2 } from "lucide-react";
 import L, { t } from "@/lib/labels";
 
-type Step = "phone" | "otp";
+type Method = "phone" | "email";
+type Step = "input" | "otp";
 
 export default function LoginPage() {
   const router = useRouter();
   const supabase = createClient();
-  const [step, setStep] = useState<Step>("phone");
+  const [method, setMethod] = useState<Method>("phone");
+  const [step, setStep] = useState<Step>("input");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
 
   const phoneDigits = phone.replace(/\D/g, "");
   const phoneValid = phoneDigits.length === 8;
   const normalizedPhone = `+374${phoneDigits}`;
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const destination = method === "phone" ? normalizedPhone : email;
+  const inputValid = method === "phone" ? phoneValid : emailValid;
 
   async function handleSendOtp(e: React.FormEvent) {
     e.preventDefault();
-    if (!phoneValid) return;
+    if (!inputValid) return;
     setLoading(true);
 
-    const normalized = `+374${phoneDigits}`;
-    const { error } = await supabase.auth.signInWithOtp({ phone: normalized });
+    const { error } = method === "phone"
+      ? await supabase.auth.signInWithOtp({ phone: normalizedPhone })
+      : await supabase.auth.signInWithOtp({ email });
 
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success(L.auth.login.codeSent);
+      toast.success(method === "phone" ? L.auth.login.codeSent : L.auth.login.codeSentEmail);
       setStep("otp");
     }
     setLoading(false);
@@ -47,11 +55,9 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
 
-    const { data, error } = await supabase.auth.verifyOtp({
-      phone: normalizedPhone,
-      token: otp,
-      type: "sms",
-    });
+    const { data, error } = method === "phone"
+      ? await supabase.auth.verifyOtp({ phone: normalizedPhone, token: otp, type: "sms" })
+      : await supabase.auth.verifyOtp({ email, token: otp, type: "email" });
 
     if (error) {
       toast.error(error.message);
@@ -77,11 +83,16 @@ export default function LoginPage() {
     setLoading(false);
   }
 
+  function switchMethod(m: Method) {
+    setMethod(m);
+    setStep("input");
+    setOtp("");
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Hero / branding section */}
       <div className="flex-1 bg-[#cc0000] flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
-        {/* Background texture — subtle diagonal stripes */}
         <div
           className="absolute inset-0 opacity-10"
           style={{
@@ -91,24 +102,20 @@ export default function LoginPage() {
         />
 
         <div className="relative z-10 text-center space-y-4 max-w-sm">
-          {/* YES badge */}
           <div className="inline-flex items-center gap-2 bg-white/15 border border-white/30 rounded-full px-4 py-1.5">
             <span className="text-white font-black text-sm tracking-widest">{L.brand.name}</span>
             <span className="text-white/60 text-xs">·</span>
             <span className="text-white/80 text-xs">{L.brand.subtitle}</span>
           </div>
 
-          {/* Campaign name */}
           <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight leading-none uppercase">
             {L.brand.campaign}
           </h1>
 
-          {/* Slogan */}
           <p className="text-white/75 text-sm sm:text-base italic leading-snug">
             &ldquo;{L.brand.slogan}&rdquo;
           </p>
 
-          {/* Decorative bar */}
           <div className="flex items-center gap-2 justify-center pt-2">
             <div className="h-px w-12 bg-white/30" />
             <div className="h-1.5 w-1.5 rounded-full bg-white/50" />
@@ -126,52 +133,101 @@ export default function LoginPage() {
         <div className="max-w-sm mx-auto">
           <div className="mb-6">
             <h2 className="text-xl font-bold">
-              {step === "phone" ? L.auth.login.title : L.auth.login.otpLabel}
+              {step === "input" ? L.auth.login.title : L.auth.login.otpLabel}
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
-              {step === "phone"
-                ? L.auth.login.subtitlePhone
-                : t(L.auth.login.subtitleOtp, { phone: normalizedPhone })}
+              {step === "input"
+                ? (method === "phone" ? L.auth.login.subtitlePhone : L.auth.login.subtitleEmail)
+                : t(L.auth.login.subtitleOtp, { dest: destination })}
             </p>
           </div>
 
-          {step === "phone" ? (
-            <form onSubmit={handleSendOtp} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="phone">{L.auth.login.phoneLabel}</Label>
-                <div className={`flex h-12 rounded-md border overflow-hidden ${phone && !phoneValid ? "border-destructive" : "border-input"}`}>
-                  <span className="flex items-center px-3 bg-muted text-muted-foreground text-sm font-medium border-r border-input select-none">
-                    +374
-                  </span>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    inputMode="numeric"
-                    placeholder={L.auth.login.phonePlaceholder}
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                    maxLength={8}
-                    required
-                    autoFocus
-                    className="text-lg h-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                  />
-                </div>
-                {phone && !phoneValid && (
-                  <p className="text-xs text-destructive">{L.auth.login.phoneInvalid}</p>
-                )}
+          {step === "input" ? (
+            <>
+              {/* Method tabs */}
+              <div className="flex rounded-lg border border-input p-1 mb-5 gap-1">
+                <button
+                  type="button"
+                  onClick={() => switchMethod("phone")}
+                  className={`flex-1 text-sm py-1.5 rounded-md transition-colors font-medium ${
+                    method === "phone"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {L.auth.login.tabPhone}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => switchMethod("email")}
+                  className={`flex-1 text-sm py-1.5 rounded-md transition-colors font-medium ${
+                    method === "email"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {L.auth.login.tabEmail}
+                </button>
               </div>
-              <Button
-                type="submit"
-                className="w-full h-12 text-base"
-                disabled={loading || !phoneValid}
-              >
-                {loading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
+
+              <form onSubmit={handleSendOtp} className="space-y-4">
+                {method === "phone" ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">{L.auth.login.phoneLabel}</Label>
+                    <div className={`flex h-12 rounded-md border overflow-hidden ${phone && !phoneValid ? "border-destructive" : "border-input"}`}>
+                      <span className="flex items-center px-3 bg-muted text-muted-foreground text-sm font-medium border-r border-input select-none">
+                        +374
+                      </span>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        inputMode="numeric"
+                        placeholder={L.auth.login.phonePlaceholder}
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                        maxLength={8}
+                        required
+                        autoFocus
+                        className="text-lg h-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                      />
+                    </div>
+                    {phone && !phoneValid && (
+                      <p className="text-xs text-destructive">{L.auth.login.phoneInvalid}</p>
+                    )}
+                  </div>
                 ) : (
-                  <>{L.auth.login.sendCode} <ArrowRight className="h-5 w-5" /></>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">{L.auth.login.emailLabel}</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      inputMode="email"
+                      placeholder={L.auth.login.emailPlaceholder}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value.trim())}
+                      required
+                      autoFocus
+                      className="h-12 text-base"
+                    />
+                    {email && !emailValid && (
+                      <p className="text-xs text-destructive">{L.auth.login.emailInvalid}</p>
+                    )}
+                  </div>
                 )}
-              </Button>
-            </form>
+
+                <Button
+                  type="submit"
+                  className="w-full h-12 text-base"
+                  disabled={loading || !inputValid}
+                >
+                  {loading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <>{L.auth.login.sendCode} <ArrowRight className="h-5 w-5" /></>
+                  )}
+                </Button>
+              </form>
+            </>
           ) : (
             <form onSubmit={handleVerifyOtp} className="space-y-4">
               <div className="space-y-2">
@@ -205,7 +261,7 @@ export default function LoginPage() {
                 type="button"
                 variant="ghost"
                 className="w-full"
-                onClick={() => { setStep("phone"); setOtp(""); }}
+                onClick={() => { setStep("input"); setOtp(""); }}
               >
                 {L.auth.login.backLink}
               </Button>
