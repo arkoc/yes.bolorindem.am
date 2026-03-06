@@ -174,21 +174,9 @@ export async function POST(
     }
   }
 
-  // Check total completions allowed (across all users)
-  if (task.total_completions_allowed !== null) {
-    const { count: totalCount } = await supabase
-      .from("task_completions")
-      .select("id", { count: "exact" })
-      .eq("task_id", taskId)
-      .eq("status", "approved");
-
-    if ((totalCount ?? 0) >= task.total_completions_allowed) {
-      return NextResponse.json(
-        { error: "This task has reached its maximum completions." },
-        { status: 409 }
-      );
-    }
-  }
+  // Note: total_completions_allowed is now enforced atomically by the
+  // guard_task_capacity BEFORE INSERT trigger in migration 019.
+  // The application-level check has been removed to eliminate the TOCTOU race condition.
 
   // Validate form data for form tasks
   if (task.task_type === "form" && payload.taskType === "form") {
@@ -231,6 +219,12 @@ export async function POST(
       .single();
 
     if (insertError) {
+      if (insertError.message?.includes("task_at_capacity")) {
+        return NextResponse.json(
+          { error: "This task has reached its maximum completions." },
+          { status: 409 }
+        );
+      }
       console.error("Completion insert error:", insertError);
       return NextResponse.json({ error: "Failed to record completion." }, { status: 500 });
     }
