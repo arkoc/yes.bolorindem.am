@@ -118,7 +118,9 @@ export default async function ProfilePage() {
             <UserAvatar name={profile.full_name} size={80} className="shrink-0" />
             <div>
               <EditNameForm name={profile.full_name} />
-              <p className="text-muted-foreground text-sm">{profile.phone}</p>
+              {(user.phone || user.email) && (
+                <p className="text-muted-foreground text-sm">{user.phone || user.email}</p>
+              )}
               <div className="mt-2 flex items-center gap-2">
                 <Badge variant={profile.role === "admin" ? "default" : profile.role === "leader" ? "secondary" : "outline"}>
                   {profile.role}

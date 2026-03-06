@@ -87,6 +87,7 @@ export default function LoginPage() {
     setMethod(m);
     setStep("input");
     setOtp("");
+    setEmail("");
   }
 
   return (
