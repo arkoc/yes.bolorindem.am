@@ -17,7 +17,7 @@ export default async function ProjectsPage() {
 
   const { data: projectsRaw } = await supabase
     .from("projects")
-    .select("id, title, description, banner_url, status, start_date, end_date, completion_bonus_points, tasks(id)")
+    .select("id, title, description, banner_url, status, start_date, end_date, completion_bonus_points, tasks(id, max_completions_per_user)")
     .eq("status", "active")
     .order("created_at", { ascending: false });
 
@@ -30,7 +30,7 @@ export default async function ProjectsPage() {
     start_date: string | null;
     end_date: string | null;
     completion_bonus_points: number;
-    tasks: { id: string }[];
+    tasks: { id: string; max_completions_per_user: number | null }[];
   }[];
 
   const allTaskIds = projects.flatMap(p => p.tasks.map(t => t.id));
@@ -42,7 +42,10 @@ export default async function ProjectsPage() {
         .eq("status", "approved")
         .in("task_id", allTaskIds)
     : { data: [] };
-  const completedTaskIds = new Set((completionsRaw ?? []).map((c: { task_id: string }) => c.task_id));
+  const taskCompletionCount: Record<string, number> = {};
+  for (const c of (completionsRaw ?? []) as { task_id: string }[]) {
+    taskCompletionCount[c.task_id] = (taskCompletionCount[c.task_id] ?? 0) + 1;
+  }
 
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-4">
@@ -57,7 +60,9 @@ export default async function ProjectsPage() {
         <div className="space-y-3">
           {projects.map((project) => {
             const taskCount = project.tasks.length;
-            const completedCount = project.tasks.filter(t => completedTaskIds.has(t.id)).length;
+            const completedCount = project.tasks.filter(t =>
+              (taskCompletionCount[t.id] ?? 0) >= (t.max_completions_per_user ?? 1)
+            ).length;
             const progressPercent = taskCount > 0 ? (completedCount / taskCount) * 100 : 0;
             return (
             <Link key={project.id} href={`/projects/${project.id}`}>

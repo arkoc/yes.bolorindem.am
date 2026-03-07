@@ -34,7 +34,7 @@ export default async function DashboardPage() {
       .single(),
     supabase
       .from("projects")
-      .select("id, title, completion_bonus_points, tasks(id)")
+      .select("id, title, completion_bonus_points, tasks(id, max_completions_per_user)")
       .eq("status", "active")
       .limit(4),
     supabase
@@ -55,7 +55,7 @@ export default async function DashboardPage() {
     id: string;
     title: string;
     completion_bonus_points: number;
-    tasks: { id: string }[];
+    tasks: { id: string; max_completions_per_user: number | null }[];
   }[];
 
   // Fetch user's approved completions for all tasks in active projects
@@ -68,7 +68,10 @@ export default async function DashboardPage() {
         .eq("status", "approved")
         .in("task_id", allDashTaskIds)
     : { data: [] };
-  const completedTaskIds = new Set((dashCompletions ?? []).map((c: { task_id: string }) => c.task_id));
+  const taskCompletionCount: Record<string, number> = {};
+  for (const c of (dashCompletions ?? []) as { task_id: string }[]) {
+    taskCompletionCount[c.task_id] = (taskCompletionCount[c.task_id] ?? 0) + 1;
+  }
   const earnedBadges = (earnedBadgesRes.data ?? []) as unknown as { badge_id: string; badges: { icon: string; name_hy: string; description_hy: string | null; image_url: string | null } }[];
   const allBadges = (allBadgesRes.data ?? []) as { id: string; icon: string; name_hy: string; description_hy: string | null; image_url: string | null }[];
   const totalBadges = allBadges.length;
@@ -156,7 +159,9 @@ export default async function DashboardPage() {
           <div className="space-y-2">
             {activeProjects.map((project) => {
               const taskCount = project.tasks.length;
-              const completedCount = project.tasks.filter(t => completedTaskIds.has(t.id)).length;
+              const completedCount = project.tasks.filter(t =>
+                (taskCompletionCount[t.id] ?? 0) >= (t.max_completions_per_user ?? 1)
+              ).length;
               const progressPercent = taskCount > 0 ? (completedCount / taskCount) * 100 : 0;
               return (
                 <Link key={project.id} href={`/projects/${project.id}`}>
