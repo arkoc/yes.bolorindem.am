@@ -159,12 +159,14 @@ export function LocationCompletion({
                 type="button"
                 variant="outline"
                 size="icon"
-                className="h-8 w-8"
+                className="h-9 w-9"
+                aria-label="Decrease"
                 onClick={() => setBatchCount((n) => Math.max(1, n - 1))}
                 disabled={batchCount <= 1}
               >−</Button>
               <Input
                 type="number"
+                inputMode="numeric"
                 min={1}
                 max={remaining}
                 value={batchCount}
@@ -172,13 +174,14 @@ export function LocationCompletion({
                   const v = parseInt(e.target.value, 10);
                   if (!isNaN(v)) setBatchCount(Math.min(remaining, Math.max(1, v)));
                 }}
-                className="w-16 text-center h-8"
+                className="w-16 text-center h-9"
               />
               <Button
                 type="button"
                 variant="outline"
                 size="icon"
-                className="h-8 w-8"
+                className="h-9 w-9"
+                aria-label="Increase"
                 onClick={() => setBatchCount((n) => Math.min(remaining, n + 1))}
                 disabled={batchCount >= remaining}
               >+</Button>

@@ -169,7 +169,7 @@ export function TaskForm({ projectId, task, onSuccess }: TaskFormProps) {
 
         <div className="space-y-1.5">
           <Label htmlFor="points">{L.forms.task.pointsLabel}</Label>
-          <Input id="points" type="number" min="0" {...register("completion_points")} />
+          <Input id="points" type="number" inputMode="numeric" min="0" {...register("completion_points")} />
         </div>
 
         <div className="space-y-1.5">
@@ -177,6 +177,7 @@ export function TaskForm({ projectId, task, onSuccess }: TaskFormProps) {
           <Input
             id="max_completions"
             type="number"
+            inputMode="numeric"
             min="1"
             placeholder="1"
             disabled={unlimited}
@@ -223,6 +224,7 @@ export function TaskForm({ projectId, task, onSuccess }: TaskFormProps) {
             <Input
               id="period_limit"
               type="number"
+              inputMode="numeric"
               min="1"
               value={periodLimit}
               onChange={(e) => setPeriodLimit(Math.max(1, parseInt(e.target.value) || 1))}

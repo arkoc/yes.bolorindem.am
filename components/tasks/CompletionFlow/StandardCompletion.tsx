@@ -128,6 +128,7 @@ export function StandardCompletion({
             <Input
               id="batch_count"
               type="number"
+              inputMode="numeric"
               min="1"
               max={maxCompletions - userCompletions}
               value={batchCount}

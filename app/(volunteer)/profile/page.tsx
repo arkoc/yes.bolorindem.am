@@ -60,11 +60,13 @@ export default async function ProfilePage() {
     supabase
       .from("badges")
       .select("id, name_hy, description_hy, icon, image_url, sort_order")
-      .order("sort_order"),
+      .order("sort_order")
+      .limit(100),
     supabase
       .from("user_badges")
       .select("badge_id, awarded_at")
-      .eq("user_id", user.id),
+      .eq("user_id", user.id)
+      .limit(100),
     supabase.rpc("get_badge_progress", { p_user_id: user.id }),
     adminClient.from("profiles").select("referral_code").eq("id", user.id).single(),
     adminClient.from("profiles").select("id", { count: "exact", head: true }).eq("referred_by", user.id),
@@ -146,21 +148,21 @@ export default async function ProfilePage() {
           <CardContent className="p-3 text-center">
             <Zap className="h-5 w-5 mx-auto text-yellow-500 mb-1" />
             <p className="text-lg font-bold truncate">{formatPoints(profile.total_points)}</p>
-            <p className="text-[10px] text-muted-foreground leading-tight line-clamp-2">{L.volunteer.profile.statPoints}</p>
+            <p className="text-xs text-muted-foreground leading-tight line-clamp-2">{L.volunteer.profile.statPoints}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-3 text-center">
             <Trophy className="h-5 w-5 mx-auto text-blue-500 mb-1" />
             <p className="text-lg font-bold truncate">{rank?.rank ? getRankSuffix(Number(rank.rank)) : "—"}</p>
-            <p className="text-[10px] text-muted-foreground leading-tight line-clamp-2">{L.volunteer.profile.statRank}</p>
+            <p className="text-xs text-muted-foreground leading-tight line-clamp-2">{L.volunteer.profile.statRank}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-3 text-center">
             <CheckCircle className="h-5 w-5 mx-auto text-green-500 mb-1" />
             <p className="text-lg font-bold truncate">{rank?.total_completions ?? 0}</p>
-            <p className="text-[10px] text-muted-foreground leading-tight line-clamp-2">{L.volunteer.profile.statTasksDone}</p>
+            <p className="text-xs text-muted-foreground leading-tight line-clamp-2">{L.volunteer.profile.statTasksDone}</p>
           </CardContent>
         </Card>
       </div>

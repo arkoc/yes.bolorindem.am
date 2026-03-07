@@ -32,7 +32,8 @@ export default async function AdminReferralsPage() {
     supabase
       .from("point_transactions")
       .select("user_id, amount")
-      .eq("source_type", "referral"),
+      .eq("source_type", "referral")
+      .limit(2000),
   ]);
 
   if (referralsRes.error) console.error("Referrals query error:", referralsRes.error);

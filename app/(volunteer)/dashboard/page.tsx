@@ -122,7 +122,7 @@ export default async function DashboardPage() {
               <Star className="h-4 w-4 text-yellow-600" />
             </div>
             <p className="text-lg font-bold truncate">{formatPoints(profile.total_points)}</p>
-            <p className="text-[10px] text-muted-foreground leading-tight break-words">{L.volunteer.dashboard.statPoints}</p>
+            <p className="text-xs text-muted-foreground leading-tight break-words">{L.volunteer.dashboard.statPoints}</p>
           </CardContent>
         </Card>
         <Card className="overflow-hidden">
@@ -131,7 +131,7 @@ export default async function DashboardPage() {
               <Trophy className="h-4 w-4 text-blue-600" />
             </div>
             <p className="text-lg font-bold truncate">{rank ? getRankSuffix(Number(rank)) : "—"}</p>
-            <p className="text-[10px] text-muted-foreground leading-tight break-words">{L.volunteer.dashboard.statLeaderboard}</p>
+            <p className="text-xs text-muted-foreground leading-tight break-words">{L.volunteer.dashboard.statLeaderboard}</p>
           </CardContent>
         </Card>
         <Card className="overflow-hidden">
@@ -140,7 +140,7 @@ export default async function DashboardPage() {
               <Award className="h-4 w-4 text-orange-600" />
             </div>
             <p className="text-lg font-bold truncate">{earnedBadges.length}</p>
-            <p className="text-[10px] text-muted-foreground leading-tight break-words">{L.volunteer.dashboard.statBadges}</p>
+            <p className="text-xs text-muted-foreground leading-tight break-words">{L.volunteer.dashboard.statBadges}</p>
           </CardContent>
         </Card>
       </div>

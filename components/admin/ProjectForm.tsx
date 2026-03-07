@@ -150,6 +150,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
               <Input
                 id="bonus"
                 type="number"
+                inputMode="numeric"
                 min="0"
                 {...register("completion_bonus_points")}
                 placeholder="0"

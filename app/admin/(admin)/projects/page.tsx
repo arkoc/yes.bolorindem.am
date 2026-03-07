@@ -20,7 +20,8 @@ export default async function AdminProjectsPage() {
   const { data: projects } = await supabase
     .from("projects")
     .select("id, title, status, completion_bonus_points, created_at, tasks(count)")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(500);
 
   return (
     <div className="space-y-5 max-w-4xl">
@@ -90,18 +91,18 @@ export default async function AdminProjectsPage() {
                   </div>
                   {/* Mobile icon-only buttons */}
                   <div className="flex sm:hidden items-center gap-1 shrink-0">
-                    <Button asChild size="icon" variant="ghost" className="h-8 w-8">
-                      <Link href={`/admin/completions?project=${p.id}`} title={L.admin.projects.completions}>
+                    <Button asChild size="icon" variant="ghost" className="h-9 w-9">
+                      <Link href={`/admin/completions?project=${p.id}`} aria-label={L.admin.projects.completions}>
                         <ClipboardList className="h-4 w-4" />
                       </Link>
                     </Button>
-                    <Button asChild size="icon" variant="ghost" className="h-8 w-8">
-                      <Link href={`/admin/projects/${p.id}`} title={L.admin.projects.edit}>
+                    <Button asChild size="icon" variant="ghost" className="h-9 w-9">
+                      <Link href={`/admin/projects/${p.id}`} aria-label={L.admin.projects.edit}>
                         <Pencil className="h-4 w-4" />
                       </Link>
                     </Button>
-                    <Button asChild size="icon" variant="outline" className="h-8 w-8">
-                      <Link href={`/admin/projects/${p.id}/tasks`} title={L.admin.projects.tasks}>
+                    <Button asChild size="icon" variant="outline" className="h-9 w-9">
+                      <Link href={`/admin/projects/${p.id}/tasks`} aria-label={L.admin.projects.tasks}>
                         <ArrowRight className="h-4 w-4" />
                       </Link>
                     </Button>

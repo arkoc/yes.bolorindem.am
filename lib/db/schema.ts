@@ -178,6 +178,44 @@ export const pointTransactions = pgTable(
   ]
 );
 
+// ─── Polls ───────────────────────────────────────────────────────────────────
+
+export const polls = pgTable("polls", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: text("status").notNull().default("draft"), // draft | active | closed
+  allowMultiple: boolean("allow_multiple").notNull().default(false),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+  notifyOnPublish: boolean("notify_on_publish").notNull().default(false),
+  createdBy: uuid("created_by").references(() => profiles.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const pollOptions = pgTable("poll_options", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  pollId: uuid("poll_id").notNull().references(() => polls.id, { onDelete: "cascade" }),
+  text: text("text").notNull(),
+  orderIndex: integer("order_index").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const pollVotes = pgTable(
+  "poll_votes",
+  {
+    id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+    pollId: uuid("poll_id").notNull().references(() => polls.id, { onDelete: "cascade" }),
+    optionId: uuid("option_id").notNull().references(() => pollOptions.id, { onDelete: "cascade" }),
+    userId: uuid("user_id").notNull().references(() => profiles.id),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("poll_votes_poll_option_user_unique").on(table.pollId, table.optionId, table.userId),
+    index("poll_votes_user_poll_idx").on(table.userId, table.pollId),
+  ]
+);
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export type Profile = typeof profiles.$inferSelect;
@@ -190,6 +228,9 @@ export type TaskCompletion = typeof taskCompletions.$inferSelect;
 export type NewTaskCompletion = typeof taskCompletions.$inferInsert;
 export type ProjectCompletion = typeof projectCompletions.$inferSelect;
 export type PointTransaction = typeof pointTransactions.$inferSelect;
+export type Poll = typeof polls.$inferSelect;
+export type PollOption = typeof pollOptions.$inferSelect;
+export type PollVote = typeof pollVotes.$inferSelect;
 
 // ─── JSONB Types ──────────────────────────────────────────────────────────────
 

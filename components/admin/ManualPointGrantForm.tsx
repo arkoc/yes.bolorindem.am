@@ -88,6 +88,7 @@ export function ManualPointGrantForm({ users }: { users: User[] }) {
         <Input
           id="amount"
           type="number"
+          inputMode="numeric"
           {...register("amount")}
           placeholder={L.forms.manualGrant.amountPlaceholder}
         />

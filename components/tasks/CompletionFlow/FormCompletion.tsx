@@ -210,6 +210,7 @@ export function FormCompletion({
                 <Input
                   id={field.id}
                   type="number"
+                  inputMode="numeric"
                   {...register(field.id, { required: field.required ? t(L.completion.form.fieldRequired, { label: field.label }) : false })}
                   placeholder="0"
                 />

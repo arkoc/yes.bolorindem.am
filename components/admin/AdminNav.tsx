@@ -12,6 +12,7 @@ import {
   Star,
   Bell,
   Share2,
+  Vote,
   ArrowLeft,
   Menu,
   X,
@@ -21,6 +22,7 @@ import L from "@/lib/labels";
 const navItems = [
   { href: "/admin", icon: LayoutDashboard, label: L.admin.nav.dashboard, exact: true },
   { href: "/admin/projects", icon: FolderOpen, label: L.admin.nav.projects },
+  { href: "/admin/voting", icon: Vote, label: L.admin.nav.voting },
   { href: "/admin/users", icon: Users, label: L.admin.nav.users },
   { href: "/admin/completions", icon: ClipboardList, label: L.admin.nav.completions },
   { href: "/admin/points", icon: Star, label: L.admin.nav.pointGrants },

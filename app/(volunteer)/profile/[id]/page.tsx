@@ -187,12 +187,12 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
               {completions.map((c: {
                 completed_at: string;
                 points_awarded: number;
-                tasks: { title: string } | null;
+                tasks: { title: string }[];
               }, i: number) => (
                 <div key={i}>
                   <div className="flex items-center justify-between py-2.5">
                     <div>
-                      <p className="text-sm font-medium">{c.tasks?.title ?? "—"}</p>
+                      <p className="text-sm font-medium">{c.tasks?.[0]?.title ?? "—"}</p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(c.completed_at).toLocaleDateString()}
                       </p>

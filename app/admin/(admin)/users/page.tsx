@@ -42,7 +42,7 @@ export default async function AdminUsersPage() {
                   <p className="font-medium text-sm truncate">{u.full_name}</p>
                   <p className="text-xs text-muted-foreground truncate">{u.phone}</p>
                 </div>
-                <div className="hidden sm:flex text-right shrink-0">
+                <div className="flex text-right shrink-0">
                   <p className="text-sm font-semibold flex items-center gap-1">
                     <Zap className="h-3.5 w-3.5 text-yellow-500" />
                     {formatPoints(u.total_points)}
