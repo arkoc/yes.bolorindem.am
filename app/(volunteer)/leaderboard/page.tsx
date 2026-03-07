@@ -1,5 +1,6 @@
 import { createServerClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { formatPoints, getRankSuffix } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { Card, CardContent } from "@/components/ui/card";
@@ -80,10 +81,11 @@ export default async function LeaderboardPage() {
               {entries.map((entry: LeaderboardEntry) => {
                 const isMe = entry.id === user.id;
                 return (
-                  <div
+                  <Link
                     key={entry.id}
+                    href={isMe ? "/profile" : `/profile/${entry.id}`}
                     className={cn(
-                      "flex items-center gap-3 px-4 py-4",
+                      "flex items-center gap-3 px-4 py-4 hover:bg-muted/50 transition-colors",
                       isMe && "bg-primary/5"
                     )}
                   >
@@ -104,7 +106,7 @@ export default async function LeaderboardPage() {
                         {formatPoints(entry.total_points)}
                       </p>
                     </div>
-                  </div>
+                  </Link>
                 );
               })}
             </div>

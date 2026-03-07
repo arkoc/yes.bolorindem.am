@@ -19,6 +19,9 @@ export const profiles = pgTable("profiles", {
   phone: text("phone"),
   totalPoints: integer("total_points").notNull().default(0),
   role: text("role").notNull().default("volunteer"), // volunteer | leader | admin
+  bio: text("bio"),
+  socialUrl: text("social_url"),
+  profileCompletionBonusAwarded: boolean("profile_completion_bonus_awarded").notNull().default(false),
   referralCode: text("referral_code"),
   referredBy: uuid("referred_by"),
   createdAt: timestamp("created_at", { withTimezone: true })

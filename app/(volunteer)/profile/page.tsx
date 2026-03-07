@@ -15,6 +15,7 @@ import { BadgeZoom } from "@/components/ui/badge-zoom";
 import { CopyReferralButton } from "@/components/volunteer/ReferralLinkCopy";
 import { PushNotificationCard } from "@/components/volunteer/PushNotificationCard";
 import { EditNameForm } from "@/components/volunteer/EditNameForm";
+import { EditProfileForm } from "@/components/volunteer/EditProfileForm";
 
 // Thresholds must stay in sync with check_and_award_badges() in SQL migrations.
 const BADGE_REQS: Record<string, { max: number }> = {
@@ -42,7 +43,7 @@ export default async function ProfilePage() {
   const [profileRes, rankRes, statsRes, allBadgesRes, userBadgesRes, progressRes, referralCodeRes, referralCountRes] = await Promise.all([
     supabase
       .from("profiles")
-      .select("full_name, phone, total_points, role, created_at")
+      .select("full_name, phone, total_points, role, created_at, bio, social_url, profile_completion_bonus_awarded")
       .eq("id", user.id)
       .single(),
     supabase
@@ -131,6 +132,11 @@ export default async function ProfilePage() {
               </div>
             </div>
           </div>
+          <EditProfileForm
+            bio={(profile as { bio?: string | null }).bio ?? null}
+            socialUrl={(profile as { social_url?: string | null }).social_url ?? null}
+            bonusAwarded={(profile as { profile_completion_bonus_awarded?: boolean }).profile_completion_bonus_awarded ?? false}
+          />
         </CardContent>
       </Card>
 
