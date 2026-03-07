@@ -159,10 +159,10 @@ export default async function DashboardPage() {
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 text-primary shrink-0">
-                        <span className="text-xs font-semibold">{L.volunteer.dashboard.startBtn}</span>
-                        <ArrowRight className="h-4 w-4" />
-                      </div>
+                      <Button size="sm" className="shrink-0 gap-1">
+                        {L.volunteer.dashboard.startBtn}
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
