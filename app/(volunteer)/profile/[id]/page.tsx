@@ -41,11 +41,10 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
       .select("badge_id")
       .eq("user_id", params.id),
     adminClient
-      .from("task_completions")
-      .select("completed_at, points_awarded, tasks(title)")
+      .from("point_transactions")
+      .select("amount, source_type, description, created_at")
       .eq("user_id", params.id)
-      .eq("status", "approved")
-      .order("completed_at", { ascending: false })
+      .order("created_at", { ascending: false })
       .limit(10),
   ]);
 
@@ -55,7 +54,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
   const rank = rankRes.data;
   const allBadges = allBadgesRes.data ?? [];
   const earnedIds = new Set((userBadgesRes.data ?? []).map((b) => b.badge_id));
-  const completions = completionsRes.data ?? [];
+  const transactions = completionsRes.data ?? [];
 
   return (
     <div className="max-w-2xl mx-auto p-4 md:p-6 space-y-4">
@@ -114,21 +113,21 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
           <CardContent className="p-3 text-center">
             <Zap className="h-5 w-5 mx-auto text-yellow-500 mb-1" />
             <p className="text-lg font-bold truncate">{formatPoints(profile.total_points)}</p>
-            <p className="text-[10px] text-muted-foreground leading-tight line-clamp-2">{L.volunteer.profile.statPoints}</p>
+            <p className="text-xs text-muted-foreground leading-tight line-clamp-2">{L.volunteer.profile.statPoints}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-3 text-center">
             <Trophy className="h-5 w-5 mx-auto text-blue-500 mb-1" />
             <p className="text-lg font-bold truncate">{rank?.rank ? getRankSuffix(Number(rank.rank)) : "—"}</p>
-            <p className="text-[10px] text-muted-foreground leading-tight line-clamp-2">{L.volunteer.profile.statRank}</p>
+            <p className="text-xs text-muted-foreground leading-tight line-clamp-2">{L.volunteer.profile.statRank}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-3 text-center">
             <CheckCircle className="h-5 w-5 mx-auto text-green-500 mb-1" />
             <p className="text-lg font-bold truncate">{rank?.total_completions ?? 0}</p>
-            <p className="text-[10px] text-muted-foreground leading-tight line-clamp-2">{L.volunteer.profile.statTasksDone}</p>
+            <p className="text-xs text-muted-foreground leading-tight line-clamp-2">{L.volunteer.profile.statTasksDone}</p>
           </CardContent>
         </Card>
       </div>
@@ -173,8 +172,8 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
         </Card>
       )}
 
-      {/* Recent completions */}
-      {completions.length > 0 && (
+      {/* Recent point activity */}
+      {transactions.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
@@ -184,24 +183,25 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
           </CardHeader>
           <CardContent className="pt-0">
             <div className="space-y-0">
-              {completions.map((c: {
-                completed_at: string;
-                points_awarded: number;
-                tasks: { title: string }[];
+              {transactions.map((tx: {
+                amount: number;
+                source_type: string;
+                description: string | null;
+                created_at: string;
               }, i: number) => (
                 <div key={i}>
                   <div className="flex items-center justify-between py-2.5">
                     <div>
-                      <p className="text-sm font-medium">{c.tasks?.[0]?.title ?? "—"}</p>
+                      <p className="text-sm font-medium">{tx.description || tx.source_type}</p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(c.completed_at).toLocaleDateString()}
+                        {new Date(tx.created_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <span className="font-semibold text-sm text-green-600">
-                      +{c.points_awarded} pts
+                    <span className={`font-semibold text-sm ${tx.amount > 0 ? "text-green-600" : "text-red-500"}`}>
+                      {tx.amount > 0 ? "+" : ""}{tx.amount} pts
                     </span>
                   </div>
-                  {i < completions.length - 1 && <Separator />}
+                  {i < transactions.length - 1 && <Separator />}
                 </div>
               ))}
             </div>
