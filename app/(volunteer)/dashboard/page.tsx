@@ -6,6 +6,7 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { Trophy, Star, FolderOpen, ArrowRight, Zap, Award, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
@@ -33,7 +34,7 @@ export default async function DashboardPage() {
       .single(),
     supabase
       .from("projects")
-      .select("id, title, completion_bonus_points, tasks(count)")
+      .select("id, title, completion_bonus_points, tasks(id)")
       .eq("status", "active")
       .limit(4),
     supabase
@@ -50,15 +51,33 @@ export default async function DashboardPage() {
 
   const profile = profileRes.data;
   const rank = rankRes.data?.rank;
-  const activeProjects = activeProjectsRes.data ?? [];
+  const activeProjects = (activeProjectsRes.data ?? []) as {
+    id: string;
+    title: string;
+    completion_bonus_points: number;
+    tasks: { id: string }[];
+  }[];
+
+  // Fetch user's approved completions for all tasks in active projects
+  const allDashTaskIds = activeProjects.flatMap(p => p.tasks.map(t => t.id));
+  const { data: dashCompletions } = allDashTaskIds.length > 0
+    ? await supabase
+        .from("task_completions")
+        .select("task_id")
+        .eq("user_id", user.id)
+        .eq("status", "approved")
+        .in("task_id", allDashTaskIds)
+    : { data: [] };
+  const completedTaskIds = new Set((dashCompletions ?? []).map((c: { task_id: string }) => c.task_id));
   const earnedBadges = (earnedBadgesRes.data ?? []) as unknown as { badge_id: string; badges: { icon: string; name_hy: string; description_hy: string | null; image_url: string | null } }[];
   const allBadges = (allBadgesRes.data ?? []) as { id: string; icon: string; name_hy: string; description_hy: string | null; image_url: string | null }[];
   const totalBadges = allBadges.length;
   const referralCode = (profile as { referral_code?: string | null } | null)?.referral_code ?? null;
   const referralCount = referralRes.count ?? 0;
-  const badgeDisplayList = earnedBadges.length > 0
-    ? earnedBadges.slice(0, 5).map(b => ({ id: b.badge_id, ...b.badges, earned: true }))
-    : allBadges.slice(0, 5).map(b => ({ ...b, earned: false }));
+  const earnedBadgeIds = new Set(earnedBadges.map(b => b.badge_id));
+  const earnedList = earnedBadges.slice(0, 5).map(b => ({ id: b.badge_id, ...b.badges, earned: true }));
+  const unearnedList = allBadges.filter(b => !earnedBadgeIds.has(b.id)).map(b => ({ ...b, earned: false }));
+  const badgeDisplayList = [...earnedList, ...unearnedList].slice(0, 5);
 
   if (!profile) redirect("/register");
 
@@ -127,8 +146,7 @@ export default async function DashboardPage() {
       {activeProjects.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-semibold text-base flex items-center gap-2">
-              <FolderOpen className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               {L.volunteer.dashboard.activeProjects}
             </h2>
             <Link href="/projects" className="text-sm text-primary hover:underline flex items-center gap-1">
@@ -136,38 +154,44 @@ export default async function DashboardPage() {
             </Link>
           </div>
           <div className="space-y-2">
-            {activeProjects.map((project: {
-              id: string;
-              title: string;
-              completion_bonus_points: number;
-              tasks: { count: number }[];
-            }) => (
-              <Link key={project.id} href={`/projects/${project.id}`}>
-                <Card className="hover:shadow-md transition-all active:scale-[0.99] border-l-4 border-l-primary">
-                  <CardContent className="py-4 px-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-base truncate">{project.title}</p>
-                        <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          <p className="text-sm text-muted-foreground">
-                            {t(L.volunteer.dashboard.taskCount, { count: project.tasks?.[0]?.count ?? 0 })}
-                          </p>
-                          {project.completion_bonus_points > 0 && (
-                            <Badge variant="success" className="shrink-0 text-xs">
-                              {t(L.volunteer.dashboard.bonus, { points: project.completion_bonus_points })}
-                            </Badge>
+            {activeProjects.map((project) => {
+              const taskCount = project.tasks.length;
+              const completedCount = project.tasks.filter(t => completedTaskIds.has(t.id)).length;
+              const progressPercent = taskCount > 0 ? (completedCount / taskCount) * 100 : 0;
+              return (
+                <Link key={project.id} href={`/projects/${project.id}`}>
+                  <Card className="hover:shadow-md transition-all active:scale-[0.99] border-l-4 border-l-primary">
+                    <CardContent className="py-4 px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-base truncate">{project.title}</p>
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            <p className="text-sm text-muted-foreground">
+                              {t(L.volunteer.dashboard.taskCount, { count: taskCount })}
+                            </p>
+                            {project.completion_bonus_points > 0 && (
+                              <Badge variant="success" className="shrink-0 text-xs">
+                                {t(L.volunteer.dashboard.bonus, { points: project.completion_bonus_points })}
+                              </Badge>
+                            )}
+                          </div>
+                          {taskCount > 0 && (
+                            <div className="mt-2 space-y-1">
+                              <Progress value={progressPercent} className="h-1.5" />
+                              <p className="text-xs text-muted-foreground">{completedCount}/{taskCount} completed</p>
+                            </div>
                           )}
                         </div>
+                        <Button size="sm" className="shrink-0 gap-1">
+                          {L.volunteer.dashboard.startBtn}
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
-                      <Button size="sm" className="shrink-0 gap-1">
-                        {L.volunteer.dashboard.startBtn}
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}
@@ -175,9 +199,9 @@ export default async function DashboardPage() {
       {/* Badges section */}
       <section>
         <div className="flex items-center justify-between mb-2">
-          <h2 className="font-semibold text-base">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
             {L.volunteer.dashboard.badgesSection}
-            <span className="ml-2 text-sm font-normal text-muted-foreground">
+            <span className="ml-2 normal-case font-normal">
               {earnedBadges.length}/{totalBadges}
             </span>
           </h2>

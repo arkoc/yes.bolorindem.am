@@ -8,17 +8,41 @@ import { Button } from "@/components/ui/button";
 import { FolderOpen, Calendar, ArrowRight, Star } from "lucide-react";
 import { formatPoints } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
+import { Progress } from "@/components/ui/progress";
 
 export default async function ProjectsPage() {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: projects } = await supabase
+  const { data: projectsRaw } = await supabase
     .from("projects")
-    .select("id, title, description, banner_url, status, start_date, end_date, completion_bonus_points, tasks(count)")
+    .select("id, title, description, banner_url, status, start_date, end_date, completion_bonus_points, tasks(id)")
     .eq("status", "active")
     .order("created_at", { ascending: false });
+
+  const projects = (projectsRaw ?? []) as {
+    id: string;
+    title: string;
+    description: string | null;
+    banner_url: string | null;
+    status: string;
+    start_date: string | null;
+    end_date: string | null;
+    completion_bonus_points: number;
+    tasks: { id: string }[];
+  }[];
+
+  const allTaskIds = projects.flatMap(p => p.tasks.map(t => t.id));
+  const { data: completionsRaw } = allTaskIds.length > 0
+    ? await supabase
+        .from("task_completions")
+        .select("task_id")
+        .eq("user_id", user.id)
+        .eq("status", "approved")
+        .in("task_id", allTaskIds)
+    : { data: [] };
+  const completedTaskIds = new Set((completionsRaw ?? []).map((c: { task_id: string }) => c.task_id));
 
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-4">
@@ -29,19 +53,13 @@ export default async function ProjectsPage() {
         </p>
       </div>
 
-      {projects && projects.length > 0 ? (
+      {projects.length > 0 ? (
         <div className="space-y-3">
-          {projects.map((project: {
-            id: string;
-            title: string;
-            description: string | null;
-            banner_url: string | null;
-            status: string;
-            start_date: string | null;
-            end_date: string | null;
-            completion_bonus_points: number;
-            tasks: { count: number }[];
-          }) => (
+          {projects.map((project) => {
+            const taskCount = project.tasks.length;
+            const completedCount = project.tasks.filter(t => completedTaskIds.has(t.id)).length;
+            const progressPercent = taskCount > 0 ? (completedCount / taskCount) * 100 : 0;
+            return (
             <Link key={project.id} href={`/projects/${project.id}`}>
               <Card className="hover:shadow-md transition-all active:scale-[0.99] cursor-pointer border-l-4 border-l-primary">
                 {project.banner_url && (
@@ -71,12 +89,12 @@ export default async function ProjectsPage() {
                     </CardDescription>
                   )}
                 </CardHeader>
-                <CardContent className="pt-0 pb-3">
+                <CardContent className="pt-0 pb-3 space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                       <span className="flex items-center gap-1">
                         <FolderOpen className="h-3.5 w-3.5" />
-                        {t(L.volunteer.projects.taskCount, { count: project.tasks?.[0]?.count ?? 0 })}
+                        {t(L.volunteer.projects.taskCount, { count: taskCount })}
                       </span>
                       {(project.start_date || project.end_date) && (
                         <span className="flex items-center gap-1">
@@ -94,10 +112,17 @@ export default async function ProjectsPage() {
                       <ArrowRight className="h-4 w-4" />
                     </div>
                   </div>
+                  {taskCount > 0 && (
+                    <div className="space-y-1">
+                      <Progress value={progressPercent} className="h-1.5" />
+                      <p className="text-xs text-muted-foreground">{completedCount}/{taskCount} completed</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </Link>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <Card>
