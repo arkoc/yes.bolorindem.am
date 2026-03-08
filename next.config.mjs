@@ -1,5 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    staleTimes: {
+      dynamic: 0, // never serve stale data for dynamic (Supabase) pages
+    },
+  },
+
   images: {
     remotePatterns: [
       {
