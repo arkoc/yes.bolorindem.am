@@ -3,6 +3,9 @@ import { type CookieOptions } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
+const noStoreFetch: typeof fetch = (url, options = {}) =>
+  fetch(url, { ...options, cache: "no-store" });
+
 export async function createServerClient() {
   const cookieStore = await cookies();
 
@@ -10,6 +13,7 @@ export async function createServerClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      global: { fetch: noStoreFetch },
       cookies: {
         getAll() {
           return cookieStore.getAll();
@@ -32,6 +36,9 @@ export function createAdminClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
+    {
+      auth: { autoRefreshToken: false, persistSession: false },
+      global: { fetch: noStoreFetch },
+    }
   );
 }
