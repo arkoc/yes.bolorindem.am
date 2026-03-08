@@ -75,7 +75,7 @@ export default async function VotingPage() {
                 <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                   <span>{optionCount} options</span>
                   <span>{t(L.volunteer.voting.totalVotes, { count: voteCount })}</span>
-                  {(p.points_per_vote ?? 0) > 0 && !closed && !voted && (
+                  {(p.points_per_vote ?? 0) > 0 && !closed && (
                     <span className="text-green-600 font-medium">+{p.points_per_vote} pts</span>
                   )}
                   {p.expires_at && !closed && (
