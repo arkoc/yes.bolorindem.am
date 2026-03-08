@@ -17,6 +17,10 @@ export async function PATCH(request: NextRequest) {
 
   const { bio, social_url } = body as { bio?: string; social_url?: string };
 
+  if (bio && bio.trim().length > 150) {
+    return NextResponse.json({ error: "Bio must be 150 characters or less" }, { status: 400 });
+  }
+
   // Validate social_url if provided
   if (social_url && social_url.trim() !== "") {
     try {

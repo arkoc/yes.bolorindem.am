@@ -131,15 +131,15 @@ export function EditProfileForm({ bio, socialUrl, bonusAwarded }: Props) {
         </label>
         <Textarea
           value={bioValue}
-          onChange={(e) => setBioValue(e.target.value)}
+          onChange={(e) => setBioValue(e.target.value.slice(0, 150))}
           placeholder={L.volunteer.profile.bioPlaceholder}
           className="text-sm resize-none"
-          rows={3}
+          rows={2}
           disabled={loading}
-          maxLength={300}
+          maxLength={150}
         />
-        <p className="text-xs text-muted-foreground text-right tabular-nums">
-          {bioValue.length}/300
+        <p className={`text-xs text-right tabular-nums ${bioValue.length >= 130 ? "text-destructive" : "text-muted-foreground"}`}>
+          {bioValue.length}/150
         </p>
       </div>
 
