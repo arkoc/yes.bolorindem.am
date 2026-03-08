@@ -17,11 +17,11 @@ import { toast } from "sonner";
 import L from "@/lib/labels";
 
 const navItems = [
-  { href: "/dashboard", icon: LayoutDashboard, label: L.volunteer.nav.dashboard },
+  { href: "/dashboard", icon: LayoutDashboard, label: L.volunteer.nav.dashboard, iconOnly: true },
   { href: "/projects", icon: FolderOpen, label: L.volunteer.nav.projects },
   { href: "/voting", icon: Vote, label: L.volunteer.nav.voting },
   { href: "/leaderboard", icon: Trophy, label: L.volunteer.nav.leaderboard },
-  { href: "/profile", icon: User, label: L.volunteer.nav.profile },
+  { href: "/profile", icon: User, label: L.volunteer.nav.profile, iconOnly: true },
 ];
 
 interface VolunteerNavProps {
@@ -47,21 +47,22 @@ export function VolunteerNav({ role }: VolunteerNavProps) {
       {/* Mobile bottom nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background md:hidden">
         <div className="flex items-center justify-around px-2 py-2">
-          {navItems.map(({ href, icon: Icon, label }) => {
+          {navItems.map(({ href, icon: Icon, label, iconOnly }) => {
             const active = pathname === href || pathname.startsWith(href + "/");
             return (
               <Link
                 key={href}
                 href={href}
+                aria-label={iconOnly ? label : undefined}
                 className={cn(
-                  "flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg transition-colors min-w-[56px] min-h-[44px] justify-center",
+                  "flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg transition-colors min-w-[44px] min-h-[44px] justify-center",
                   active
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 <Icon className={cn("h-5 w-5", active && "fill-primary/10")} />
-                <span className="text-[10px] font-medium">{label}</span>
+                {!iconOnly && <span className="text-[10px] font-medium">{label}</span>}
               </Link>
             );
           })}
