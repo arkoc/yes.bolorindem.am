@@ -76,6 +76,9 @@ export default async function AdminPollDetailPage({ params }: { params: { id: st
         </div>
       </div>
 
+      {/* Status actions + delete */}
+      <PollStatusActions pollId={poll.id} status={effectiveStatus} />
+
       {/* Meta */}
       <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
         <span className="flex items-center gap-1">
@@ -90,9 +93,6 @@ export default async function AdminPollDetailPage({ params }: { params: { id: st
           <span>· {L.admin.voting.expiryLabel}: {new Date(poll.expires_at).toLocaleString()}</span>
         )}
       </div>
-
-      {/* Status actions */}
-      <PollStatusActions pollId={poll.id} status={effectiveStatus} />
 
       {/* Results */}
       {optionIds.length > 0 && (

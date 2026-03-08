@@ -93,14 +93,18 @@ export default function RegisterPage() {
                 type="text"
                 placeholder={L.auth.register.fullNamePlaceholder}
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e) => setFullName(e.target.value.slice(0, 50))}
+                maxLength={50}
                 required
                 autoFocus
                 className="h-12 text-base"
               />
-              <p className="text-xs text-muted-foreground">
-                {L.auth.register.avatarHint}
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">{L.auth.register.avatarHint}</p>
+                <p className={`text-xs ${fullName.length >= 45 ? "text-destructive" : "text-muted-foreground"}`}>
+                  {fullName.length}/50
+                </p>
+              </div>
             </div>
 
             <Button

@@ -59,7 +59,8 @@ export function EditNameForm({ name }: { name: string }) {
     <div className="flex items-center gap-2">
       <Input
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => setValue(e.target.value.slice(0, 50))}
+        maxLength={50}
         className="h-8 text-base font-semibold"
         autoFocus
         onKeyDown={(e) => {

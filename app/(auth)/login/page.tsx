@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { ArrowRight, Loader2 } from "lucide-react";
 import L, { t } from "@/lib/labels";
+
+const RESEND_COOLDOWN = 60;
 
 type Method = "phone" | "email";
 type Step = "input" | "otp";
@@ -24,6 +26,22 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, []);
+
+  function startCooldown() {
+    setResendCooldown(RESEND_COOLDOWN);
+    timerRef.current = setInterval(() => {
+      setResendCooldown((s) => {
+        if (s <= 1) { clearInterval(timerRef.current!); return 0; }
+        return s - 1;
+      });
+    }, 1000);
+  }
 
   const phoneDigits = phone.replace(/\D/g, "");
   const phoneValid = phoneDigits.length === 8;
@@ -47,6 +65,22 @@ export default function LoginPage() {
     } else {
       toast.success(method === "phone" ? L.auth.login.codeSent : L.auth.login.codeSentEmail);
       setStep("otp");
+      startCooldown();
+    }
+    setLoading(false);
+  }
+
+  async function handleResend() {
+    if (resendCooldown > 0 || loading) return;
+    setLoading(true);
+    const { error } = method === "phone"
+      ? await supabase.auth.signInWithOtp({ phone: normalizedPhone })
+      : await supabase.auth.signInWithOtp({ email });
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success(method === "phone" ? L.auth.login.codeSent : L.auth.login.codeSentEmail);
+      startCooldown();
     }
     setLoading(false);
   }
@@ -88,6 +122,8 @@ export default function LoginPage() {
     setStep("input");
     setOtp("");
     setEmail("");
+    setResendCooldown(0);
+    if (timerRef.current) clearInterval(timerRef.current);
   }
 
   return (
@@ -262,6 +298,17 @@ export default function LoginPage() {
                 type="button"
                 variant="ghost"
                 className="w-full"
+                disabled={loading || resendCooldown > 0}
+                onClick={handleResend}
+              >
+                {resendCooldown > 0
+                  ? t(L.auth.login.resendIn, { sec: resendCooldown })
+                  : L.auth.login.resendCode}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full text-muted-foreground"
                 onClick={() => { setStep("input"); setOtp(""); }}
               >
                 {L.auth.login.backLink}

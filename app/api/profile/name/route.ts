@@ -16,8 +16,8 @@ export async function PATCH(request: NextRequest) {
   }
 
   const { full_name } = body as { full_name?: string };
-  if (!full_name || full_name.trim().length < 2) {
-    return NextResponse.json({ error: "Name must be at least 2 characters" }, { status: 400 });
+  if (!full_name || full_name.trim().length < 2 || full_name.trim().length > 50) {
+    return NextResponse.json({ error: "Name must be 2–50 characters" }, { status: 400 });
   }
 
   const { error } = await supabase

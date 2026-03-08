@@ -87,7 +87,7 @@ export async function POST(
       p_amount: pts,
       p_source_type: "poll_vote",
       p_source_id: params.id,
-      p_description: "Քvearakutyun",
+      p_description: "Քվեարկություն",
       p_created_by: null,
     });
     if (rpcError) console.error("award_points failed for poll vote:", rpcError);
