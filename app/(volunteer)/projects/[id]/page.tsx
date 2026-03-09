@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, MapPin, ClipboardList, Star, CheckCircle, Repeat, FileText, Calendar } from "lucide-react";
 import { formatPoints } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
 
 interface TaskWithCompletion {
@@ -151,7 +152,7 @@ export default async function ProjectDetailPage({
 
             return (
               <Link key={task.id} href={`/tasks/${task.id}`}>
-                <Card className={`hover:shadow-md transition-all cursor-pointer ${isDone ? "opacity-75" : ""}`}>
+                <Card className={cn("hover:shadow-md active:scale-[0.99] transition-all cursor-pointer border-l-4", isDone ? "border-l-green-500 bg-green-50/40" : "border-l-transparent")}>
                   <CardContent className="py-4 px-4">
                     <div className="flex items-center gap-3">
                       {isDone ? (

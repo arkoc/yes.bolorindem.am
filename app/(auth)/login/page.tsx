@@ -33,6 +33,14 @@ export default function LoginPage() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, []);
 
+  // Auto-submit when 6 digits entered
+  useEffect(() => {
+    if (otp.length === 6 && step === "otp" && !loading) {
+      doVerify(otp);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [otp, step]);
+
   function startCooldown() {
     setResendCooldown(RESEND_COOLDOWN);
     timerRef.current = setInterval(() => {
@@ -85,13 +93,12 @@ export default function LoginPage() {
     setLoading(false);
   }
 
-  async function handleVerifyOtp(e: React.FormEvent) {
-    e.preventDefault();
+  async function doVerify(token: string) {
     setLoading(true);
 
     const { data, error } = method === "phone"
-      ? await supabase.auth.verifyOtp({ phone: normalizedPhone, token: otp, type: "sms" })
-      : await supabase.auth.verifyOtp({ email, token: otp, type: "email" });
+      ? await supabase.auth.verifyOtp({ phone: normalizedPhone, token, type: "sms" })
+      : await supabase.auth.verifyOtp({ email, token, type: "email" });
 
     if (error) {
       toast.error(error.message);
@@ -115,6 +122,11 @@ export default function LoginPage() {
       return;
     }
     setLoading(false);
+  }
+
+  async function handleVerifyOtp(e: React.FormEvent) {
+    e.preventDefault();
+    await doVerify(otp);
   }
 
   function switchMethod(m: Method) {
@@ -280,6 +292,7 @@ export default function LoginPage() {
                   maxLength={6}
                   required
                   autoFocus
+                  autoComplete="one-time-code"
                   className="text-2xl h-14 tracking-widest text-center"
                 />
               </div>

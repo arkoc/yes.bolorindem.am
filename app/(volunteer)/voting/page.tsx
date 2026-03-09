@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Vote, ChevronRight, CheckCircle2, Clock } from "lucide-react";
+import { Vote, ChevronRight, CheckCircle2, Clock, Lock } from "lucide-react";
+import { cn } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
 
 export default async function VotingPage() {
@@ -56,30 +57,43 @@ export default async function VotingPage() {
 
     return (
       <Link href={`/voting/${p.id}`}>
-        <Card className="hover:bg-muted/30 transition-colors cursor-pointer">
+        <Card className={cn(
+          "hover:shadow-md active:scale-[0.99] transition-all cursor-pointer border-l-4",
+          closed
+            ? "border-l-muted-foreground/30 opacity-75"
+            : voted
+              ? "border-l-green-500"
+              : "border-l-primary"
+        )}>
           <CardContent className="py-3 px-4">
             <div className="flex items-center gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="font-medium text-sm">{p.title}</p>
+                  <p className={cn("font-medium text-sm", closed && "text-muted-foreground")}>{p.title}</p>
                   {voted && !closed && (
-                    <Badge variant="outline" className="text-xs text-green-600 border-green-200 bg-green-50">
+                    <Badge variant="outline" className="text-xs text-green-600 border-green-200 bg-green-50 shrink-0">
                       <CheckCircle2 className="h-3 w-3 mr-1" />
                       {L.volunteer.voting.votedLabel}
+                    </Badge>
+                  )}
+                  {closed && (
+                    <Badge variant="outline" className="text-xs text-muted-foreground shrink-0">
+                      <Lock className="h-3 w-3 mr-1" />
+                      {L.volunteer.voting.pollClosed}
                     </Badge>
                   )}
                 </div>
                 {p.description && (
                   <p className="text-xs text-muted-foreground mt-0.5 truncate">{p.description}</p>
                 )}
-                <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground flex-wrap">
                   <span>{t(L.volunteer.voting.optionCount, { count: optionCount })}</span>
                   <span>{t(L.volunteer.voting.totalVotes, { count: voteCount })}</span>
-                  {(p.points_per_vote ?? 0) > 0 && !closed && (
-                    <span className="text-green-600 font-medium">+{p.points_per_vote} pts</span>
+                  {(p.points_per_vote ?? 0) > 0 && !closed && !voted && (
+                    <span className="text-green-600 font-semibold">+{p.points_per_vote} pts</span>
                   )}
                   {p.expires_at && !closed && (
-                    <span className="flex items-center gap-1">
+                    <span className="flex items-center gap-1 text-orange-500">
                       <Clock className="h-3 w-3" />
                       {t(L.volunteer.voting.expiresAt, { date: new Date(p.expires_at).toLocaleDateString() })}
                     </span>
@@ -116,6 +130,7 @@ export default async function VotingPage() {
         ) : (
           <Card>
             <CardContent className="py-8 text-center">
+              <Vote className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
               <p className="text-sm text-muted-foreground">{L.volunteer.voting.emptyActive}</p>
             </CardContent>
           </Card>

@@ -30,7 +30,18 @@ export default async function LeaderboardPage() {
 
   if (lbError) console.error("Leaderboard query error:", lbError);
 
-  const myEntry = entries?.find((e: LeaderboardEntry) => e.id === user.id);
+  const myEntryInTop50 = entries?.find((e: LeaderboardEntry) => e.id === user.id) ?? null;
+
+  // If user not in top 50, fetch their rank separately
+  let myEntry: LeaderboardEntry | null = myEntryInTop50;
+  if (!myEntryInTop50) {
+    const { data: myData } = await adminClient
+      .from("leaderboard")
+      .select("id, full_name, total_points, rank, total_completions")
+      .eq("id", user.id)
+      .single();
+    myEntry = myData ?? null;
+  }
 
   const rankIcon = (rank: number) => {
     if (rank === 1) return <span className="text-xl leading-none">🥇</span>;
@@ -48,7 +59,7 @@ export default async function LeaderboardPage() {
         <p className="text-muted-foreground text-sm mt-1">{L.volunteer.leaderboard.subtitle}</p>
       </div>
 
-      {/* My position (sticky if not in top view) */}
+      {/* My position — always shown */}
       {myEntry && (
         <Card className="border-primary/30 bg-primary/5">
           <CardContent className="py-3 px-4">
@@ -85,7 +96,7 @@ export default async function LeaderboardPage() {
                     key={entry.id}
                     href={isMe ? "/profile" : `/profile/${entry.id}`}
                     className={cn(
-                      "flex items-center gap-3 px-4 py-4 hover:bg-muted/50 transition-colors",
+                      "flex items-center gap-3 px-4 py-3.5 hover:bg-muted/50 active:bg-muted/70 transition-colors",
                       isMe && "bg-primary/5"
                     )}
                   >

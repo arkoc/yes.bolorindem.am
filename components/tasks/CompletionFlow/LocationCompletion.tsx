@@ -8,7 +8,8 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LocationPicker } from "@/components/map/LocationPicker";
-import { CheckCircle, MapPin, Zap } from "lucide-react";
+import { CheckCircle, MapPin } from "lucide-react";
+import { TaskSuccessScreen } from "@/components/tasks/TaskSuccessScreen";
 import { type TaskLocationData } from "@/lib/db/schema";
 
 interface LocationCompletionProps {
@@ -80,27 +81,7 @@ export function LocationCompletion({
   }
 
   if (justCompleted) {
-    return (
-      <Card className="border-green-200 bg-green-50">
-        <CardContent className="py-8 text-center space-y-3">
-          <div className="flex justify-center">
-            <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center">
-              <CheckCircle className="h-8 w-8 text-green-600" />
-            </div>
-          </div>
-          <div>
-            <h3 className="font-semibold text-green-800 text-lg">{L.completion.location.successTitle}</h3>
-            <p className="text-green-700 flex items-center justify-center gap-1 mt-1">
-              <Zap className="h-4 w-4" />
-              {t(L.completion.location.successPoints, { points: awardedPoints })}
-            </p>
-          </div>
-          <Button variant="outline" onClick={() => router.push(`/projects/${projectId}`)}>
-            {L.completion.location.backToProject}
-          </Button>
-        </CardContent>
-      </Card>
-    );
+    return <TaskSuccessScreen points={awardedPoints} projectId={projectId} />;
   }
 
   if (isDone && !isRepeatable) {

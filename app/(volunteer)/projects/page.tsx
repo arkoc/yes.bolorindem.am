@@ -120,7 +120,7 @@ export default async function ProjectsPage() {
                   {taskCount > 0 && (
                     <div className="space-y-1">
                       <Progress value={progressPercent} className="h-1.5" />
-                      <p className="text-xs text-muted-foreground">{completedCount}/{taskCount} completed</p>
+                      <p className="text-xs text-muted-foreground">{completedCount}/{taskCount}</p>
                     </div>
                   )}
                 </CardContent>
