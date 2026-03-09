@@ -168,9 +168,6 @@ export default function LoginPage() {
       {/* Form section */}
       <div className="bg-background rounded-t-3xl -mt-6 relative z-10 shadow-2xl px-6 pt-8 pb-10">
         <div className="max-w-sm mx-auto">
-          <p className="text-center text-sm font-semibold text-primary mb-6 leading-snug">
-            Միացիր Բոլորին դեմ եմի կյանքին, քվեարկիր և ստեղծիր փոփոխություններ
-          </p>
           <div className="mb-6">
             <h2 className="text-xl font-bold">
               {step === "input" ? L.auth.login.title : L.auth.login.otpLabel}

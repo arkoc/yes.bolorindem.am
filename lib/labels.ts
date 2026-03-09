@@ -8,7 +8,7 @@ const L = {
     adminSubtitle: "bolorindem.am · Ադմին",
     adminMobileTitle: "ԵՍ · Ադմին",
     campaign: "ԵՍ ԲՈԼՈՐԻՆ ԴԵՄ ԵՄ",
-    slogan: "Անցի´ր գործի, հասի´ր արդյունքի",
+    slogan: "Միացիր Բոլորին դեմ եմի կյանքին, քվեարկիր և ստեղծիր փոփոխություններ",
   },
   auth: {
     login: {
