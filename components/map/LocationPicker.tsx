@@ -1,10 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { MapPin, Loader2, Navigation, ExternalLink, CheckCircle, AlertCircle } from "lucide-react";
 import { type TaskLocationData, type LocationTargetPoint } from "@/lib/db/schema";
 import L, { t } from "@/lib/labels";
+
+const MapView = dynamic(
+  () => import("./MapView").then((m) => ({ default: m.MapView })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="rounded-xl border bg-muted animate-pulse" style={{ height: 280 }} />
+    ),
+  }
+);
 
 interface LocationPickerProps {
   locationData: TaskLocationData;
@@ -52,7 +63,7 @@ export function LocationPicker({ locationData, onConfirm, disabled, perPointComp
     return nearest;
   }
 
-  async function handleGetLocation() {
+  const handleGetLocation = useCallback(async () => {
     setGettingLocation(true);
     try {
       const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
@@ -73,10 +84,24 @@ export function LocationPicker({ locationData, onConfirm, disabled, perPointComp
     } finally {
       setGettingLocation(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-request location on mount
+  useEffect(() => {
+    if (navigator.geolocation) handleGetLocation();
+  }, [handleGetLocation]);
+
+  // When user taps a point on the map, update selected + distance
+  function handleSelectPoint(pointId: string) {
+    setSelectedPointId(pointId);
+    if (userLocation) {
+      const p = (locationData.targetPoints ?? []).find((pt) => pt.id === pointId);
+      if (p) setDistanceMeters(haversineMeters(userLocation.lat, userLocation.lng, p.lat, p.lng));
+    }
   }
 
   const points = locationData.targetPoints ?? [];
-
   const selectedPoint = points.find((p) => p.id === selectedPointId);
   const withinRadius =
     !selectedPoint?.radiusMeters ||
@@ -99,6 +124,18 @@ export function LocationPicker({ locationData, onConfirm, disabled, perPointComp
         <p className="text-sm text-muted-foreground">{locationData.description}</p>
       )}
 
+      {/* Map */}
+      <MapView
+        center={locationData.center}
+        zoom={locationData.defaultZoom}
+        targetPoints={points}
+        userLocation={userLocation}
+        selectedPointId={selectedPointId}
+        onSelectPoint={handleSelectPoint}
+        perPointCompletions={perPointCompletions}
+      />
+
+      {/* Target points list */}
       {points.length > 0 && (
         <div className="space-y-1.5">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -108,18 +145,26 @@ export function LocationPicker({ locationData, onConfirm, disabled, perPointComp
             const done = perPointCompletions[p.id] ?? 0;
             const limit = p.maxCompletions;
             const exhausted = limit !== undefined && done >= limit;
+            const isSelected = selectedPointId === p.id;
             return (
-              <div key={p.id} className={`flex items-center justify-between gap-2 ${exhausted ? "opacity-50" : ""}`}>
+              <button
+                key={p.id}
+                type="button"
+                disabled={exhausted}
+                onClick={() => handleSelectPoint(p.id)}
+                className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg border text-left transition-colors ${
+                  isSelected
+                    ? "border-primary bg-primary/5"
+                    : exhausted
+                    ? "opacity-50 border-border bg-muted cursor-not-allowed"
+                    : "border-border hover:bg-muted/50"
+                }`}
+              >
                 <div className="flex items-center gap-2 text-sm min-w-0">
-                  <MapPin className={`h-3.5 w-3.5 shrink-0 ${exhausted ? "text-muted-foreground" : "text-primary"}`} />
-                  <a
-                    href={`https://yandex.com/maps/?pt=${p.lng},${p.lat}&z=16`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`truncate hover:underline ${exhausted ? "text-muted-foreground" : "text-primary font-medium"}`}
-                  >
+                  <MapPin className={`h-3.5 w-3.5 shrink-0 ${isSelected ? "text-primary" : exhausted ? "text-muted-foreground" : "text-primary"}`} />
+                  <span className={`truncate font-medium ${exhausted ? "text-muted-foreground" : ""}`}>
                     {p.label}
-                  </a>
+                  </span>
                   {p.radiusMeters && (
                     <span className="text-muted-foreground text-xs shrink-0">within {p.radiusMeters}m</span>
                   )}
@@ -129,7 +174,7 @@ export function LocationPicker({ locationData, onConfirm, disabled, perPointComp
                     {exhausted ? L.completion.location.pointFull : `${done}/${limit}`}
                   </span>
                 )}
-              </div>
+              </button>
             );
           })}
           {points.length > 1 && (
@@ -146,29 +191,13 @@ export function LocationPicker({ locationData, onConfirm, disabled, perPointComp
         </div>
       )}
 
+      {/* Location status */}
       <div className="space-y-2">
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full"
-          onClick={handleGetLocation}
-          disabled={gettingLocation || disabled}
-        >
-          {gettingLocation ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Navigation className="h-4 w-4" />
-          )}
-          {userLocation ? L.completion.location.updateLocationBtn : L.completion.location.getLocationBtn}
-        </Button>
-
         {userLocation && (
           <div className="space-y-1">
             <p className="text-xs text-center text-muted-foreground">
               {userLocation.lat.toFixed(5)}, {userLocation.lng.toFixed(5)}
-              {selectedPoint && (
-                <> — near &ldquo;{selectedPoint.label}&rdquo;</>
-              )}
+              {selectedPoint && <> — near &ldquo;{selectedPoint.label}&rdquo;</>}
             </p>
             {selectedPoint?.radiusMeters && distanceMeters !== null && (
               <p className={`text-xs text-center font-medium flex items-center justify-center gap-1 ${withinRadius ? "text-green-600" : "text-destructive"}`}>
@@ -181,6 +210,21 @@ export function LocationPicker({ locationData, onConfirm, disabled, perPointComp
             )}
           </div>
         )}
+
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={handleGetLocation}
+          disabled={gettingLocation || disabled}
+        >
+          {gettingLocation ? <Loader2 className="h-4 w-4 animate-spin" /> : <Navigation className="h-4 w-4" />}
+          {gettingLocation
+            ? L.completion.location.getLocationBtn
+            : userLocation
+              ? L.completion.location.updateLocationBtn
+              : L.completion.location.getLocationBtn}
+        </Button>
 
         <Button
           type="button"

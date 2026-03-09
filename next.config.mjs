@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  transpilePackages: ["maplibre-gl", "react-map-gl"],
   experimental: {
     staleTimes: {
       dynamic: 0, // never serve stale data for dynamic (Supabase) pages
