@@ -152,6 +152,7 @@ const L = {
       adminPanel: "Ադմին վահանակ",
       badgesTitle: "Կրծքանշաններ",
       badgesEarned: "{count} ձեռք բերված",
+      badgeNotEarned: "Դեռ չի ձեռք բերվել",
       referralTitle: "Հրավիրեք ընկերներ",
       referralDesc: "Կիսվեք հղումով և ստացեք 50 միավոր:",
       referralCount: "{count} հոգի միացել է ձեր հղումով",

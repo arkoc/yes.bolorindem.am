@@ -5,6 +5,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { BadgeIcon } from "@/components/ui/badge-icon";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
+import L from "@/lib/labels";
 
 interface BadgeZoomProps {
   src: string | null;
@@ -72,7 +73,7 @@ export function BadgeZoom({ src, fallback, name, description, size = 40, earned 
               <p className="text-sm text-muted-foreground mt-1">{description}</p>
             )}
             {!earned && (
-              <p className="text-xs text-muted-foreground mt-2 italic">Not yet earned</p>
+              <p className="text-xs text-muted-foreground mt-2 italic">{L.volunteer.profile.badgeNotEarned}</p>
             )}
           </div>
         </DialogContent>
