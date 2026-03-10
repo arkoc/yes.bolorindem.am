@@ -11,6 +11,7 @@ import L, { t } from "@/lib/labels";
 interface LeaderboardEntry {
   id: string;
   full_name: string;
+  avatar_url: string | null;
   total_points: number;
   rank: number;
   total_completions: number;
@@ -24,7 +25,7 @@ export default async function LeaderboardPage() {
   const adminClient = createAdminClient();
   const { data: entries, error: lbError } = await adminClient
     .from("leaderboard")
-    .select("id, full_name, total_points, rank, total_completions")
+    .select("id, full_name, avatar_url, total_points, rank, total_completions")
     .order("rank")
     .limit(50);
 
@@ -37,7 +38,7 @@ export default async function LeaderboardPage() {
   if (!myEntryInTop50) {
     const { data: myData } = await adminClient
       .from("leaderboard")
-      .select("id, full_name, total_points, rank, total_completions")
+      .select("id, full_name, avatar_url, total_points, rank, total_completions")
       .eq("id", user.id)
       .single();
     myEntry = myData ?? null;
@@ -67,7 +68,7 @@ export default async function LeaderboardPage() {
               <div className="w-8 flex justify-center shrink-0">
                 {rankIcon(Number(myEntry.rank))}
               </div>
-              <UserAvatar name={myEntry.full_name} size={40} className="shrink-0" />
+              <UserAvatar name={myEntry.full_name} avatarUrl={myEntry.avatar_url} size={40} className="shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm truncate">{t(L.volunteer.leaderboard.me, { name: myEntry.full_name })}</p>
                 <p className="text-xs text-muted-foreground">{t(L.volunteer.leaderboard.completions, { count: myEntry.total_completions })}</p>
@@ -103,7 +104,7 @@ export default async function LeaderboardPage() {
                     <div className="w-8 flex justify-center shrink-0">
                       {rankIcon(Number(entry.rank))}
                     </div>
-                    <UserAvatar name={entry.full_name} size={36} className="shrink-0" />
+                    <UserAvatar name={entry.full_name} avatarUrl={entry.avatar_url} size={36} className="shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className={cn("text-sm font-medium truncate", isMe && "text-primary font-semibold")}>
                         {entry.full_name}
