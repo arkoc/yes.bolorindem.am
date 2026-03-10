@@ -68,6 +68,19 @@ export function MapView({
     });
   }, [userLocation, zoom]);
 
+  // Pan to selected target point when it changes
+  useEffect(() => {
+    if (!selectedPointId) return;
+    const point = targetPoints.find((p) => p.id === selectedPointId);
+    if (!point) return;
+    mapRef.current?.flyTo({
+      center: [point.lng, point.lat],
+      zoom: Math.max(zoom, 15),
+      duration: 600,
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPointId]);
+
   return (
     <div className="rounded-xl overflow-hidden border w-full" style={{ height: 280 }}>
       <Map
