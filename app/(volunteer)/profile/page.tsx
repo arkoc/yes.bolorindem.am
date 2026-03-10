@@ -2,7 +2,6 @@ import { createServerClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { formatPoints, getRankSuffix } from "@/lib/utils";
-import { UserAvatar } from "@/components/ui/user-avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,7 @@ import { CopyReferralButton } from "@/components/volunteer/ReferralLinkCopy";
 import { PushNotificationCard } from "@/components/volunteer/PushNotificationCard";
 import { EditNameForm } from "@/components/volunteer/EditNameForm";
 import { EditProfileForm } from "@/components/volunteer/EditProfileForm";
+import { AvatarUpload } from "@/components/volunteer/AvatarUpload";
 
 // Thresholds must stay in sync with check_and_award_badges() in SQL migrations.
 const BADGE_REQS: Record<string, { max: number }> = {
@@ -43,7 +43,7 @@ export default async function ProfilePage() {
   const [profileRes, rankRes, statsRes, allBadgesRes, userBadgesRes, progressRes, referralCodeRes, referralCountRes] = await Promise.all([
     supabase
       .from("profiles")
-      .select("full_name, phone, total_points, role, created_at, bio, social_url, profile_completion_bonus_awarded")
+      .select("full_name, phone, total_points, role, created_at, bio, social_url, profile_completion_bonus_awarded, avatar_url")
       .eq("id", user.id)
       .single(),
     supabase
@@ -118,7 +118,11 @@ export default async function ProfilePage() {
       <Card>
         <CardContent className="pt-6 pb-6">
           <div className="flex items-center gap-4">
-            <UserAvatar name={profile.full_name} size={80} className="shrink-0" />
+            <AvatarUpload
+              name={profile.full_name}
+              avatarUrl={(profile as { avatar_url?: string | null }).avatar_url ?? null}
+              size={80}
+            />
             <div>
               <EditNameForm name={profile.full_name} />
               {(user.phone || user.email) && (

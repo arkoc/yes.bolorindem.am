@@ -19,9 +19,10 @@ interface UserAvatarProps {
   size?: number;
   className?: string;
   border?: number; // width in px, 0 = none
+  avatarUrl?: string | null;
 }
 
-export function UserAvatar({ name, size = 48, className, border = 2 }: UserAvatarProps) {
+export function UserAvatar({ name, size = 48, className, border = 2, avatarUrl }: UserAvatarProps) {
   const resolvedName = name || "User";
   return (
     <span
@@ -47,7 +48,18 @@ export function UserAvatar({ name, size = 48, className, border = 2 }: UserAvata
           borderRadius: "50%",
         }}
       >
-        <Avatar size={size} name={resolvedName} variant="bauhaus" colors={COLORS} />
+        {avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={avatarUrl}
+            alt={resolvedName}
+            width={size}
+            height={size}
+            style={{ width: size, height: size, objectFit: "cover" }}
+          />
+        ) : (
+          <Avatar size={size} name={resolvedName} variant="bauhaus" colors={COLORS} />
+        )}
       </span>
     </span>
   );
