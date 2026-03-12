@@ -11,8 +11,10 @@ import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { ArrowRight, Loader2 } from "lucide-react";
 import L, { t } from "@/lib/labels";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
 const RESEND_COOLDOWN = 60;
+const TURNSTILE_SITE_KEY = "0x4AAAAAACpoK0sMSH92yZ0M";
 
 type Method = "phone" | "email";
 type Step = "input" | "otp";
@@ -27,7 +29,9 @@ export default function LoginPage() {
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const turnstileRef = useRef<TurnstileInstance>(null);
 
   useEffect(() => {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
@@ -62,14 +66,23 @@ export default function LoginPage() {
   async function handleSendOtp(e: React.FormEvent) {
     e.preventDefault();
     if (!inputValid) return;
+    if (TURNSTILE_SITE_KEY && !captchaToken) {
+      toast.error("Հաստատեք, որ մարդ եք");
+      return;
+    }
     setLoading(true);
 
+    const options = captchaToken ? { captchaToken } : undefined;
+
     const { error } = method === "phone"
-      ? await supabase.auth.signInWithOtp({ phone: normalizedPhone })
-      : await supabase.auth.signInWithOtp({ email });
+      ? await supabase.auth.signInWithOtp({ phone: normalizedPhone, options })
+      : await supabase.auth.signInWithOtp({ email, options });
 
     if (error) {
       toast.error(error.message);
+      // Reset Turnstile so user can retry
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
     } else {
       toast.success(method === "phone" ? L.auth.login.codeSent : L.auth.login.codeSentEmail);
       setStep("otp");
@@ -135,6 +148,8 @@ export default function LoginPage() {
     setOtp("");
     setEmail("");
     setResendCooldown(0);
+    setCaptchaToken(null);
+    turnstileRef.current?.reset();
     if (timerRef.current) clearInterval(timerRef.current);
   }
 
@@ -264,10 +279,23 @@ export default function LoginPage() {
                   </div>
                 )}
 
+                {TURNSTILE_SITE_KEY && (
+                  <div className="flex justify-center">
+                    <Turnstile
+                      ref={turnstileRef}
+                      siteKey={TURNSTILE_SITE_KEY}
+                      onSuccess={(token) => setCaptchaToken(token)}
+                      onExpire={() => setCaptchaToken(null)}
+                      onError={() => setCaptchaToken(null)}
+                      options={{ theme: "light", language: "hy" }}
+                    />
+                  </div>
+                )}
+
                 <Button
                   type="submit"
                   className="w-full h-12 text-base"
-                  disabled={loading || !inputValid}
+                  disabled={loading || !inputValid || (!!TURNSTILE_SITE_KEY && !captchaToken)}
                 >
                   {loading ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
