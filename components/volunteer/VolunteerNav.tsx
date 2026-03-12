@@ -8,6 +8,7 @@ import {
   FolderOpen,
   Trophy,
   Vote,
+  Landmark,
   User,
   Settings,
   LogOut,
@@ -20,7 +21,7 @@ const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: L.volunteer.nav.dashboard },
   { href: "/projects", icon: FolderOpen, label: L.volunteer.nav.projects },
   { href: "/voting", icon: Vote, label: L.volunteer.nav.voting },
-  { href: "/leaderboard", icon: Trophy, label: L.volunteer.nav.leaderboard },
+  { href: "/elections", icon: Landmark, label: L.volunteer.nav.elections },
   { href: "/profile", icon: User, label: L.volunteer.nav.profile },
 ];
 

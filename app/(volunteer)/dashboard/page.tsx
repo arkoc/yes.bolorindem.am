@@ -119,6 +119,20 @@ export default async function DashboardPage() {
         </CardContent>
       </Card>
 
+      {/* Elections 2026 banner */}
+      <Link href="/elections">
+        <Card className="border-2 border-amber-400/50 bg-gradient-to-r from-amber-50 to-orange-50 hover:shadow-md transition-all active:scale-[0.99]">
+          <CardContent className="py-3 px-4 flex items-center gap-3">
+            <span className="text-2xl shrink-0">🏛</span>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-sm">{L.elections.dashboardBannerTitle}</p>
+              <p className="text-xs text-muted-foreground leading-tight">{L.elections.dashboardBannerText}</p>
+            </div>
+            <span className="text-xs font-semibold text-amber-700 shrink-0">{L.elections.dashboardBannerBtn}</span>
+          </CardContent>
+        </Card>
+      </Link>
+
       {/* Push notification banner */}
       <PushNotificationBanner />
 
@@ -133,24 +147,28 @@ export default async function DashboardPage() {
             <p className="text-xs text-muted-foreground leading-tight">{L.volunteer.dashboard.statPoints}</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-3 text-center">
-            <div className="p-1.5 rounded-lg bg-blue-100 w-fit mx-auto mb-1.5">
-              <Trophy className="h-4 w-4 text-blue-600" />
-            </div>
-            <p className="text-lg font-bold truncate">{rank ? getRankSuffix(Number(rank)) : "—"}</p>
-            <p className="text-xs text-muted-foreground leading-tight">{L.volunteer.dashboard.statLeaderboard}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-3 text-center">
-            <div className="p-1.5 rounded-lg bg-orange-100 w-fit mx-auto mb-1.5">
-              <Award className="h-4 w-4 text-orange-600" />
-            </div>
-            <p className="text-lg font-bold truncate">{earnedBadges.length}</p>
-            <p className="text-xs text-muted-foreground leading-tight">{L.volunteer.dashboard.statBadges}</p>
-          </CardContent>
-        </Card>
+        <Link href="/leaderboard">
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="p-3 text-center">
+              <div className="p-1.5 rounded-lg bg-blue-100 w-fit mx-auto mb-1.5">
+                <Trophy className="h-4 w-4 text-blue-600" />
+              </div>
+              <p className="text-lg font-bold truncate">{rank ? getRankSuffix(Number(rank)) : "—"}</p>
+              <p className="text-xs text-muted-foreground leading-tight">{L.volunteer.dashboard.statLeaderboard}</p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/profile">
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="p-3 text-center">
+              <div className="p-1.5 rounded-lg bg-orange-100 w-fit mx-auto mb-1.5">
+                <Award className="h-4 w-4 text-orange-600" />
+              </div>
+              <p className="text-lg font-bold truncate">{earnedBadges.length}</p>
+              <p className="text-xs text-muted-foreground leading-tight">{L.volunteer.dashboard.statBadges}</p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {/* Active projects */}

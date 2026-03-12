@@ -155,13 +155,15 @@ export default async function ProfilePage() {
             <p className="text-xs text-muted-foreground leading-tight line-clamp-2">{L.volunteer.profile.statPoints}</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-3 text-center">
-            <Trophy className="h-5 w-5 mx-auto text-blue-500 mb-1" />
-            <p className="text-lg font-bold truncate">{rank?.rank ? getRankSuffix(Number(rank.rank)) : "—"}</p>
-            <p className="text-xs text-muted-foreground leading-tight line-clamp-2">{L.volunteer.profile.statRank}</p>
-          </CardContent>
-        </Card>
+        <Link href="/leaderboard">
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="p-3 text-center">
+              <Trophy className="h-5 w-5 mx-auto text-blue-500 mb-1" />
+              <p className="text-lg font-bold truncate">{rank?.rank ? getRankSuffix(Number(rank.rank)) : "—"}</p>
+              <p className="text-xs text-muted-foreground leading-tight line-clamp-2">{L.volunteer.profile.statRank}</p>
+            </CardContent>
+          </Card>
+        </Link>
         <Card>
           <CardContent className="p-3 text-center">
             <CheckCircle className="h-5 w-5 mx-auto text-green-500 mb-1" />
