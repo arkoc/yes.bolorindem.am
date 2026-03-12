@@ -280,16 +280,14 @@ export default function LoginPage() {
                 )}
 
                 {TURNSTILE_SITE_KEY && (
-                  <div className="flex justify-center">
-                    <Turnstile
-                      ref={turnstileRef}
-                      siteKey={TURNSTILE_SITE_KEY}
-                      onSuccess={(token) => setCaptchaToken(token)}
-                      onExpire={() => setCaptchaToken(null)}
-                      onError={() => setCaptchaToken(null)}
-                      options={{ theme: "light", language: "hy" }}
-                    />
-                  </div>
+                  <Turnstile
+                    ref={turnstileRef}
+                    siteKey={TURNSTILE_SITE_KEY}
+                    onSuccess={(token) => setCaptchaToken(token)}
+                    onExpire={() => setCaptchaToken(null)}
+                    onError={() => setCaptchaToken(null)}
+                    options={{ size: "invisible" }}
+                  />
                 )}
 
                 <Button
