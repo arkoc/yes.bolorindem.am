@@ -14,7 +14,7 @@ import L, { t } from "@/lib/labels";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
 const RESEND_COOLDOWN = 60;
-const TURNSTILE_SITE_KEY = "0x4AAAAAACpoK0sMSH92yZ0M";
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!;
 
 type Method = "phone" | "email";
 type Step = "input" | "otp";
