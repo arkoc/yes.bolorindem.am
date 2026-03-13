@@ -286,7 +286,7 @@ export default function LoginPage() {
                     onSuccess={(token) => setCaptchaToken(token)}
                     onExpire={() => setCaptchaToken(null)}
                     onError={() => setCaptchaToken(null)}
-                    options={{ size: "invisible" }}
+                    options={{ size: "compact", theme: "light", appearance: "interaction-only" }}
                   />
                 )}
 
