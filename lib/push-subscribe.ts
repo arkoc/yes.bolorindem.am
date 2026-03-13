@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -53,6 +54,13 @@ export async function subscribeToPush(): Promise<"granted" | "denied" | "error">
       const body = await res.json().catch(() => ({}));
       console.error("Push subscribe API error:", res.status, body);
       return "error";
+    }
+
+    const body = await res.json().catch(() => ({}));
+    if (body.bonusAwarded) {
+      toast.success("🔔 +150 միավոր ծանուցումները միացնելու համար", {
+        description: "Շնորհակալություն ծանուցումները միացնելու համար",
+      });
     }
 
     return "granted";

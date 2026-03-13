@@ -93,20 +93,23 @@ export function PushPermissionStep() {
           </div>
 
           <div className="flex flex-col gap-3 w-full">
-            <Button
-              className="w-full h-12 text-base"
-              onClick={handleEnable}
-              disabled={loading}
-            >
-              {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <>
-                  <Bell className="h-4 w-4 mr-2" />
-                  {L.auth.push.enable}
-                </>
-              )}
-            </Button>
+            <div className="space-y-1">
+              <Button
+                className="w-full h-12 text-base"
+                onClick={handleEnable}
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <>
+                    <Bell className="h-4 w-4 mr-2" />
+                    {L.auth.push.enable}
+                  </>
+                )}
+              </Button>
+              <p className="text-center text-xs font-semibold text-primary">+100 միավոր բոնուս</p>
+            </div>
             <Button
               variant="ghost"
               className="w-full h-10 text-sm text-muted-foreground"

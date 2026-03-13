@@ -63,6 +63,30 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to save subscription" }, { status: 500 });
   }
 
+  // Award one-time bonus on first notification subscription
+  const { data: profile } = await adminClient
+    .from("profiles")
+    .select("notification_bonus_awarded")
+    .eq("id", userId)
+    .single();
+
+  if (profile && !profile.notification_bonus_awarded) {
+    await adminClient
+      .from("profiles")
+      .update({ notification_bonus_awarded: true })
+      .eq("id", userId);
+
+    await adminClient.rpc("award_points", {
+      p_user_id: userId,
+      p_amount: 100,
+      p_source_type: "admin_grant",
+      p_source_id: null,
+      p_description: "Ծանուցումների ակտիվացման բոնուս",
+    });
+
+    console.log(`[push/subscribe] notification bonus awarded to user=${userId}`);
+  }
+
   console.log(`[push/subscribe] saved subscription for user=${userId}`);
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, bonusAwarded: profile && !profile.notification_bonus_awarded });
 }

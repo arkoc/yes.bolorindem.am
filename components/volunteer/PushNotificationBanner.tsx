@@ -36,14 +36,17 @@ export function PushNotificationBanner() {
           {L.volunteer.dashboard.pushBannerOpenSettings}
         </Button>
       ) : (
-        <Button
-          size="sm"
-          className="shrink-0 h-8 text-xs bg-blue-600 hover:bg-blue-700"
-          onClick={async () => { const r = await subscribe(); if (r === "error") toast.error("Failed to enable notifications"); }}
-          disabled={loading}
-        >
-          {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : L.volunteer.dashboard.pushBannerEnable}
-        </Button>
+        <div className="flex flex-col items-center gap-0.5 shrink-0">
+          <Button
+            size="sm"
+            className="h-8 text-xs bg-blue-600 hover:bg-blue-700"
+            onClick={async () => { const r = await subscribe(); if (r === "error") toast.error("Failed to enable notifications"); }}
+            disabled={loading}
+          >
+            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : L.volunteer.dashboard.pushBannerEnable}
+          </Button>
+          <span className="text-[10px] font-semibold text-blue-600">+100 միավոր</span>
+        </div>
       )}
       <button
         type="button"

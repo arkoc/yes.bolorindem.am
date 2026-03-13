@@ -101,7 +101,7 @@ export function PushNotificationCard() {
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <><Bell className="h-4 w-4 mr-2" />{L.auth.push.enableFromProfile}</>
+            <><Bell className="h-4 w-4 mr-2" />{L.auth.push.enableFromProfile} · +100 միավոր</>
           )}
         </Button>
       </CardContent>
