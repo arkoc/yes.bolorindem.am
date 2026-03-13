@@ -7,7 +7,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
 import { Trophy, Star, FolderOpen, ArrowRight, Zap, Award, Users, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
@@ -120,7 +119,7 @@ export default async function DashboardPage() {
       </Card>
 
       {/* Elections 2026 banner */}
-      <Link href="/elections">
+      {/* <Link href="/elections">
         <Card className="border-2 border-amber-400/50 bg-gradient-to-r from-amber-50 to-orange-50 hover:shadow-md transition-all active:scale-[0.99]">
           <CardContent className="py-3 px-4 flex items-center gap-3">
             <span className="text-2xl shrink-0">🏛</span>
@@ -131,7 +130,7 @@ export default async function DashboardPage() {
             <span className="text-xs font-semibold text-amber-700 shrink-0">{L.elections.dashboardBannerBtn}</span>
           </CardContent>
         </Card>
-      </Link>
+      </Link> */}
 
       {/* Push notification banner */}
       <PushNotificationBanner />
