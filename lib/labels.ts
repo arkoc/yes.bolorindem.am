@@ -137,7 +137,7 @@ const L = {
       leaderboard: "Առաջատարներ",
       profile: "Պրոֆիլ",
       voting: "Քվեարկություն",
-      elections: "Ընտրություններ",
+      elections: "ԱԺ ցուցակ",
       adminSection: "Ադմին",
       adminPanel: "Ադմին վահանակ",
       signOut: "Ելք",

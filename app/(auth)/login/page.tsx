@@ -154,7 +154,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-dvh flex flex-col">
       {/* Hero / branding section */}
       <div className="flex-1 bg-[#cc0000] flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
         <div

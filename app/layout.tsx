@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import { KeyboardScrollFix } from "@/components/KeyboardScrollFix";
 import NextTopLoader from "nextjs-toploader";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
@@ -35,6 +36,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <NextTopLoader color="#cc0000" showSpinner={false} />
         <QueryProvider>
+          <KeyboardScrollFix />
           {children}
           <Toaster />
           <SpeedInsights />

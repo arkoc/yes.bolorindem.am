@@ -29,7 +29,7 @@ export function PushPermissionStep() {
 
   if (state === "ios-guide") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
         <Card className="w-full max-w-sm shadow-lg">
           <CardContent className="pt-8 pb-8 flex flex-col items-center text-center gap-6">
             <div className="p-4 rounded-full bg-primary/10">
@@ -80,7 +80,7 @@ export function PushPermissionStep() {
 
   // state === "default"
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <Card className="w-full max-w-sm shadow-lg">
         <CardContent className="pt-8 pb-8 flex flex-col items-center text-center gap-6">
           <div className="p-4 rounded-full bg-primary/10">

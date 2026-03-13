@@ -62,7 +62,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <Card className="w-full max-w-sm shadow-lg">
         <CardHeader className="text-center pb-4">
           <CardTitle className="text-2xl font-bold">{L.auth.register.title}</CardTitle>
