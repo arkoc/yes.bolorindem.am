@@ -182,6 +182,7 @@ const L = {
       votedLabel: "Քվեարկել եք",
       resultsTitle: "Արդյունքներ",
       totalVotes: "{count} քվե",
+      totalVoters: "{count} քվեարկող",
       optionCount: "{count} տարբերակ",
       yourVote: "Ձեր քվեն",
       emptyActive: "Ակտիվ քվեարկություններ չկան",

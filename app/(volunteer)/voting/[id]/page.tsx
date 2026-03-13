@@ -50,14 +50,18 @@ export default async function PollDetailPage({ params }: { params: { id: string 
   if (hasVoted || isClosed) {
     const { data: allVotes } = await adminClient
       .from("poll_votes")
-      .select("option_id")
+      .select("option_id, user_id")
       .eq("poll_id", params.id)
       .limit(20_000);
 
     for (const v of allVotes ?? []) {
       countByOption[v.option_id] = (countByOption[v.option_id] ?? 0) + 1;
     }
-    totalVotes = (allVotes ?? []).length;
+    // For multi-choice polls use distinct voter count so percentages reflect
+    // "% of voters who chose this option" rather than "% of all selections"
+    totalVotes = poll.allow_multiple
+      ? new Set((allVotes ?? []).map((v: { user_id: string }) => v.user_id)).size
+      : (allVotes ?? []).length;
   }
 
   const statusLabel = isClosed
@@ -163,7 +167,9 @@ export default async function PollDetailPage({ params }: { params: { id: string 
               );
             })}
             <p className="text-xs text-muted-foreground pt-1">
-              {t(L.volunteer.voting.totalVotes, { count: totalVotes })}
+              {poll.allow_multiple
+                ? t(L.volunteer.voting.totalVoters ?? "{count} քվեարկող", { count: totalVotes })
+                : t(L.volunteer.voting.totalVotes, { count: totalVotes })}
             </p>
           </CardContent>
         </Card>
