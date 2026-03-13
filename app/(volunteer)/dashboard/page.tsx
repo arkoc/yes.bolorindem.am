@@ -94,7 +94,8 @@ export default async function DashboardPage() {
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-5">
       {/* Hero card */}
-      <Card className="bg-gradient-to-br from-primary to-red-800 text-white border-0 overflow-hidden">
+      <Link href="/profile">
+      <Card className="bg-gradient-to-br from-primary to-red-800 text-white border-0 overflow-hidden hover:opacity-95 transition-opacity active:scale-[0.99]">
         <CardContent className="pt-5 pb-5">
           <div className="flex items-center gap-4">
             <UserAvatar name={profile.full_name} size={64} className="shrink-0 ring-2 ring-white/30" />
@@ -117,6 +118,7 @@ export default async function DashboardPage() {
           </div>
         </CardContent>
       </Card>
+      </Link>
 
       {/* Elections 2026 banner */}
       {/* <Link href="/elections">
