@@ -347,7 +347,6 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
         onClick={handleGetLocation}
         style={{
           position: "absolute",
-          bottom: selectedPoint ? 220 : 24,
           right: 16,
           zIndex: 10,
           width: 44,
@@ -362,6 +361,9 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
           justifyContent: "center",
           transition: "bottom 0.2s ease",
         }}
+        className={selectedPoint
+          ? "bottom-[300px] md:bottom-[220px]"
+          : "bottom-[104px] md:bottom-6"}
         title="Center on my location"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

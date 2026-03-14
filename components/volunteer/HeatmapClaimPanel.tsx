@@ -54,11 +54,11 @@ export function HeatmapClaimPanel({
         background: "white",
         borderRadius: "16px 16px 0 0",
         boxShadow: "0 -4px 24px rgba(0,0,0,0.15)",
-        padding: "20px 20px 32px",
         zIndex: 10,
         maxWidth: 480,
         margin: "0 auto",
       }}
+      className="px-5 pt-5 pb-[calc(80px+32px)] md:pb-8"
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
