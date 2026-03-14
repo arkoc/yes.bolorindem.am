@@ -15,7 +15,7 @@ function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number)
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-const CLAIM_RADIUS_METERS = 25;
+const CLAIM_RADIUS_METERS = 15;
 
 interface HeatmapClaimPanelProps {
   point: HeatmapPoint;
