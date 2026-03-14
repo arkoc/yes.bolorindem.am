@@ -24,7 +24,7 @@ export default async function DashboardPage() {
   const [profileRes, rankRes, activeProjectsRes, earnedBadgesRes, allBadgesRes, referralRes, recentActivityRes] = await Promise.all([
     supabase
       .from("profiles")
-      .select("full_name, total_points, role, referral_code")
+      .select("full_name, total_points, role, referral_code, avatar_url")
       .eq("id", user.id)
       .single(),
     adminClient
@@ -98,7 +98,7 @@ export default async function DashboardPage() {
       <Card className="bg-gradient-to-br from-primary to-red-800 text-white border-0 overflow-hidden hover:opacity-95 transition-opacity active:scale-[0.99]">
         <CardContent className="pt-5 pb-5">
           <div className="flex items-center gap-4">
-            <UserAvatar name={profile.full_name} size={64} className="shrink-0 ring-2 ring-white/30" />
+            <UserAvatar name={profile.full_name} size={64} avatarUrl={profile.avatar_url} className="shrink-0 ring-2 ring-white/30" />
             <div className="flex-1 min-w-0">
               <p className="text-blue-100 text-xs font-medium">{L.volunteer.dashboard.greeting}</p>
               <h1 className="text-xl font-bold truncate mt-0.5">{profile.full_name}</h1>
