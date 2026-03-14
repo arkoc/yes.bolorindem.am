@@ -229,7 +229,7 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
     } finally {
       setClaiming(false);
     }
-  }, [selectedPoint, userLocation, projectId, currentUserId]);
+  }, [selectedPoint, userLocation, projectId, currentUserId, currentUserName]);
 
   return (
     <div style={{ width: "100%", height: "100dvh", position: "relative" }}>
