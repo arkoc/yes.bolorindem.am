@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FolderOpen, Plus, ArrowRight, Star, ClipboardList, Pencil } from "lucide-react";
+import { FolderOpen, Plus, ArrowRight, Star, ClipboardList, Pencil, MapPin } from "lucide-react";
 import { formatPoints } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
 
@@ -19,7 +19,7 @@ export default async function AdminProjectsPage() {
 
   const { data: projects } = await supabase
     .from("projects")
-    .select("id, title, status, completion_bonus_points, created_at, tasks(count)")
+    .select("id, title, status, completion_bonus_points, project_type, created_at, tasks(count)")
     .order("created_at", { ascending: false })
     .limit(500);
 
@@ -44,6 +44,7 @@ export default async function AdminProjectsPage() {
             title: string;
             status: string;
             completion_bonus_points: number;
+            project_type: string;
             created_at: string;
             tasks: { count: number }[];
           }) => (
@@ -72,37 +73,49 @@ export default async function AdminProjectsPage() {
                   </div>
                   {/* Desktop action buttons */}
                   <div className="hidden sm:flex items-center gap-2 shrink-0">
-                    <Button asChild size="sm" variant="ghost">
-                      <Link href={`/admin/completions?project=${p.id}`}>
-                        <ClipboardList className="h-3.5 w-3.5" />
-                        {L.admin.projects.completions}
-                      </Link>
-                    </Button>
+                    {p.project_type !== "heatmap" && (
+                      <Button asChild size="sm" variant="ghost">
+                        <Link href={`/admin/completions?project=${p.id}`}>
+                          <ClipboardList className="h-3.5 w-3.5" />
+                          {L.admin.projects.completions}
+                        </Link>
+                      </Button>
+                    )}
                     <Button asChild size="sm" variant="ghost">
                       <Link href={`/admin/projects/${p.id}`}>
                         {L.admin.projects.edit}
                       </Link>
                     </Button>
-                    <Button asChild size="sm" variant="outline">
-                      <Link href={`/admin/projects/${p.id}/tasks`}>
-                        {L.admin.projects.tasks} <ArrowRight className="h-3 w-3 ml-1" />
-                      </Link>
-                    </Button>
+                    {p.project_type === "heatmap" ? (
+                      <Button asChild size="sm" variant="outline">
+                        <Link href={`/admin/heatmap/${p.id}`}>
+                          <MapPin className="h-3 w-3 mr-1" /> Heatmap <ArrowRight className="h-3 w-3 ml-1" />
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button asChild size="sm" variant="outline">
+                        <Link href={`/admin/projects/${p.id}/tasks`}>
+                          {L.admin.projects.tasks} <ArrowRight className="h-3 w-3 ml-1" />
+                        </Link>
+                      </Button>
+                    )}
                   </div>
                   {/* Mobile icon-only buttons */}
                   <div className="flex sm:hidden items-center gap-1 shrink-0">
-                    <Button asChild size="icon" variant="ghost" className="h-9 w-9">
-                      <Link href={`/admin/completions?project=${p.id}`} aria-label={L.admin.projects.completions}>
-                        <ClipboardList className="h-4 w-4" />
-                      </Link>
-                    </Button>
+                    {p.project_type !== "heatmap" && (
+                      <Button asChild size="icon" variant="ghost" className="h-9 w-9">
+                        <Link href={`/admin/completions?project=${p.id}`} aria-label={L.admin.projects.completions}>
+                          <ClipboardList className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    )}
                     <Button asChild size="icon" variant="ghost" className="h-9 w-9">
                       <Link href={`/admin/projects/${p.id}`} aria-label={L.admin.projects.edit}>
                         <Pencil className="h-4 w-4" />
                       </Link>
                     </Button>
                     <Button asChild size="icon" variant="outline" className="h-9 w-9">
-                      <Link href={`/admin/projects/${p.id}/tasks`} aria-label={L.admin.projects.tasks}>
+                      <Link href={p.project_type === "heatmap" ? `/admin/heatmap/${p.id}` : `/admin/projects/${p.id}/tasks`} aria-label={p.project_type === "heatmap" ? "Heatmap" : L.admin.projects.tasks}>
                         <ArrowRight className="h-4 w-4" />
                       </Link>
                     </Button>

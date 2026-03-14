@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FolderOpen, Calendar, ArrowRight, Star } from "lucide-react";
+import { FolderOpen, Calendar, ArrowRight, Star, MapPin } from "lucide-react";
 import { formatPoints } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
 import { Progress } from "@/components/ui/progress";
@@ -17,7 +17,7 @@ export default async function ProjectsPage() {
 
   const { data: projectsRaw } = await supabase
     .from("projects")
-    .select("id, title, description, banner_url, status, start_date, end_date, completion_bonus_points, tasks(id, max_completions_per_user)")
+    .select("id, title, description, banner_url, status, start_date, end_date, completion_bonus_points, project_type, tasks(id, max_completions_per_user)")
     .eq("status", "active")
     .order("created_at", { ascending: false });
 
@@ -30,6 +30,7 @@ export default async function ProjectsPage() {
     start_date: string | null;
     end_date: string | null;
     completion_bonus_points: number;
+    project_type: string;
     tasks: { id: string; max_completions_per_user: number | null }[];
   }[];
 
@@ -59,13 +60,14 @@ export default async function ProjectsPage() {
       {projects.length > 0 ? (
         <div className="space-y-3">
           {projects.map((project) => {
+            const isHeatmap = project.project_type === "heatmap";
             const taskCount = project.tasks.length;
             const completedCount = project.tasks.filter(t =>
               (taskCompletionCount[t.id] ?? 0) >= (t.max_completions_per_user ?? 1)
             ).length;
             const progressPercent = taskCount > 0 ? (completedCount / taskCount) * 100 : 0;
             return (
-            <Link key={project.id} href={`/projects/${project.id}`}>
+            <Link key={project.id} href={isHeatmap ? `/heatmap/${project.id}` : `/projects/${project.id}`} className="block">
               <Card className="hover:shadow-md transition-all active:scale-[0.99] cursor-pointer border-l-4 border-l-primary">
                 {project.banner_url && (
                   <div className="h-32 w-full overflow-hidden rounded-t-lg relative">
@@ -98,8 +100,11 @@ export default async function ProjectsPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                       <span className="flex items-center gap-1">
-                        <FolderOpen className="h-3.5 w-3.5" />
-                        {t(L.volunteer.projects.taskCount, { count: taskCount })}
+                        {isHeatmap ? (
+                          <><MapPin className="h-3.5 w-3.5" />{L.volunteer.projects.heatmapLabel}</>
+                        ) : (
+                          <><FolderOpen className="h-3.5 w-3.5" />{t(L.volunteer.projects.taskCount, { count: taskCount })}</>
+                        )}
                       </span>
                       {(project.start_date || project.end_date) && (
                         <span className="flex items-center gap-1">
@@ -117,7 +122,7 @@ export default async function ProjectsPage() {
                       <ArrowRight className="h-4 w-4" />
                     </div>
                   </div>
-                  {taskCount > 0 && (
+                  {!isHeatmap && taskCount > 0 && (
                     <div className="space-y-1">
                       <Progress value={progressPercent} className="h-1.5" />
                       <p className="text-xs text-muted-foreground">{completedCount}/{taskCount}</p>

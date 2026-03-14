@@ -102,6 +102,7 @@ const L = {
       emptyText: "Առաջադրանքները կհայտնվեն այստեղ",
       dateFrom: "{date}-ից",
       dateUntil: "Մինչև {date}",
+      heatmapLabel: "Քարտեզ",
     },
 
     projectDetail: {
@@ -526,6 +527,46 @@ const L = {
     searchVolunteer: "Որոնել կամավոր...",
     clear: "Մաքրել",
     noResults: "Ոչինչ չգտնվեց",
+  },
+
+ heatmap: {
+    // Progress bar
+    sloganTitle: "Բոլորին Դեմ Եմ",
+    progressDots: "{claimed}/{total} կետ",
+    completionBonusPrefix: "Հավելյալ",
+    completionBonusSuffix: "բոնուս",
+    userStatPrefix: "Ձեր",
+    userStatPoints: "{points} միավոր",
+    userStatBonusEstimate: "(+{bonus})",
+
+    // Info panel
+    infoMapTitle: "Քարտեզ",
+    infoMapText: "Քարտեզի յուրաքանչյուր կետ իրական GPS տեղորոշում է Երևանում։ Մոտեցեք կետին 100մ շառավղով և սեղմեք «Վերցնել»։",
+    infoDotPointsTitle: "Միավորներ",
+    infoDotPointsText: "Որքան շատ կետ է հավաքված, այնքան արժեքավոր է հաջորդը՝ {min}-ից (սկզբում) մինչև {max} ({threshold} կետից հետո)։",
+    infoBonusTitle: "Ընդհանուր բոնուս՝ {bonus}",
+    infoBonusText: "Երբ բոլոր կետերը հավաքվեն, յուրաքանչյուր մասնակից կստանա իր ներդրմանը համապատասխան մասնաբաժին։",
+    infoBonusYourShare: "Ձեր ներկայիս բաժինը՝ ~{bonus} միավոր",
+    infoBonusIncentive: "Հավաքեք ավելի շատ կետեր՝ ավելի մեծ բոնուս ստանալու համար:",
+
+    // Claim panel
+    dotPointValue: "{points} մվր",
+    alreadyClaimed: "Արդեն վերցված է",
+    claimSuccessPoints: "+{points} միավոր",
+    errorTooFar: "{distance}մ հեռավորություն (առավելագույնը՝ {radius}մ)",
+    errorGeneric: "Ինչ-որ բան այն չէ",
+    withinRange: "Դուք մոտ եք ({distance}մ)",
+    tooFarLocation: "{distance}մ հեռավորություն (առավելագույնը՝ {radius}մ)",
+    recenterBtn: "Կենտրոնացնել",
+    getLocationBtn: "Ճշտել տեղադիրքը",
+    claimingBtn: "Մշակվում է...",
+    claimBtn: "Վերցնել (+{points} մվր)",
+
+    // Toasts
+    claimToastTitle: "+{points} միավոր",
+    claimToastDesc: "Կետը հավաքված է",
+    completionToastTitle: "Բոլոր կետերը հավաքված են",
+    completionToastDesc: "+{points} + {bonus} բոնուսային միավոր",
   },
 
   elections: {

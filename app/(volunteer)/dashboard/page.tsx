@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Star, FolderOpen, ArrowRight, Zap, Award, Users, Activity } from "lucide-react";
+import { Trophy, Star, FolderOpen, ArrowRight, Zap, Award, Users, Activity, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
 import { BadgeZoom } from "@/components/ui/badge-zoom";
@@ -34,7 +34,7 @@ export default async function DashboardPage() {
       .single(),
     supabase
       .from("projects")
-      .select("id, title, completion_bonus_points, tasks(id, max_completions_per_user)")
+      .select("id, title, completion_bonus_points, project_type, tasks(id, max_completions_per_user)")
       .eq("status", "active")
       .limit(4),
     supabase
@@ -61,6 +61,7 @@ export default async function DashboardPage() {
     id: string;
     title: string;
     completion_bonus_points: number;
+    project_type: string;
     tasks: { id: string; max_completions_per_user: number | null }[];
   }[];
 
@@ -183,7 +184,7 @@ export default async function DashboardPage() {
               {L.admin.dashboard.viewAll} <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {activeProjects.map((project) => {
               const taskCount = project.tasks.length;
               const completedCount = project.tasks.filter(t =>
@@ -192,7 +193,7 @@ export default async function DashboardPage() {
               const progressPercent = taskCount > 0 ? (completedCount / taskCount) * 100 : 0;
               const allDone = taskCount > 0 && completedCount === taskCount;
               return (
-                <Link key={project.id} href={`/projects/${project.id}`}>
+                <Link key={project.id} href={project.project_type === "heatmap" ? `/heatmap/${project.id}` : `/projects/${project.id}`} className="block">
                   <Card className={cn(
                     "hover:shadow-md transition-all active:scale-[0.99] border-l-4",
                     allDone ? "border-l-green-500 bg-green-50/50" : "border-l-primary"
@@ -202,6 +203,17 @@ export default async function DashboardPage() {
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-sm truncate">{project.title}</p>
                           <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            {project.project_type === "heatmap" ? (
+                              <Badge variant="secondary" className="text-xs shrink-0">
+                                <MapPin className="h-3 w-3 mr-1" />
+                                {L.volunteer.projects.heatmapLabel}
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary" className="text-xs shrink-0">
+                                <FolderOpen className="h-3 w-3 mr-1" />
+                                {t(L.volunteer.projects.taskCount, { count: taskCount })}
+                              </Badge>
+                            )}
                             {project.completion_bonus_points > 0 && (
                               <Badge variant="success" className="text-xs shrink-0">
                                 {t(L.volunteer.dashboard.bonus, { points: project.completion_bonus_points })}
