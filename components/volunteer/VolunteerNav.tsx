@@ -70,7 +70,7 @@ export function VolunteerNav({ role }: VolunteerNavProps) {
                 )}>
                   <Icon className="h-5 w-5" />
                 </div>
-                <span className={cn("text-[10px] font-medium leading-none", active && "font-semibold")}>{label}</span>
+                <span className={cn("text-[10px] font-medium leading-tight text-center", active && "font-semibold")}>{label}</span>
               </Link>
             );
           })}
