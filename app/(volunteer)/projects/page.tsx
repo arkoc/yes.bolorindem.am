@@ -66,6 +66,9 @@ export default async function ProjectsPage() {
               (taskCompletionCount[t.id] ?? 0) >= (t.max_completions_per_user ?? 1)
             ).length;
             const progressPercent = taskCount > 0 ? (completedCount / taskCount) * 100 : 0;
+            const daysLeft = project.end_date
+              ? Math.ceil((new Date(project.end_date).getTime() - Date.now()) / 86_400_000)
+              : null;
             return (
             <Link key={project.id} href={isHeatmap ? `/heatmap/${project.id}` : `/projects/${project.id}`} className="block">
               <Card className="hover:shadow-md transition-all active:scale-[0.99] cursor-pointer border-l-4 border-l-primary">
@@ -83,12 +86,19 @@ export default async function ProjectsPage() {
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-base leading-snug">{project.title}</CardTitle>
-                    {project.completion_bonus_points > 0 && (
-                      <Badge variant="success" className="shrink-0 text-xs">
-                        <Star className="h-3 w-3 mr-1" />
-                        {formatPoints(project.completion_bonus_points)} bonus
-                      </Badge>
-                    )}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {daysLeft !== null && daysLeft >= 0 && (
+                        <Badge variant={daysLeft === 0 ? "destructive" : daysLeft <= 7 ? "warning" : "secondary"} className="text-xs">
+                          {daysLeft === 0 ? L.volunteer.projects.lastDay : t(L.volunteer.projects.daysLeft, { days: daysLeft })}
+                        </Badge>
+                      )}
+                      {project.completion_bonus_points > 0 && (
+                        <Badge variant="success" className="text-xs">
+                          <Star className="h-3 w-3 mr-1" />
+                          {formatPoints(project.completion_bonus_points)} bonus
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                   {project.description && (
                     <CardDescription className="text-sm line-clamp-2">

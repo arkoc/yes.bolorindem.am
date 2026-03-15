@@ -194,6 +194,9 @@ export default async function DashboardPage() {
               ).length;
               const progressPercent = taskCount > 0 ? (completedCount / taskCount) * 100 : 0;
               const allDone = taskCount > 0 && completedCount === taskCount;
+              const daysLeft = project.end_date
+                ? Math.ceil((new Date(project.end_date).getTime() - Date.now()) / 86_400_000)
+                : null;
               return (
                 <Link key={project.id} href={project.project_type === "heatmap" ? `/heatmap/${project.id}` : `/projects/${project.id}`} className="block">
                   <Card className={cn(
@@ -214,6 +217,11 @@ export default async function DashboardPage() {
                               <Badge variant="secondary" className="text-xs shrink-0">
                                 <FolderOpen className="h-3 w-3 mr-1" />
                                 {t(L.volunteer.projects.taskCount, { count: taskCount })}
+                              </Badge>
+                            )}
+                            {daysLeft !== null && daysLeft >= 0 && (
+                              <Badge variant={daysLeft === 0 ? "destructive" : daysLeft <= 7 ? "warning" : "secondary"} className="text-xs shrink-0">
+                                {daysLeft === 0 ? L.volunteer.projects.lastDay : t(L.volunteer.projects.daysLeft, { days: daysLeft })}
                               </Badge>
                             )}
                             {project.completion_bonus_points > 0 && (

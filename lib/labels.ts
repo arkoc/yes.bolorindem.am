@@ -102,6 +102,8 @@ const L = {
       emptyText: "Առաջադրանքները կհայտնվեն այստեղ",
       dateFrom: "{date}-ից",
       dateUntil: "Մինչև {date}",
+      daysLeft: "{days} օր մնաց",
+      lastDay: "Վերջին օրն է",
       heatmapLabel: "Քարտեզ",
     },
 
