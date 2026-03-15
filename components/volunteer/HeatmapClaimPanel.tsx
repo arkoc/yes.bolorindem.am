@@ -4,6 +4,7 @@ import { MapPin, X, Navigation, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { type HeatmapPoint } from "./heatmap-types";
 import L, { t } from "@/lib/labels";
+import Link from "next/link";
 
 function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371000;
@@ -93,8 +94,8 @@ export function HeatmapClaimPanel({
           <CheckCircle className="h-4 w-4 shrink-0" />
           <span>
             {L.heatmap.alreadyClaimed}
-            {point.claimer_name && (
-              <span className="font-medium"> — {point.claimer_name}</span>
+            {point.claimer_name && point.claimed_by && (
+              <span className="font-medium"> — <Link href={`/profile/${point.claimed_by}`} className="underline hover:no-underline">{point.claimer_name}</Link></span>
             )}
           </span>
         </div>
