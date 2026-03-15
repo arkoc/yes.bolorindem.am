@@ -557,6 +557,8 @@ const L = {
     claimSuccessPoints: "+{points} միավոր",
     errorTooFar: "{distance}մ հեռավորություն (առավելագույնը՝ {radius}մ)",
     errorGeneric: "Ինչ-որ բան այն չէ",
+    errorBanned: "Ձեր հաշիվը արգելափակված է GPS կեղծման կասկածով։",
+    errorDailyLimit: "24 ժամում կարող եք վերցնել առավելագույնը 10 կետ։",
     withinRange: "Դուք մոտ եք ({distance}մ)",
     tooFarLocation: "{distance}մ հեռավորություն (առավելագույնը՝ {radius}մ)",
     recenterBtn: "Կենտրոնացնել",
@@ -653,6 +655,111 @@ const L = {
     toastFailed: "Չհաջողվեց չեղարկել",
     toastSuccess: "−{points} միավոր",
   },
+
+  bounty: {
+    // Projects list section header
+    sectionTitle: "Օգտատերերի Բաունտիներ",
+
+    // Create form
+    createTitle: "Ստեղծել բաունտի",
+    createSubtitle: "Ստեղծեք առաջադրանք, որը կարող է կատարել յուրաքանչյուրը",
+    titleLabel: "Վերնագիր *",
+    titlePlaceholder: "Ի՞նչ պետք է անել",
+    titleRequired: "Պարտադիր է",
+    descriptionLabel: "Նկարագրություն *",
+    descriptionPlaceholder: "Մանրամասն նկարագրեք...",
+    descriptionRequired: "Պարտադիր է",
+    proofHintLabel: "Ապացույցի հրահանգ",
+    proofHintPlaceholder: "Օր.՝ Ուղարկեք լուսանկար տվյալ վայրից",
+    rewardLabel: "Պարգև (միավոր) *",
+    rewardMin: "Նվազագույնը 10 միավոր",
+    repeatableLabel: "Բազմակի կատարում",
+    repeatableHint: "Յուրաքանչյուր օգտատեր կարող է կատարել մեկ անգամ",
+    maxCompletionsLabel: "Կատարողների առավ. քանակ *",
+    maxCompletionsMin: "Նվազագույնը 2",
+    balanceHintRepeatable: "Կսառեցվի {total} մվր ({reward} × {count})",
+    expiresLabel: "Ժամկետ (ըստ ցանկության)",
+    balanceHint: "Հաշվեկշիռ՝ {balance} մվր · Կսառեցվի {reward} մվր",
+    insufficientPoints: "Միավորները չեն բավականացնում",
+    submitBtn: "Ստեղծել (−{points} մվր)",
+    createSuccess: "Բաունտին ստեղծված է",
+    createFailed: "Չհաջողվեց ստեղծել",
+    backLink: "Հետ",
+
+    // Bounty detail page
+    statusOpen: "Բաց",
+    statusClosed: "Ավարտված",
+    statusPendingReview: "Ստուգվում է",
+    statusAccepted: "Ընդունված",
+    statusDisputed: "Վիճարկված",
+    statusCancelled: "Չեղարկված",
+    statusRejected: "Մերժված",
+    postedBy: "Հեղինակ",
+    completedBy: "Կատարող",
+    reward: "Պարգև",
+    rewardPoints: "{points} միավոր",
+    expiresAt: "Վերջնաժամկետ՝ {date}",
+    proofHintTitle: "Ինչպես ապացուցել",
+    noProofHint: "Ցուցումներ չկան",
+
+    // Complete (target user submits proof)
+    completeTitle: "Կատարել առաջադրանքը",
+    uploadProofLabel: "Վերբեռնեք ապացույցը",
+    uploadProofHint: "Լուսանկար (տեսախցիկ կամ պատկերասրահ)",
+    uploadBtn: "Նկարել / Ընտրել",
+    submitProofBtn: "Ուղարկել ապացույցը",
+    submitProofSuccess: "Ապացույցն ընդունված է, {points} մվր շնորհվել է",
+    submitProofFailed: "Չհաջողվեց ուղարկել",
+
+    // Auto-accept countdown
+    autoAcceptIn: "Ինքնաշխատ հաստատում {hours}ժ-ից",
+    autoAcceptExpired: "Ինքնաշխատ հաստատումը ակտիվ է",
+    pendingReviewHint: "Սպասում է ստուգման",
+
+    // Creator actions
+    acceptBtn: "Ընդունել",
+    disputeBtn: "Վիճարկել",
+    disputeConfirmPrompt: "Համոզվա՞ծ եք, որ ուզում եք վիճարկել",
+    disputeConfirmYes: "Այո, վիճարկել",
+    disputeConfirmCancel: "Ոչ",
+    cancelBtn: "Չեղարկել",
+    completionsCount: "{accepted} / {max} կատարված",
+    completionsHeader: "Ներկայացված ապացույցներ",
+    cancelConfirm: "Չեղարկե՞լ բաունտին (կվերադարձվի {points} մվր)",
+    acceptSuccess: "{points} մվր փոխանցվեց {name}-ին",
+    acceptFailed: "Չհաջողվեց հաստատել",
+    disputeSuccess: "Վիճարկումն ուղարկված է ադմինին",
+    disputeFailed: "Չհաջողվեց վիճարկել",
+    cancelSuccess: "{points} մվր վերադարձվեց",
+    cancelFailed: "Չհաջողվեց չեղարկել",
+
+    // Results
+    acceptedBanner: "Բաունտին հաստատված է · {points} մվր շնորհվեց",
+    autoAcceptedBanner: "Ժամկետն անցել է, հաստատվեց ինքնաշխատ · {points} մվր",
+    disputedBanner: "Վիճարկված է. սպասեք ադմինի որոշմանը",
+    cancelledBanner: "Բաունտին չեղարկված է",
+
+    // Profile page button
+    postBountyBtn: "Ստեղծել բաունտի",
+
+    // Dashboard card
+    dashboardTitle: "Բաունտիներ ձեզ համար",
+    dashboardDesc: "{count} բաց առաջադրանք · {points} մվր ընդամենը",
+    dashboardViewAll: "Տեսնել բոլորը",
+
+    // Projects list group labels
+    groupCampaign: "Արշավի առաջադրանքներ",
+    groupLocation: "Տեղորոշման առաջադրանքներ",
+    groupBounties: "Օգտատերերի բաունտիներ",
+    groupMyBounties: "Իմ բաունտիները",
+    bountyLabel: "Բաունտի",
+
+    // Admin
+    adminTitle: "Բաունտիներ",
+    adminSubtitle: "{count} բաունտի",
+    adminDisputeResolveAccept: "Հաստատել",
+    adminDisputeResolveRefund: "Վերադարձնել հեղինակին",
+},
 } as const;
 
 export default L;

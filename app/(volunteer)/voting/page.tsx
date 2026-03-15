@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Vote, ChevronRight, CheckCircle2, Clock, Lock } from "lucide-react";
+import { Vote, ChevronRight, CheckCircle2, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
 
@@ -55,6 +55,10 @@ export default async function VotingPage() {
     const optionCount = p.poll_options?.[0]?.count ?? 0;
     const voteCount = p.poll_votes?.[0]?.count ?? 0;
 
+    const daysLeft = p.expires_at && !closed
+      ? Math.ceil((new Date(p.expires_at).getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+      : null;
+
     return (
       <Link href={`/voting/${p.id}`}>
         <Card className={cn(
@@ -65,8 +69,8 @@ export default async function VotingPage() {
               ? "border-l-green-500"
               : "border-l-primary"
         )}>
-          <CardContent className="py-3 px-4">
-            <div className="flex items-center gap-3">
+          <CardContent className="py-4 px-4">
+            <div className="flex items-start gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className={cn("font-medium text-sm", closed && "text-muted-foreground")}>{p.title}</p>
@@ -82,25 +86,24 @@ export default async function VotingPage() {
                       {L.volunteer.voting.pollClosed}
                     </Badge>
                   )}
+                  {daysLeft !== null && daysLeft >= 0 && (
+                    <Badge variant={daysLeft === 0 ? "destructive" : daysLeft <= 3 ? "warning" : "secondary"} className="text-xs shrink-0">
+                      {daysLeft === 0 ? L.volunteer.projects.lastDay : t(L.volunteer.projects.daysLeft, { days: daysLeft })}
+                    </Badge>
+                  )}
                 </div>
                 {p.description && (
-                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{p.description}</p>
+                  <p className="text-xs text-muted-foreground mt-1 truncate">{p.description}</p>
                 )}
-                <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground flex-wrap">
+                <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
                   <span>{t(L.volunteer.voting.optionCount, { count: optionCount })}</span>
                   <span>{t(L.volunteer.voting.totalVotes, { count: voteCount })}</span>
                   {(p.points_per_vote ?? 0) > 0 && !closed && !voted && (
                     <span className="text-green-600 font-semibold">+{p.points_per_vote} pts</span>
                   )}
-                  {p.expires_at && !closed && (
-                    <span className="flex items-center gap-1 text-orange-500">
-                      <Clock className="h-3 w-3" />
-                      {t(L.volunteer.voting.expiresAt, { date: new Date(p.expires_at).toLocaleDateString() })}
-                    </span>
-                  )}
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
             </div>
           </CardContent>
         </Card>
@@ -119,33 +122,37 @@ export default async function VotingPage() {
       </div>
 
       {/* Active polls */}
-      <section className="space-y-2">
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+      <section>
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
           {L.volunteer.voting.activeTitle}
         </h2>
-        {activePollsList.length > 0 ? (
-          activePollsList.map((p: Parameters<typeof PollCard>[0]["p"] & { id: string }) => (
-            <PollCard key={p.id} p={p} voted={votedPollIds.has(p.id)} closed={false} />
-          ))
-        ) : (
-          <Card>
-            <CardContent className="py-8 text-center">
-              <Vote className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">{L.volunteer.voting.emptyActive}</p>
-            </CardContent>
-          </Card>
-        )}
+        <div className="flex flex-col gap-3">
+          {activePollsList.length > 0 ? (
+            activePollsList.map((p: Parameters<typeof PollCard>[0]["p"] & { id: string }) => (
+              <PollCard key={p.id} p={p} voted={votedPollIds.has(p.id)} closed={false} />
+            ))
+          ) : (
+            <Card>
+              <CardContent className="py-8 text-center">
+                <Vote className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">{L.volunteer.voting.emptyActive}</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </section>
 
       {/* Closed polls */}
       {closedPollsList.length > 0 && (
-        <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+        <section>
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
             {L.volunteer.voting.closedTitle}
           </h2>
-          {closedPollsList.map((p: Parameters<typeof PollCard>[0]["p"] & { id: string }) => (
-            <PollCard key={p.id} p={p} voted={votedPollIds.has(p.id)} closed={true} />
-          ))}
+          <div className="flex flex-col gap-3">
+            {closedPollsList.map((p: Parameters<typeof PollCard>[0]["p"] & { id: string }) => (
+              <PollCard key={p.id} p={p} voted={votedPollIds.has(p.id)} closed={true} />
+            ))}
+          </div>
         </section>
       )}
     </div>

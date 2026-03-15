@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Trophy, Zap, CheckCircle, Award, CheckCheck, ChevronLeft, ExternalLink } from "lucide-react";
-import { cn } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
 import { BadgeZoom } from "@/components/ui/badge-zoom";
 
@@ -74,9 +73,9 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
         <CardContent className="pt-6 pb-6">
           <div className="flex items-center gap-4">
             <UserAvatar name={profile.full_name} size={80} className="shrink-0" />
-            <div>
+            <div className="flex-1 min-w-0">
               <p className="text-xl font-semibold">{profile.full_name}</p>
-              <div className="mt-2 flex items-center gap-2">
+              <div className="mt-2 flex items-center gap-2 flex-wrap">
                 <Badge variant={profile.role === "admin" ? "default" : profile.role === "leader" ? "secondary" : "outline"}>
                   {profile.role}
                 </Badge>

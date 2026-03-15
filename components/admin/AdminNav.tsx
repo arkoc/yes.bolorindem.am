@@ -14,6 +14,7 @@ import {
   Share2,
   Vote,
   Landmark,
+  Coins,
   ArrowLeft,
   Menu,
   X,
@@ -29,6 +30,7 @@ const navItems = [
   { href: "/admin/points", icon: Star, label: L.admin.nav.pointGrants },
   { href: "/admin/notifications", icon: Bell, label: L.admin.nav.notifications },
   { href: "/admin/referrals", icon: Share2, label: L.admin.nav.referrals },
+  { href: "/admin/bounties", icon: Coins, label: L.bounty.adminTitle },
   { href: "/admin/elections", icon: Landmark, label: "Yntrutyunner 2026" },
 ];
 

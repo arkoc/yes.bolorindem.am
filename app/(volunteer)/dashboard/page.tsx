@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Star, FolderOpen, ArrowRight, Zap, Award, Users, Activity, MapPin, Calendar } from "lucide-react";
+import { Trophy, Star, FolderOpen, ArrowRight, Zap, Award, Users, Activity, MapPin, Calendar, Coins } from "lucide-react";
 import { cn } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
 import { BadgeZoom } from "@/components/ui/badge-zoom";
@@ -21,7 +21,7 @@ export default async function DashboardPage() {
 
   const adminClient = createAdminClient();
 
-  const [profileRes, rankRes, activeProjectsRes, earnedBadgesRes, allBadgesRes, referralRes, recentActivityRes] = await Promise.all([
+  const [profileRes, rankRes, activeProjectsRes, earnedBadgesRes, allBadgesRes, referralRes, recentActivityRes, openBountiesRes] = await Promise.all([
     supabase
       .from("profiles")
       .select("full_name, total_points, role, referral_code, avatar_url")
@@ -53,6 +53,11 @@ export default async function DashboardPage() {
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(5),
+    supabase
+      .from("user_bounties")
+      .select("id, reward_points", { count: "exact" })
+      .eq("target_user_id", user.id)
+      .eq("status", "open"),
   ]);
 
   const profile = profileRes.data;
@@ -86,6 +91,8 @@ export default async function DashboardPage() {
   const totalBadges = allBadges.length;
   const referralCode = (profile as { referral_code?: string | null } | null)?.referral_code ?? null;
   const referralCount = referralRes.count ?? 0;
+  const openBountyCount = openBountiesRes.count ?? 0;
+  const openBountyPoints = ((openBountiesRes.data ?? []) as { reward_points: number }[]).reduce((s, b) => s + b.reward_points, 0);
   const earnedBadgeIds = new Set(earnedBadges.map(b => b.badge_id));
   const earnedList = earnedBadges.slice(0, 5).map(b => ({ id: b.badge_id, ...b.badges, earned: true }));
   const unearnedList = allBadges.filter(b => !earnedBadgeIds.has(b.id)).map(b => ({ ...b, earned: false }));
@@ -267,6 +274,26 @@ export default async function DashboardPage() {
             </Button>
           </CardContent>
         </Card>
+      )}
+
+      {/* Bounties card */}
+      {openBountyCount > 0 && (
+        <Link href="/projects" className="block">
+          <Card className="hover:shadow-md transition-all active:scale-[0.99] border-l-4 border-l-yellow-500">
+            <CardContent className="py-3 px-4 flex items-center gap-3">
+              <div className="p-1.5 rounded-lg bg-yellow-100 shrink-0">
+                <Coins className="h-4 w-4 text-yellow-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold">{L.bounty.dashboardTitle}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t(L.bounty.dashboardDesc, { count: openBountyCount, points: openBountyPoints })}
+                </p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+            </CardContent>
+          </Card>
+        </Link>
       )}
 
       {/* Badges section */}

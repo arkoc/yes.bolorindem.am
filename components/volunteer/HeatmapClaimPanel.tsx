@@ -116,6 +116,10 @@ export function HeatmapClaimPanel({
           <span>
             {result.reason === "too_far"
               ? t(L.heatmap.errorTooFar, { distance: result.distance ?? 0, radius: CLAIM_RADIUS_METERS })
+              : result.reason === "banned"
+              ? L.heatmap.errorBanned
+              : result.reason === "daily_limit"
+              ? L.heatmap.errorDailyLimit
               : L.heatmap.errorGeneric}
           </span>
         </div>
