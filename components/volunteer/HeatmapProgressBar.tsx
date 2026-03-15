@@ -8,11 +8,13 @@ interface HeatmapProgressBarProps {
   total: number;
   userClaimed: number;
   userPoints: number;
+  dailyCount: number;
 }
 
 const COMPLETION_BONUS = 10_000;
+const DAILY_LIMIT = 10;
 
-export function HeatmapProgressBar({ claimed, total, userClaimed, userPoints }: HeatmapProgressBarProps) {
+export function HeatmapProgressBar({ claimed, total, userClaimed, userPoints, dailyCount }: HeatmapProgressBarProps) {
   const [showInfo, setShowInfo] = useState(false);
   const pct = total > 0 ? Math.round((claimed / total) * 100) : 0;
   const estimatedBonus =
@@ -95,6 +97,27 @@ export function HeatmapProgressBar({ claimed, total, userClaimed, userPoints }: 
             )}
           </span>
         )}
+      </div>
+
+      {/* Daily limit indicator */}
+      <div className="mt-2 pt-2" style={{ borderTop: "1px solid #e5e7eb" }}>
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-xs text-muted-foreground">{t(L.heatmap.dailyLimitStat, { used: dailyCount })}</span>
+          <span className="text-xs font-medium" style={{ color: dailyCount >= DAILY_LIMIT ? "#cc0000" : dailyCount >= 7 ? "#d97706" : "#16a34a" }}>
+            {DAILY_LIMIT - dailyCount > 0 ? `${DAILY_LIMIT - dailyCount} մնաց` : "սպառված"}
+          </span>
+        </div>
+        <div style={{ height: 4, borderRadius: 2, background: "#e5e7eb", overflow: "hidden" }}>
+          <div
+            style={{
+              height: "100%",
+              width: `${Math.min(100, (dailyCount / DAILY_LIMIT) * 100)}%`,
+              background: dailyCount >= DAILY_LIMIT ? "#cc0000" : dailyCount >= 7 ? "#d97706" : "#16a34a",
+              borderRadius: 2,
+              transition: "width 0.4s ease",
+            }}
+          />
+        </div>
       </div>
 
       {/* Expandable explanation */}

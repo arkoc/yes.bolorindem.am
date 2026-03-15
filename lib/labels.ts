@@ -540,6 +540,7 @@ const L = {
     userStatPrefix: "Ձեր",
     userStatPoints: "{points} միավոր",
     userStatBonusEstimate: "(+{bonus})",
+    dailyLimitStat: "{used}/10 օրական",
 
     // Info panel
     infoMapTitle: "Քարտեզ",

@@ -60,6 +60,14 @@ export default async function HeatmapPage({
     profiles: undefined,
   }));
 
+  // Count how many dots user has claimed in the last 24h (global, across all projects)
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { count: dailyCount } = await admin
+    .from("heatmap_points")
+    .select("id", { count: "exact", head: true })
+    .eq("claimed_by", user.id)
+    .gte("claimed_at", since);
+
   return (
     <div style={{ width: "100%", height: "100dvh", overflow: "hidden" }}>
       <HeatmapMapView
@@ -67,6 +75,7 @@ export default async function HeatmapPage({
         projectId={projectId}
         currentUserId={user.id}
         currentUserName={profile?.full_name ?? ""}
+        initialDailyCount={dailyCount ?? 0}
       />
     </div>
   );

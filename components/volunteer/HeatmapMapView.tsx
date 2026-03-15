@@ -34,13 +34,15 @@ interface HeatmapMapViewProps {
   projectId: string;
   currentUserId: string;
   currentUserName: string;
+  initialDailyCount: number;
 }
 
-export function HeatmapMapView({ initialPoints, projectId, currentUserId, currentUserName }: HeatmapMapViewProps) {
+export function HeatmapMapView({ initialPoints, projectId, currentUserId, currentUserName, initialDailyCount }: HeatmapMapViewProps) {
   const mapRef = useRef<MapRef>(null);
   const [points, setPoints] = useState<HeatmapPoint[]>(initialPoints);
   const [selectedPoint, setSelectedPoint] = useState<HeatmapPoint | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [dailyCount, setDailyCount] = useState(initialDailyCount);
   const [claimResult, setClaimResult] = useState<{
     ok: boolean;
     reason?: string;
@@ -230,6 +232,7 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
         setSelectedPoint((prev) =>
           prev ? { ...prev, claimed_by: currentUserId, claimer_name: currentUserName } : prev
         );
+        setDailyCount((c) => c + 1);
       }
     } catch {
       setClaimResult({ ok: false, reason: "network_error" });
@@ -246,6 +249,7 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
         total={points.length}
         userClaimed={userClaimedCount}
         userPoints={userPoints}
+        dailyCount={dailyCount}
       />
 
       <Map
