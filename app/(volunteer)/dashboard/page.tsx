@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Star, FolderOpen, ArrowRight, Zap, Award, Users, Activity, MapPin } from "lucide-react";
+import { Trophy, Star, FolderOpen, ArrowRight, Zap, Award, Users, Activity, MapPin, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
 import { BadgeZoom } from "@/components/ui/badge-zoom";
@@ -34,7 +34,7 @@ export default async function DashboardPage() {
       .single(),
     supabase
       .from("projects")
-      .select("id, title, completion_bonus_points, project_type, tasks(id, max_completions_per_user)")
+      .select("id, title, completion_bonus_points, project_type, start_date, end_date, tasks(id, max_completions_per_user)")
       .eq("status", "active")
       .limit(4),
     supabase
@@ -62,6 +62,8 @@ export default async function DashboardPage() {
     title: string;
     completion_bonus_points: number;
     project_type: string;
+    start_date: string | null;
+    end_date: string | null;
     tasks: { id: string; max_completions_per_user: number | null }[];
   }[];
 
@@ -220,6 +222,16 @@ export default async function DashboardPage() {
                               </Badge>
                             )}
                           </div>
+                          {(project.start_date || project.end_date) && (
+                            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                              <Calendar className="h-3 w-3 shrink-0" />
+                              {project.start_date && project.end_date
+                                ? `${new Date(project.start_date).toLocaleDateString()} – ${new Date(project.end_date).toLocaleDateString()}`
+                                : project.start_date
+                                ? t(L.volunteer.projects.dateFrom, { date: new Date(project.start_date).toLocaleDateString() })
+                                : t(L.volunteer.projects.dateUntil, { date: new Date(project.end_date!).toLocaleDateString() })}
+                            </p>
+                          )}
                           {taskCount > 0 && (
                             <div className="mt-2 space-y-0.5">
                               <Progress value={progressPercent} className="h-1.5" />
