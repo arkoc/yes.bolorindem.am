@@ -752,6 +752,7 @@ const L = {
     groupLocation: "Տեղորոշման առաջադրանքներ",
     groupBounties: "Օգտատերերի բաունտիներ",
     groupMyBounties: "Իմ բաունտիները",
+    groupMyCompletedBounties: "Կատարված բաունտիներ",
     bountyLabel: "Բաունտի",
 
     // Admin

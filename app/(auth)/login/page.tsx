@@ -280,15 +280,14 @@ export default function LoginPage() {
                 )}
 
                 {TURNSTILE_SITE_KEY && (
-                  <div className="rounded-md border border-input overflow-hidden">
+                  <div className="flex items-center justify-center rounded-xl overflow-hidden bg-muted/40 py-1">
                     <Turnstile
                       ref={turnstileRef}
                       siteKey={TURNSTILE_SITE_KEY}
                       onSuccess={(token) => setCaptchaToken(token)}
                       onExpire={() => setCaptchaToken(null)}
                       onError={() => setCaptchaToken(null)}
-                      options={{ size: "flexible", theme: "light", appearance: "interaction-only" }}
-                      style={{ width: "100%" }}
+                      options={{ size: "compact", theme: "light", appearance: "interaction-only" }}
                     />
                   </div>
                 )}

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FolderOpen, Calendar, ArrowRight, Star, MapPin, Coins, Plus, Repeat2 } from "lucide-react";
+import { FolderOpen, Calendar, ArrowRight, Star, MapPin, Coins, Plus, Repeat2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatPoints } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
@@ -15,7 +15,7 @@ export default async function ProjectsPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [projectsRaw, bountiesRaw, myBountiesRaw] = await Promise.all([
+  const [projectsRaw, bountiesRaw, myBountiesRaw, profileRaw, myCompletionsRaw] = await Promise.all([
     supabase
       .from("projects")
       .select("id, title, description, banner_url, status, start_date, end_date, completion_bonus_points, project_type, tasks(id, max_completions_per_user)")
@@ -32,6 +32,18 @@ export default async function ProjectsPage() {
       .select("id, title, description, reward_points, is_repeatable, max_completions, status, created_at, creator_id, creator:profiles!user_bounties_creator_id_fkey(full_name)")
       .eq("creator_id", user.id)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("profiles")
+      .select("total_points")
+      .eq("id", user.id)
+      .single(),
+    supabase
+      .from("bounty_completions")
+      .select("id, status, created_at, bounty:user_bounties(id, title, reward_points, is_repeatable, creator_id, creator:profiles!user_bounties_creator_id_fkey(full_name))")
+      .eq("user_id", user.id)
+      .neq("status", "rejected")
+      .order("created_at", { ascending: false })
+      .limit(20),
   ]);
 
   const projects = (projectsRaw.data ?? []) as {
@@ -60,8 +72,17 @@ export default async function ProjectsPage() {
     creator: { full_name: string } | null;
   };
 
+  type CompletionItem = {
+    id: string;
+    status: string;
+    created_at: string;
+    bounty: BountyItem | null;
+  };
+
   const bounties = (bountiesRaw.data ?? []) as unknown as BountyItem[];
   const myBounties = (myBountiesRaw.data ?? []) as unknown as BountyItem[];
+  const myCompletions = (myCompletionsRaw.data ?? []) as unknown as CompletionItem[];
+  const userPoints = profileRaw.data?.total_points ?? 0;
 
   const allTaskIds = projects.flatMap(p => p.tasks.map(t => t.id));
   const { data: completionsRaw } = allTaskIds.length > 0
@@ -168,17 +189,29 @@ export default async function ProjectsPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-6">
-      <div className="pt-2 flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">{L.volunteer.projects.title}</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            {L.volunteer.projects.subtitle}
-          </p>
+      <div className="pt-2 space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold">{L.volunteer.projects.title}</h1>
+            <p className="text-muted-foreground text-sm mt-1">
+              {L.volunteer.projects.subtitle}
+            </p>
+          </div>
+          <Button asChild size="sm" variant="outline" className="shrink-0 gap-1 mt-1 hidden sm:inline-flex">
+            <Link href="/bounties/create">
+              <Plus className="h-3.5 w-3.5" />
+              {L.bounty.createTitle}
+            </Link>
+          </Button>
         </div>
-        <Button asChild size="sm" variant="outline" className="shrink-0 gap-1 mt-1">
+        {/* Mobile create bounty button */}
+        <Button asChild className="w-full gap-2 sm:hidden">
           <Link href="/bounties/create">
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="h-4 w-4" />
             {L.bounty.createTitle}
+            <span className="ml-auto text-xs opacity-75 font-normal flex items-center gap-1">
+              <Coins className="h-3.5 w-3.5" />{formatPoints(userPoints)}
+            </span>
           </Link>
         </Button>
       </div>
@@ -227,6 +260,38 @@ export default async function ProjectsPage() {
           </h2>
           {myBounties.map((b) => (
             <BountyCard key={b.id} b={b} mine />
+          ))}
+        </section>
+      )}
+
+      {/* Bounties I completed */}
+      {myCompletions.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            {L.bounty.groupMyCompletedBounties}
+          </h2>
+          {myCompletions.filter(c => c.bounty).map((c) => (
+            <Link key={c.id} href={`/bounties/${c.bounty!.id}`} className="block">
+              <Card className="hover:shadow-md transition-all active:scale-[0.99] cursor-pointer border-l-4 border-l-muted-foreground/30 opacity-80">
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <CardTitle className="text-base leading-snug text-muted-foreground">{c.bounty!.title}</CardTitle>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Badge variant={c.status === "accepted" ? "success" : c.status === "disputed" ? "destructive" : "warning"} className="text-xs">
+                        +{c.bounty!.reward_points}
+                      </Badge>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0 pb-3">
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Coins className="h-3.5 w-3.5" />
+                    {L.bounty.bountyLabel} · {c.bounty!.creator?.full_name}
+                  </span>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </section>
       )}
