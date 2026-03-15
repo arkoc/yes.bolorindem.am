@@ -17,7 +17,7 @@ import { type HeatmapPoint } from "./heatmap-types";
 import L, { t } from "@/lib/labels";
 
 const MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
-const CLAIM_RADIUS_METERS = 15;
+const CLAIM_RADIUS_METERS = 20;
 
 function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371000;
