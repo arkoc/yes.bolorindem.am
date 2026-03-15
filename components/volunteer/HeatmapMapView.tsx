@@ -49,6 +49,13 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
   } | null>(null);
   const [claiming, setClaiming] = useState(false);
 
+  // Lock body scroll while fullscreen map is mounted
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
   // Continuous GPS tracking — essential for a walking game
   const hasFlownToUser = useRef(false);
   useEffect(() => {
