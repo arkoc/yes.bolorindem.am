@@ -100,19 +100,22 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
     };
   }, [startWatch]);
 
-  // Pull-to-refresh: only when drag starts in the top bar area (progress bar / error banner).
-  // The map captures all touch events so we listen at window level and guard by startY < 60.
+  // Pull-to-refresh: an invisible overlay div sits above the map canvas so MapLibre never
+  // captures the touchstart. Per the touch spec, touchmove/touchend always fire on the same
+  // element as touchstart, so window-level move/end listeners work correctly after that.
   const [pullDistance, setPullDistance] = useState(0);
   const pullRef = useRef({ startY: 0, startX: 0, pulling: false, distance: 0 });
+
+  const handlePullTouchStart = useCallback((e: React.TouchEvent) => {
+    const t = e.touches[0];
+    pullRef.current.startY = t.clientY;
+    pullRef.current.startX = t.clientX;
+    pullRef.current.pulling = true;
+    pullRef.current.distance = 0;
+  }, []);
+
   useEffect(() => {
     const pr = pullRef.current;
-    const onTouchStart = (e: TouchEvent) => {
-      const t = e.touches[0];
-      pr.startY = t.clientY;
-      pr.startX = t.clientX;
-      pr.pulling = t.clientY < 60;
-      pr.distance = 0;
-    };
     const onTouchMove = (e: TouchEvent) => {
       if (!pr.pulling) return;
       const dy = e.touches[0].clientY - pr.startY;
@@ -132,11 +135,9 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
       pr.distance = 0;
       setPullDistance(0);
     };
-    window.addEventListener("touchstart", onTouchStart, { passive: true });
     window.addEventListener("touchmove", onTouchMove, { passive: true });
     window.addEventListener("touchend", onTouchEnd, { passive: true });
     return () => {
-      window.removeEventListener("touchstart", onTouchStart);
       window.removeEventListener("touchmove", onTouchMove);
       window.removeEventListener("touchend", onTouchEnd);
     };
@@ -306,6 +307,12 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
         userClaimed={userClaimedCount}
         userPoints={userPoints}
         dailyCount={dailyCount}
+      />
+
+      {/* Pull-to-refresh touch zone — invisible, sits above map so MapLibre doesn't capture touchstart */}
+      <div
+        onTouchStart={handlePullTouchStart}
+        style={{ position: "absolute", top: 0, left: 0, right: 0, height: 80, zIndex: 15, touchAction: "pan-y" }}
       />
 
       {/* Pull-to-refresh indicator */}

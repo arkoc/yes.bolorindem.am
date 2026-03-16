@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { VolunteerNav } from "@/components/volunteer/VolunteerNav";
+import { PullToRefresh } from "@/components/volunteer/PullToRefresh";
 
 export default async function VolunteerLayout({
   children,
@@ -25,6 +26,7 @@ export default async function VolunteerLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <PullToRefresh />
       {/* Main content with bottom padding for nav */}
       <main className="pb-20 md:pb-0 md:pl-64">
         {children}

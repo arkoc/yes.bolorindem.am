@@ -91,7 +91,7 @@ export function HeatmapProgressBar({ claimed, total, userClaimed, userPoints, da
         {userClaimed > 0 && (
           <span className="text-xs text-muted-foreground">
             {L.heatmap.userStatPrefix}{" "}
-            <span className="font-medium text-foreground">{t(L.heatmap.userStatPoints, { points: userPoints })}</span>
+            <span className="font-medium text-foreground">{t(L.heatmap.userStatPoints, { points: userPoints, dots: userClaimed })}</span>
             {estimatedBonus !== null && (
               <span className="text-amber-600 font-medium"> {t(L.heatmap.userStatBonusEstimate, { bonus: estimatedBonus })}</span>
             )}

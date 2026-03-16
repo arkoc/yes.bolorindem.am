@@ -538,7 +538,7 @@ const L = {
     completionBonusPrefix: "Հավելյալ",
     completionBonusSuffix: "բոնուս",
     userStatPrefix: "Ձեր",
-    userStatPoints: "{points} միավոր",
+    userStatPoints: "{points} մվր ({dots} կետ)",
     userStatBonusEstimate: "(+{bonus})",
     dailyLimitStat: "{used}/10 օրական",
 
