@@ -100,6 +100,48 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
     };
   }, [startWatch]);
 
+  // Pull-to-refresh: only when drag starts in the top bar area (progress bar / error banner).
+  // The map captures all touch events so we listen at window level and guard by startY < 60.
+  const [pullDistance, setPullDistance] = useState(0);
+  const pullRef = useRef({ startY: 0, startX: 0, pulling: false, distance: 0 });
+  useEffect(() => {
+    const pr = pullRef.current;
+    const onTouchStart = (e: TouchEvent) => {
+      const t = e.touches[0];
+      pr.startY = t.clientY;
+      pr.startX = t.clientX;
+      pr.pulling = t.clientY < 60;
+      pr.distance = 0;
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!pr.pulling) return;
+      const dy = e.touches[0].clientY - pr.startY;
+      const dx = Math.abs(e.touches[0].clientX - pr.startX);
+      if (dy > 0 && dy > dx) {
+        pr.distance = Math.min(dy, 100);
+        setPullDistance(pr.distance);
+      } else {
+        pr.pulling = false;
+        pr.distance = 0;
+        setPullDistance(0);
+      }
+    };
+    const onTouchEnd = () => {
+      if (pr.distance >= 70) window.location.reload();
+      pr.pulling = false;
+      pr.distance = 0;
+      setPullDistance(0);
+    };
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
+  }, []);
+
   // Realtime subscription
   useEffect(() => {
     const supabase = createClient();
@@ -265,6 +307,44 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
         userPoints={userPoints}
         dailyCount={dailyCount}
       />
+
+      {/* Pull-to-refresh indicator */}
+      {pullDistance > 0 && (
+        <div
+          style={{
+            position: "absolute",
+            top: pullDistance - 36,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 25,
+            background: "white",
+            borderRadius: "50%",
+            width: 36,
+            height: 36,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+            transition: "top 0.05s linear",
+            opacity: Math.min(pullDistance / 70, 1),
+          }}
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={pullDistance >= 70 ? "#16a34a" : "#6b7280"}
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ transform: `rotate(${(pullDistance / 70) * 360}deg)` }}
+          >
+            <polyline points="1 4 1 10 7 10" />
+            <path d="M3.51 15a9 9 0 1 0 .49-4" />
+          </svg>
+        </div>
+      )}
 
       {/* Location error banner */}
       {locationError !== null && (
