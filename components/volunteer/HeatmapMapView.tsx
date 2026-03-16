@@ -42,7 +42,9 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
   const [points, setPoints] = useState<HeatmapPoint[]>(initialPoints);
   const [selectedPoint, setSelectedPoint] = useState<HeatmapPoint | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationError, setLocationError] = useState<number | null>(null);
   const [dailyCount, setDailyCount] = useState(initialDailyCount);
+  const watchIdRef = useRef<number | null>(null);
   const [claimResult, setClaimResult] = useState<{
     ok: boolean;
     reason?: string;
@@ -58,28 +60,45 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
     return () => { document.body.style.overflow = prev; };
   }, []);
 
-  // Continuous GPS tracking — essential for a walking game
+  // Continuous GPS tracking with iOS fallback:
+  // 1. Try enableHighAccuracy (GPS). iOS 14+ "Approximate Location" returns POSITION_UNAVAILABLE here.
+  // 2. On POSITION_UNAVAILABLE, fall back to standard accuracy (works with approximate location).
+  // 3. Surface all other errors so the user can act (PERMISSION_DENIED, TIMEOUT).
   const hasFlownToUser = useRef(false);
-  useEffect(() => {
-    const watchId = navigator.geolocation.watchPosition(
+
+  const startWatch = useCallback((highAccuracy: boolean) => {
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+    }
+    watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {
+        setLocationError(null);
         const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setUserLocation(loc);
-        // Fly to user on first fix only
         if (!hasFlownToUser.current) {
           hasFlownToUser.current = true;
-          mapRef.current?.flyTo({
-            center: [loc.lng, loc.lat],
-            zoom: 16,
-            duration: 1200,
-          });
+          mapRef.current?.flyTo({ center: [loc.lng, loc.lat], zoom: 16, duration: 1200 });
         }
       },
-      () => {}, // user denied — they can tap the button later
-      { enableHighAccuracy: true, maximumAge: 5000 }
+      (err) => {
+        // POSITION_UNAVAILABLE (2) with high accuracy = iOS approximate location mode.
+        // Retry once without high accuracy before reporting the error.
+        if (highAccuracy && err.code === err.POSITION_UNAVAILABLE) {
+          startWatch(false);
+        } else {
+          setLocationError(err.code);
+        }
+      },
+      { enableHighAccuracy: highAccuracy, maximumAge: 5000, timeout: 15000 }
     );
-    return () => navigator.geolocation.clearWatch(watchId);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    startWatch(true);
+    return () => {
+      if (watchIdRef.current !== null) navigator.geolocation.clearWatch(watchIdRef.current);
+    };
+  }, [startWatch]);
 
   // Realtime subscription
   useEffect(() => {
@@ -180,21 +199,16 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
     [points]
   );
 
-  // Re-center on user when tapped
+  // Re-center on user when tapped; also retries the watch if location errored
   const handleGetLocation = useCallback(() => {
     if (userLocation) {
       mapRef.current?.flyTo({ center: [userLocation.lng, userLocation.lat], zoom: 16, duration: 800 });
     } else {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          setUserLocation(loc);
-          mapRef.current?.flyTo({ center: [loc.lng, loc.lat], zoom: 16, duration: 800 });
-        },
-        () => {}
-      );
+      // Restart the watch — this prompts the permission dialog again if needed
+      setLocationError(null);
+      startWatch(true);
     }
-  }, [userLocation]);
+  }, [userLocation, startWatch]);
 
   const handleClaim = useCallback(async () => {
     if (!selectedPoint || !userLocation) return;
@@ -251,6 +265,42 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
         userPoints={userPoints}
         dailyCount={dailyCount}
       />
+
+      {/* Location error banner */}
+      {locationError !== null && (
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 20,
+            background: locationError === 1 ? "#7f1d1d" : "#78350f",
+            color: "white",
+            fontSize: 13,
+            padding: "10px 16px",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <span style={{ flex: 1 }}>
+            {locationError === 1
+              ? L.heatmap.locationDenied
+              : locationError === 3
+              ? L.heatmap.locationTimeout
+              : L.heatmap.locationUnavailable}
+          </span>
+          {locationError !== 1 && (
+            <button
+              onClick={() => { setLocationError(null); startWatch(true); }}
+              style={{ color: "white", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", fontSize: 13, flexShrink: 0 }}
+            >
+              {L.heatmap.recenterBtn}
+            </button>
+          )}
+        </div>
+      )}
 
       <Map
         ref={mapRef}
