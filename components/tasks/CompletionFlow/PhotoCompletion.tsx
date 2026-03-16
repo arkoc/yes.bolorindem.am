@@ -170,7 +170,6 @@ export function PhotoCompletion({
           ref={fileInputRef}
           type="file"
           accept="image/*"
-          capture="environment"
           multiple={allowBatchSubmission}
           className="hidden"
           onChange={handleFileChange}

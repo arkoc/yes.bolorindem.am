@@ -244,7 +244,6 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              capture="environment"
               className="hidden"
               onChange={handleFileChange}
             />
