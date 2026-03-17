@@ -690,6 +690,7 @@ const L = {
     balanceHint: "Հաշվեկշիռ՝ {balance} մվր · Կսառեցվի {reward} մվր",
     insufficientPoints: "Միավորները չեն բավականացնում",
     submitBtn: "Ստեղծել (−{points} մվր)",
+    creating: "Ստեղծվում է...",
     createSuccess: "Բոնուսը ստեղծված է",
     createFailed: "Չհաջողվեց ստեղծել",
     backLink: "Հետ",

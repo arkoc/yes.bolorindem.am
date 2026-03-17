@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, ChevronLeft, Coins, ImageIcon, RefreshCw, X } from "lucide-react";
+import { Camera, ChevronLeft, Coins, ImageIcon, Loader2, RefreshCw, X } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import L, { t } from "@/lib/labels";
@@ -282,7 +282,12 @@ export function BountyCreateForm({ creatorBalance }: BountyCreateFormProps) {
               className="w-full"
               disabled={submitting || insufficient || !title.trim() || !description.trim() || rewardPoints < 10 || (isRepeatable && maxCompletions < 2)}
             >
-              {t(L.bounty.submitBtn, { points: escrow })}
+              {submitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {L.bounty.creating}
+                </>
+              ) : t(L.bounty.submitBtn, { points: escrow })}
             </Button>
           </CardContent>
         </Card>
