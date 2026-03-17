@@ -115,7 +115,7 @@ export function BountyCreateForm({ creatorBalance }: BountyCreateFormProps) {
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                onBlur={() => setTitleTouched(true)}
+                onBlur={() => { setTitle(v => v.trim()); setTitleTouched(true); }}
                 placeholder={L.bounty.titlePlaceholder}
                 maxLength={120}
               />
