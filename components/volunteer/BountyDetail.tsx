@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -227,8 +228,9 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
                 {t(myCompletion.resolution === "auto_accepted" ? L.bounty.autoAcceptedBanner : L.bounty.acceptedBanner, { points: bounty.reward_points })}
               </p>
             )}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={myCompletion.proof_url} alt="My proof" className="w-full rounded-lg object-cover max-h-48" />
+            <div className="relative w-full h-48 rounded-lg overflow-hidden">
+              <Image src={myCompletion.proof_url} alt="My proof" fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" />
+            </div>
           </CardContent>
         </Card>
       )}
@@ -249,8 +251,10 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
             />
 
             {proofPreview && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={proofPreview} alt="Preview" className="w-full rounded-lg object-cover max-h-48" />
+              <div className="relative w-full h-48 rounded-lg overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={proofPreview} alt="Preview" className="w-full h-full object-cover" />
+              </div>
             )}
 
             <Button variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()} type="button">
@@ -289,8 +293,9 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
                       {COMP_LABELS[c.status]}
                     </Badge>
                   </div>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={c.proof_url} alt="Proof" className="w-full rounded-lg object-cover max-h-48" />
+                  <div className="relative w-full h-48 rounded-lg overflow-hidden">
+                    <Image src={c.proof_url} alt="Proof" fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" loading="lazy" />
+                  </div>
                   {c.status === "accepted" && (
                     confirmingDispute === c.id ? (
                       <div className="flex flex-col gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-2">

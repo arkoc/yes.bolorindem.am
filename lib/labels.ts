@@ -751,6 +751,18 @@ const L = {
     dashboardDesc: "{count} բաց առաջադրանք · {points} մվր ընդամենը",
     dashboardViewAll: "Տեսնել բոլորը",
 
+    // Bounties list page
+    pageTitle: "Բաունտիներ",
+    pageSubtitle: "Ստեղծեք կամ կատարեք առաջադրանքներ",
+    tabOthers: "Բոլոր բաունտիները",
+    tabMine: "Իմ բաունտիները",
+    sortByReward: "Ըստ պարգևի",
+    sortByNewest: "Ըստ ամսաթվի",
+    loadMore: "Ավելի շատ",
+    noOpenBounties: "Բաց բաունտիներ չկան",
+    noMyBounties: "Դուք դեռ չեք ստեղծել բաունտիներ",
+    viewAllBounties: "Բաունտիներ",
+
     // Projects list group labels
     groupCampaign: "Արշավի առաջադրանքներ",
     groupLocation: "Տեղորոշման առաջադրանքներ",

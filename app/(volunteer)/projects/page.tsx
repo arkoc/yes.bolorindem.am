@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FolderOpen, Calendar, ArrowRight, Star, MapPin, Coins, Plus, Repeat2, CheckCircle2 } from "lucide-react";
+import { FolderOpen, Calendar, ArrowRight, Star, MapPin, Coins, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatPoints } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
@@ -15,35 +15,17 @@ export default async function ProjectsPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [projectsRaw, bountiesRaw, myBountiesRaw, profileRaw, myCompletionsRaw] = await Promise.all([
+  const [projectsRaw, profileRaw] = await Promise.all([
     supabase
       .from("projects")
       .select("id, title, description, banner_url, status, start_date, end_date, completion_bonus_points, project_type, tasks(id, max_completions_per_user)")
       .eq("status", "active")
       .order("created_at", { ascending: false }),
     supabase
-      .from("user_bounties")
-      .select("id, title, description, reward_points, is_repeatable, max_completions, status, created_at, creator_id, creator:profiles!user_bounties_creator_id_fkey(full_name)")
-      .eq("status", "open")
-      .neq("creator_id", user.id)
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("user_bounties")
-      .select("id, title, description, reward_points, is_repeatable, max_completions, status, created_at, creator_id, creator:profiles!user_bounties_creator_id_fkey(full_name)")
-      .eq("creator_id", user.id)
-      .order("created_at", { ascending: false }),
-    supabase
       .from("profiles")
       .select("total_points")
       .eq("id", user.id)
       .single(),
-    supabase
-      .from("bounty_completions")
-      .select("id, status, created_at, bounty:user_bounties(id, title, reward_points, is_repeatable, creator_id, creator:profiles!user_bounties_creator_id_fkey(full_name))")
-      .eq("user_id", user.id)
-      .neq("status", "rejected")
-      .order("created_at", { ascending: false })
-      .limit(20),
   ]);
 
   const projects = (projectsRaw.data ?? []) as {
@@ -59,29 +41,6 @@ export default async function ProjectsPage() {
     tasks: { id: string; max_completions_per_user: number | null }[];
   }[];
 
-  type BountyItem = {
-    id: string;
-    title: string;
-    description: string | null;
-    reward_points: number;
-    is_repeatable: boolean;
-    max_completions: number | null;
-    status: string;
-    created_at: string;
-    creator_id: string;
-    creator: { full_name: string } | null;
-  };
-
-  type CompletionItem = {
-    id: string;
-    status: string;
-    created_at: string;
-    bounty: BountyItem | null;
-  };
-
-  const bounties = (bountiesRaw.data ?? []) as unknown as BountyItem[];
-  const myBounties = (myBountiesRaw.data ?? []) as unknown as BountyItem[];
-  const myCompletions = (myCompletionsRaw.data ?? []) as unknown as CompletionItem[];
   const userPoints = profileRaw.data?.total_points ?? 0;
 
   const allTaskIds = projects.flatMap(p => p.tasks.map(t => t.id));
@@ -101,7 +60,7 @@ export default async function ProjectsPage() {
   const locationProjects = projects.filter(p => p.project_type === "heatmap");
   const campaignProjects = projects.filter(p => p.project_type === "standard");
 
-  function ProjectCard({ project }: { project: typeof projects[0] }) {
+  function ProjectCard({ project, priority = false }: { project: typeof projects[0]; priority?: boolean }) {
     const isHeatmap = project.project_type === "heatmap";
     const taskCount = project.tasks.length;
     const completedCount = project.tasks.filter(t =>
@@ -123,6 +82,7 @@ export default async function ProjectsPage() {
                 fill
                 className="object-cover"
                 sizes="(max-width: 672px) 100vw, 672px"
+                priority={priority}
               />
             </div>
           )}
@@ -223,7 +183,7 @@ export default async function ProjectsPage() {
             <MapPin className="h-3.5 w-3.5" />
             {L.bounty.groupLocation}
           </h2>
-          {locationProjects.map(p => <ProjectCard key={p.id} project={p} />)}
+          {locationProjects.map((p, i) => <ProjectCard key={p.id} project={p} priority={i === 0} />)}
         </section>
       )}
 
@@ -234,113 +194,27 @@ export default async function ProjectsPage() {
             <FolderOpen className="h-3.5 w-3.5" />
             {L.bounty.groupCampaign}
           </h2>
-          {campaignProjects.map(p => <ProjectCard key={p.id} project={p} />)}
+          {campaignProjects.map((p, i) => <ProjectCard key={p.id} project={p} priority={i === 0 && locationProjects.length === 0} />)}
         </section>
       )}
 
-      {/* Open bounties */}
-      {bounties.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-            <Coins className="h-3.5 w-3.5" />
-            {L.bounty.groupBounties}
-          </h2>
-          {bounties.map((b) => (
-            <BountyCard key={b.id} b={b} />
-          ))}
-        </section>
-      )}
-
-      {/* My bounties */}
-      {myBounties.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-            <Coins className="h-3.5 w-3.5" />
-            {L.bounty.groupMyBounties}
-          </h2>
-          {myBounties.map((b) => (
-            <BountyCard key={b.id} b={b} mine />
-          ))}
-        </section>
-      )}
-
-      {/* Bounties I completed */}
-      {myCompletions.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-            <CheckCircle2 className="h-3.5 w-3.5" />
-            {L.bounty.groupMyCompletedBounties}
-          </h2>
-          {myCompletions.filter(c => c.bounty).map((c) => (
-            <Link key={c.id} href={`/bounties/${c.bounty!.id}`} className="block">
-              <Card className="hover:shadow-md transition-all active:scale-[0.99] cursor-pointer border-l-4 border-l-muted-foreground/30 opacity-80">
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-base leading-snug text-muted-foreground">{c.bounty!.title}</CardTitle>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <Badge variant={c.status === "accepted" ? "success" : c.status === "disputed" ? "destructive" : "warning"} className="text-xs">
-                        +{c.bounty!.reward_points}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0 pb-3">
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Coins className="h-3.5 w-3.5" />
-                    {L.bounty.bountyLabel} · {c.bounty!.creator?.full_name}
-                  </span>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </section>
-      )}
+      {/* Bounties link */}
+      <section>
+        <Link href="/bounties" className="block">
+          <Card className="hover:shadow-md transition-all active:scale-[0.99] cursor-pointer border-l-4 border-l-yellow-500">
+            <CardContent className="py-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <Coins className="h-5 w-5 text-yellow-500 shrink-0" />
+                <div>
+                  <p className="font-semibold text-sm">{L.bounty.viewAllBounties}</p>
+                  <p className="text-xs text-muted-foreground">{L.bounty.pageSubtitle}</p>
+                </div>
+              </div>
+              <ArrowRight className="h-4 w-4 text-primary shrink-0" />
+            </CardContent>
+          </Card>
+        </Link>
+      </section>
     </div>
   );
-
-  function BountyCard({ b, mine = false }: { b: BountyItem; mine?: boolean }) {
-    const closed = b.status !== "open";
-    return (
-      <Link href={`/bounties/${b.id}`} className="block">
-        <Card className={`hover:shadow-md transition-all active:scale-[0.99] cursor-pointer border-l-4 ${closed ? "border-l-muted-foreground/30 opacity-75" : "border-l-yellow-500"}`}>
-          <CardHeader className="pb-2">
-            <div className="flex items-start justify-between gap-2">
-              <CardTitle className={`text-base leading-snug ${closed ? "text-muted-foreground" : ""}`}>{b.title}</CardTitle>
-              <div className="flex items-center gap-1.5 shrink-0">
-                {mine && closed && (
-                  <Badge variant="outline" className="text-xs text-muted-foreground">
-                    {b.status === "closed" ? "Ավարտված" : "Չեղարկված"}
-                  </Badge>
-                )}
-                {b.is_repeatable && (
-                  <Badge variant="secondary" className="text-xs gap-1">
-                    <Repeat2 className="h-3 w-3" />
-                    {b.max_completions ?? "∞"}
-                  </Badge>
-                )}
-                <Badge variant={closed ? "outline" : "success"} className="text-xs">
-                  +{b.reward_points}
-                </Badge>
-              </div>
-            </div>
-            {b.description && (
-              <CardDescription className="text-sm line-clamp-2">{b.description}</CardDescription>
-            )}
-          </CardHeader>
-          <CardContent className="pt-0 pb-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Coins className="h-3.5 w-3.5" />
-                {L.bounty.bountyLabel} · {b.creator?.full_name}
-              </span>
-              <div className="flex items-center gap-1 text-primary">
-                <span className="text-xs font-semibold">{L.volunteer.dashboard.startBtn}</span>
-                <ArrowRight className="h-4 w-4" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </Link>
-    );
-  }
 }

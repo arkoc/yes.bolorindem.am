@@ -28,7 +28,7 @@ export default async function VolunteerLayout({
     <div className="min-h-screen bg-gray-50">
       <PullToRefresh />
       {/* Main content with bottom padding for nav */}
-      <main className="pb-20 md:pb-0 md:pl-64">
+      <main className="pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 md:pl-64">
         {children}
       </main>
       {/* Navigation (bottom on mobile, sidebar on desktop) */}

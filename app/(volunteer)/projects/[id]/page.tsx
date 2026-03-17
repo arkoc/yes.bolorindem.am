@@ -98,7 +98,7 @@ export default async function ProjectDetailPage({
       {/* Banner / Header */}
       {project.banner_url && (
         <div className="h-40 w-full overflow-hidden relative">
-          <Image src={project.banner_url} alt={project.title} fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" />
+          <Image src={project.banner_url} alt={project.title} fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" priority />
         </div>
       )}
 

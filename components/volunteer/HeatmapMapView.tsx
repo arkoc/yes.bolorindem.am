@@ -269,7 +269,7 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
   }, [selectedPoint, userLocation, projectId, currentUserId, currentUserName]);
 
   return (
-    <div style={{ width: "100%", height: "100dvh", position: "relative" }}>
+    <div style={{ width: "100%", height: "100vh", minHeight: "100dvh", position: "relative" }}>
       {/* Live progress bar — updates as dots are claimed */}
       <HeatmapProgressBar
         claimed={claimedCount}
@@ -420,8 +420,8 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
           position: "absolute",
           right: 16,
           zIndex: 10,
-          width: 44,
-          height: 44,
+          width: 48,
+          height: 48,
           borderRadius: "50%",
           background: "white",
           boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
