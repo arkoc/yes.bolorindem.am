@@ -28,7 +28,7 @@ export function BountyCreateForm({ creatorBalance }: BountyCreateFormProps) {
   const [isRepeatable, setIsRepeatable] = useState(false);
   const [maxCompletions, setMaxCompletions] = useState(2);
   const [expiresAt, setExpiresAt] = useState("");
-  const [requirePhoto, setRequirePhoto] = useState(true);
+  const [requirePhoto, setRequirePhoto] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const escrow = rewardPoints * (isRepeatable ? maxCompletions : 1);
