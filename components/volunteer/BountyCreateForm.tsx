@@ -22,7 +22,9 @@ export function BountyCreateForm({ creatorBalance }: BountyCreateFormProps) {
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [title, setTitle] = useState("");
+  const [titleTouched, setTitleTouched] = useState(false);
   const [description, setDescription] = useState("");
+  const [descriptionTouched, setDescriptionTouched] = useState(false);
   const [proofHint, setProofHint] = useState("");
   const [rewardPoints, setRewardPoints] = useState(50);
   const [isRepeatable, setIsRepeatable] = useState(false);
@@ -113,10 +115,13 @@ export function BountyCreateForm({ creatorBalance }: BountyCreateFormProps) {
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                onBlur={() => setTitleTouched(true)}
                 placeholder={L.bounty.titlePlaceholder}
-                required
                 maxLength={120}
               />
+              {titleTouched && !title.trim() && (
+                <p className="text-xs text-destructive">{L.bounty.titleRequired}</p>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -125,11 +130,14 @@ export function BountyCreateForm({ creatorBalance }: BountyCreateFormProps) {
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                onBlur={() => setDescriptionTouched(true)}
                 placeholder={L.bounty.descriptionPlaceholder}
-                required
                 rows={4}
                 maxLength={1000}
               />
+              {descriptionTouched && !description.trim() && (
+                <p className="text-xs text-destructive">{L.bounty.descriptionRequired}</p>
+              )}
             </div>
 
             {/* Images */}
