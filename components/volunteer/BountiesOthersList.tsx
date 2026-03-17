@@ -21,6 +21,7 @@ type BountyItem = {
   status: string;
   created_at: string;
   creator: { full_name: string } | null;
+  completions: { status: string }[];
 };
 
 type SortKey = "reward" | "newest";
@@ -41,7 +42,7 @@ export function BountiesOthersList({ initialBounties, initialHasMore, excludeUse
     const supabase = createClient();
     const { data } = await supabase
       .from("user_bounties")
-      .select("id, title, description, reward_points, is_repeatable, max_completions, status, created_at, creator:profiles!user_bounties_creator_id_fkey(full_name)")
+      .select("id, title, description, reward_points, is_repeatable, max_completions, status, created_at, creator:profiles!user_bounties_creator_id_fkey(full_name), completions:bounty_completions(status)")
       .eq("status", "open")
       .neq("creator_id", excludeUserId)
       .order(sortKey === "reward" ? "reward_points" : "created_at", { ascending: false })
@@ -57,7 +58,7 @@ export function BountiesOthersList({ initialBounties, initialHasMore, excludeUse
     const supabase = createClient();
     const { data } = await supabase
       .from("user_bounties")
-      .select("id, title, description, reward_points, is_repeatable, max_completions, status, created_at, creator:profiles!user_bounties_creator_id_fkey(full_name)")
+      .select("id, title, description, reward_points, is_repeatable, max_completions, status, created_at, creator:profiles!user_bounties_creator_id_fkey(full_name), completions:bounty_completions(status)")
       .eq("status", "open")
       .neq("creator_id", excludeUserId)
       .order(newSort === "reward" ? "reward_points" : "created_at", { ascending: false })
@@ -103,7 +104,9 @@ export function BountiesOthersList({ initialBounties, initialHasMore, excludeUse
         <p className="text-sm text-muted-foreground py-8 text-center">{L.bounty.noOpenBounties}</p>
       ) : (
         <div className="space-y-3">
-          {bounties.map((b) => (
+          {bounties.map((b) => {
+            const acceptedCount = b.completions?.filter(c => c.status === "accepted" || c.status === "disputed").length ?? 0;
+            return (
             <Link key={b.id} href={`/bounties/${b.id}`} className="block">
               <Card className="hover:shadow-md transition-all active:scale-[0.99] cursor-pointer border-l-4 border-l-yellow-500">
                 <CardHeader className="pb-2">
@@ -113,7 +116,7 @@ export function BountiesOthersList({ initialBounties, initialHasMore, excludeUse
                       {b.is_repeatable && (
                         <Badge variant="secondary" className="text-xs gap-1">
                           <Repeat2 className="h-3 w-3" />
-                          {b.max_completions ?? "∞"}
+                          {acceptedCount}/{b.max_completions ?? "∞"}
                         </Badge>
                       )}
                       <Badge variant="success" className="text-xs">+{b.reward_points}</Badge>
@@ -137,7 +140,7 @@ export function BountiesOthersList({ initialBounties, initialHasMore, excludeUse
                 </CardContent>
               </Card>
             </Link>
-          ))}
+          );})}
         </div>
       )}
 

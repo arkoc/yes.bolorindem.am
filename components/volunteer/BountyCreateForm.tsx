@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, ChevronLeft, Coins, RefreshCw } from "lucide-react";
+import { Camera, ChevronLeft, Coins, ImageIcon, RefreshCw, X } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import L, { t } from "@/lib/labels";
@@ -18,6 +18,9 @@ interface BountyCreateFormProps {
 
 export function BountyCreateForm({ creatorBalance }: BountyCreateFormProps) {
   const router = useRouter();
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [proofHint, setProofHint] = useState("");
@@ -31,25 +34,37 @@ export function BountyCreateForm({ creatorBalance }: BountyCreateFormProps) {
   const escrow = rewardPoints * (isRepeatable ? maxCompletions : 1);
   const insufficient = escrow > creatorBalance;
 
+  function handleImagesChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    const newFiles = [...imageFiles, ...files].slice(0, 5); // max 5 images
+    setImageFiles(newFiles);
+    setImagePreviews(newFiles.map(f => URL.createObjectURL(f)));
+    if (imageInputRef.current) imageInputRef.current.value = "";
+  }
+
+  function handleRemoveImage(index: number) {
+    const newFiles = imageFiles.filter((_, i) => i !== index);
+    setImageFiles(newFiles);
+    setImagePreviews(newFiles.map(f => URL.createObjectURL(f)));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (insufficient) return;
     setSubmitting(true);
     try {
-      const res = await fetch("/api/bounties", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          description,
-          proofHint: proofHint || null,
-          rewardPoints,
-          isRepeatable,
-          maxCompletions: isRepeatable ? maxCompletions : null,
-          expiresAt: expiresAt || null,
-          requirePhoto,
-        }),
-      });
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("proofHint", proofHint);
+      formData.append("rewardPoints", String(rewardPoints));
+      formData.append("isRepeatable", String(isRepeatable));
+      formData.append("maxCompletions", isRepeatable ? String(maxCompletions) : "");
+      formData.append("expiresAt", expiresAt);
+      formData.append("requirePhoto", String(requirePhoto));
+      imageFiles.forEach(f => formData.append("images", f));
+      const res = await fetch("/api/bounties", { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) {
         toast.error(data.error === "insufficient_points" ? L.bounty.insufficientPoints : L.bounty.createFailed);
@@ -115,6 +130,56 @@ export function BountyCreateForm({ creatorBalance }: BountyCreateFormProps) {
                 rows={4}
                 maxLength={1000}
               />
+            </div>
+
+            {/* Images */}
+            <div className="space-y-1.5">
+              <Label>{L.bounty.coverImageLabel}</Label>
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handleImagesChange}
+              />
+              {imagePreviews.length > 0 && (
+                <div className="grid grid-cols-3 gap-2">
+                  {imagePreviews.map((src, i) => (
+                    <div key={i} className="relative aspect-square rounded-lg overflow-hidden border">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={src} alt="" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(i)}
+                        className="absolute top-1 right-1 bg-background/80 rounded-full p-0.5 hover:bg-background"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                  {imagePreviews.length < 5 && (
+                    <button
+                      type="button"
+                      onClick={() => imageInputRef.current?.click()}
+                      className="aspect-square rounded-lg border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
+                    >
+                      <ImageIcon className="h-4 w-4" />
+                      <span className="text-xs">+</span>
+                    </button>
+                  )}
+                </div>
+              )}
+              {imagePreviews.length === 0 && (
+                <button
+                  type="button"
+                  onClick={() => imageInputRef.current?.click()}
+                  className="w-full h-24 rounded-lg border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
+                >
+                  <ImageIcon className="h-5 w-5" />
+                  <span className="text-xs">{L.bounty.coverImageHint}</span>
+                </button>
+              )}
             </div>
 
             <div className="space-y-1.5">

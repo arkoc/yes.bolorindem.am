@@ -38,6 +38,7 @@ interface Bounty {
   is_repeatable: boolean;
   max_completions: number | null;
   require_photo: boolean;
+  image_urls: string[];
   status: BountyStatus;
   created_at: string;
   expires_at: string | null;
@@ -170,7 +171,16 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
       )}
 
       {/* Details card */}
-      <Card>
+      <Card className="overflow-hidden">
+        {bounty.image_urls?.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto p-3 pb-0">
+            {bounty.image_urls.map((url, i) => (
+              <div key={i} className="relative shrink-0 w-48 h-36 rounded-lg overflow-hidden border">
+                <Image src={url} alt="" fill className="object-cover" sizes="192px" />
+              </div>
+            ))}
+          </div>
+        )}
         <CardContent className="pt-4 space-y-3">
           <p className="text-sm leading-relaxed">{bounty.description}</p>
 

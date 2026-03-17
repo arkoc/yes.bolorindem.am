@@ -24,6 +24,7 @@ type BountyItem = {
   created_at: string;
   creator_id: string;
   creator: { full_name: string } | null;
+  completions: { status: string }[];
 };
 
 type CompletionItem = {
@@ -55,7 +56,7 @@ export default async function BountiesPage({
     tab === "others"
       ? supabase
           .from("user_bounties")
-          .select("id, title, description, reward_points, is_repeatable, max_completions, status, created_at, creator_id, creator:profiles!user_bounties_creator_id_fkey(full_name)")
+          .select("id, title, description, reward_points, is_repeatable, max_completions, status, created_at, creator_id, creator:profiles!user_bounties_creator_id_fkey(full_name), completions:bounty_completions(status)")
           .eq("status", "open")
           .neq("creator_id", user.id)
           .order("reward_points", { ascending: false })
@@ -64,7 +65,7 @@ export default async function BountiesPage({
     tab === "mine"
       ? supabase
           .from("user_bounties")
-          .select("id, title, description, reward_points, is_repeatable, max_completions, status, created_at, creator_id, creator:profiles!user_bounties_creator_id_fkey(full_name)")
+          .select("id, title, description, reward_points, is_repeatable, max_completions, status, created_at, creator_id, creator:profiles!user_bounties_creator_id_fkey(full_name), completions:bounty_completions(status)")
           .eq("creator_id", user.id)
           .order("created_at", { ascending: false })
       : Promise.resolve({ data: [] }),
@@ -199,6 +200,7 @@ export default async function BountiesPage({
 
   function BountyCard({ b, showStatus = false }: { b: BountyItem; showStatus?: boolean }) {
     const closed = b.status !== "open";
+    const acceptedCount = b.completions?.filter(c => c.status === "accepted" || c.status === "disputed").length ?? 0;
     return (
       <Link href={`/bounties/${b.id}`} className="block">
         <Card className={`hover:shadow-md transition-all active:scale-[0.99] cursor-pointer border-l-4 ${closed ? "border-l-muted-foreground/30 opacity-75" : "border-l-yellow-500"}`}>
@@ -216,7 +218,7 @@ export default async function BountiesPage({
                 {b.is_repeatable && (
                   <Badge variant="secondary" className="text-xs gap-1">
                     <Repeat2 className="h-3 w-3" />
-                    {b.max_completions ?? "∞"}
+                    {acceptedCount}/{b.max_completions ?? "∞"}
                   </Badge>
                 )}
                 <Badge variant={closed ? "outline" : "success"} className="text-xs">

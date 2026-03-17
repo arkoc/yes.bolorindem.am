@@ -677,6 +677,8 @@ const L = {
     proofHintPlaceholder: "Օր.՝ Ուղարկեք լուսանկար տվյալ վայրից",
     requirePhotoLabel: "Լուսանկար պարտադիր է",
     requirePhotoHint: "Կատարողը պետք է կցի լուսանկար",
+    coverImageLabel: "Նկար (ըստ ցանկության)",
+    coverImageHint: "Կցեք նկար",
     rewardLabel: "Պարգև (միավոր) *",
     rewardMin: "Նվազագույնը 10 միավոր",
     repeatableLabel: "Բազմակի կատարում",

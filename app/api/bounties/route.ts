@@ -6,27 +6,55 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await req.json();
-  const { title, description, proofHint, rewardPoints, isRepeatable, maxCompletions, expiresAt, requirePhoto } = body;
+  const formData = await req.formData();
+  const title        = (formData.get("title") as string)?.trim();
+  const description  = (formData.get("description") as string)?.trim();
+  const proofHint    = (formData.get("proofHint") as string)?.trim() || null;
+  const rewardPoints = Number(formData.get("rewardPoints"));
+  const isRepeatable = formData.get("isRepeatable") === "true";
+  const maxCompletionsRaw = Number(formData.get("maxCompletions"));
+  const maxCompletions = isRepeatable && maxCompletionsRaw >= 2 ? maxCompletionsRaw : null;
+  const expiresAt    = (formData.get("expiresAt") as string) || null;
+  const requirePhoto = formData.get("requirePhoto") !== "false";
+  const imageFiles = (formData.getAll("images") as File[]).filter(f => f.size > 0);
 
-  if (!title?.trim() || !description?.trim()) {
+  if (!title || !description) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
-  if (typeof rewardPoints !== "number" || rewardPoints < 10) {
+  if (isNaN(rewardPoints) || rewardPoints < 10) {
     return NextResponse.json({ error: "Minimum reward is 10 points" }, { status: 400 });
   }
 
   const admin = createAdminClient();
+
+  // Upload all images in parallel
+  const imageUrls: string[] = [];
+  if (imageFiles.length > 0) {
+    const uploads = await Promise.all(
+      imageFiles.map(async (file, i) => {
+        const ext = file.name.split(".").pop() ?? "jpg";
+        const path = `bounty-images/${user.id}/${Date.now()}_${i}.${ext}`;
+        const { error: uploadError } = await admin.storage
+          .from("bounty-proofs")
+          .upload(path, file, { upsert: true, contentType: file.type });
+        if (uploadError) throw new Error(uploadError.message);
+        return admin.storage.from("bounty-proofs").getPublicUrl(path).data.publicUrl;
+      })
+    );
+    imageUrls.push(...uploads);
+  }
+
   const { data, error } = await admin.rpc("create_user_bounty", {
     p_creator_id:      user.id,
-    p_title:           title.trim(),
-    p_description:     description.trim(),
-    p_proof_hint:      proofHint?.trim() || null,
+    p_title:           title,
+    p_description:     description,
+    p_proof_hint:      proofHint,
     p_reward_points:   rewardPoints,
-    p_is_repeatable:   isRepeatable ?? false,
-    p_max_completions: isRepeatable && maxCompletions >= 2 ? maxCompletions : null,
+    p_is_repeatable:   isRepeatable,
+    p_max_completions: maxCompletions,
     p_expires_at:      expiresAt || null,
-    p_require_photo:   requirePhoto !== false,
+    p_require_photo:   requirePhoto,
+    p_image_urls:      imageUrls,
   });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
