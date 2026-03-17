@@ -133,7 +133,7 @@ export default async function AdminBountiesPage() {
           {L.bounty.adminTitle}
         </h2>
         {bounties.length === 0 ? (
-          <Card><CardContent className="py-10 text-center text-muted-foreground text-sm">Բաունտիներ չկան</CardContent></Card>
+          <Card><CardContent className="py-10 text-center text-muted-foreground text-sm">Բոնուսներ չկան</CardContent></Card>
         ) : (
           bounties.map(b => (
             <Card key={b.id} className="hover:shadow-sm transition-shadow">

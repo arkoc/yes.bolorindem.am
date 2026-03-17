@@ -662,10 +662,10 @@ const L = {
 
   bounty: {
     // Projects list section header
-    sectionTitle: "Օգտատերերի Բաունտիներ",
+    sectionTitle: "Օգտատերերի Բոնուսներ",
 
     // Create form
-    createTitle: "Ստեղծել բաունտի",
+    createTitle: "Ստեղծել բոնուս",
     createSubtitle: "Ստեղծեք առաջադրանք, որը կարող է կատարել յուրաքանչյուրը",
     titleLabel: "Վերնագիր *",
     titlePlaceholder: "Ի՞նչ պետք է անել",
@@ -686,7 +686,7 @@ const L = {
     balanceHint: "Հաշվեկշիռ՝ {balance} մվր · Կսառեցվի {reward} մվր",
     insufficientPoints: "Միավորները չեն բավականացնում",
     submitBtn: "Ստեղծել (−{points} մվր)",
-    createSuccess: "Բաունտին ստեղծված է",
+    createSuccess: "Բոնուսը ստեղծված է",
     createFailed: "Չհաջողվեց ստեղծել",
     backLink: "Հետ",
 
@@ -729,7 +729,7 @@ const L = {
     cancelBtn: "Չեղարկել",
     completionsCount: "{accepted} / {max} կատարված",
     completionsHeader: "Ներկայացված ապացույցներ",
-    cancelConfirm: "Չեղարկե՞լ բաունտին (կվերադարձվի {points} մվր)",
+    cancelConfirm: "Չեղարկե՞լ բոնուսը (կվերադարձվի {points} մվր)",
     acceptSuccess: "{points} մվր փոխանցվեց {name}-ին",
     acceptFailed: "Չհաջողվեց հաստատել",
     disputeSuccess: "Վիճարկումն ուղարկված է ադմինին",
@@ -738,42 +738,42 @@ const L = {
     cancelFailed: "Չհաջողվեց չեղարկել",
 
     // Results
-    acceptedBanner: "Բաունտին հաստատված է · {points} մվր շնորհվեց",
+    acceptedBanner: "Բոնուսը հաստատված է · {points} մվր շնորհվեց",
     autoAcceptedBanner: "Ժամկետն անցել է, հաստատվեց ինքնաշխատ · {points} մվր",
     disputedBanner: "Վիճարկված է. սպասեք ադմինի որոշմանը",
-    cancelledBanner: "Բաունտին չեղարկված է",
+    cancelledBanner: "Բոնուսը չեղարկված է",
 
     // Profile page button
-    postBountyBtn: "Ստեղծել բաունտի",
+    postBountyBtn: "Ստեղծել բոնուս",
 
     // Dashboard card
-    dashboardTitle: "Բաունտիներ ձեզ համար",
+    dashboardTitle: "Բոնուսներ ձեզ համար",
     dashboardDesc: "{count} բաց առաջադրանք · {points} մվր ընդամենը",
     dashboardViewAll: "Տեսնել բոլորը",
 
     // Bounties list page
-    pageTitle: "Բաունտիներ",
+    pageTitle: "Բոնուսներ",
     pageSubtitle: "Ստեղծեք կամ կատարեք առաջադրանքներ",
-    tabOthers: "Բոլոր բաունտիները",
-    tabMine: "Իմ բաունտիները",
+    tabOthers: "Բոլոր բոնուսները",
+    tabMine: "Իմ բոնուսները",
     sortByReward: "Ըստ պարգևի",
     sortByNewest: "Ըստ ամսաթվի",
     loadMore: "Ավելի շատ",
-    noOpenBounties: "Բաց բաունտիներ չկան",
-    noMyBounties: "Դուք դեռ չեք ստեղծել բաունտիներ",
-    viewAllBounties: "Բաունտիներ",
+    noOpenBounties: "Բաց բոնուսներ չկան",
+    noMyBounties: "Դուք դեռ չեք ստեղծել բոնուսներ",
+    viewAllBounties: "Բոնուսներ",
 
     // Projects list group labels
     groupCampaign: "Արշավի առաջադրանքներ",
     groupLocation: "Տեղորոշման առաջադրանքներ",
-    groupBounties: "Օգտատերերի բաունտիներ",
-    groupMyBounties: "Իմ բաունտիները",
-    groupMyCompletedBounties: "Կատարված բաունտիներ",
-    bountyLabel: "Բաունտի",
+    groupBounties: "Օգտատերերի Բոնուսներ",
+    groupMyBounties: "Իմ բոնուսները",
+    groupMyCompletedBounties: "Կատարված բոնուսները",
+    bountyLabel: "Բոնուս",
 
     // Admin
-    adminTitle: "Բաունտիներ",
-    adminSubtitle: "{count} բաունտի",
+    adminTitle: "Բոնուսներ",
+    adminSubtitle: "{count} բոնուս",
     adminDisputeResolveAccept: "Հաստատել",
     adminDisputeResolveRefund: "Վերադարձնել հեղինակին",
 },
