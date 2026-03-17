@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronLeft, Coins, RefreshCw } from "lucide-react";
+import { Camera, ChevronLeft, Coins, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import L, { t } from "@/lib/labels";
@@ -25,6 +25,7 @@ export function BountyCreateForm({ creatorBalance }: BountyCreateFormProps) {
   const [isRepeatable, setIsRepeatable] = useState(false);
   const [maxCompletions, setMaxCompletions] = useState(2);
   const [expiresAt, setExpiresAt] = useState("");
+  const [requirePhoto, setRequirePhoto] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   const escrow = rewardPoints * (isRepeatable ? maxCompletions : 1);
@@ -46,6 +47,7 @@ export function BountyCreateForm({ creatorBalance }: BountyCreateFormProps) {
           isRepeatable,
           maxCompletions: isRepeatable ? maxCompletions : null,
           expiresAt: expiresAt || null,
+          requirePhoto,
         }),
       });
       const data = await res.json();
@@ -139,6 +141,24 @@ export function BountyCreateForm({ creatorBalance }: BountyCreateFormProps) {
               {rewardPoints < 10 && (
                 <p className="text-xs text-destructive">{L.bounty.rewardMin}</p>
               )}
+            </div>
+
+            {/* Require photo toggle */}
+            <div className="flex items-start gap-3 p-3 rounded-lg border bg-muted/30">
+              <input
+                id="requirePhoto"
+                type="checkbox"
+                checked={requirePhoto}
+                onChange={(e) => setRequirePhoto(e.target.checked)}
+                className="mt-0.5 h-4 w-4 accent-primary"
+              />
+              <div className="flex-1 min-w-0">
+                <label htmlFor="requirePhoto" className="text-sm font-medium flex items-center gap-1.5 cursor-pointer">
+                  <Camera className="h-3.5 w-3.5 text-primary" />
+                  {L.bounty.requirePhotoLabel}
+                </label>
+                <p className="text-xs text-muted-foreground mt-0.5">{L.bounty.requirePhotoHint}</p>
+              </div>
             </div>
 
             {/* Repeatable toggle */}

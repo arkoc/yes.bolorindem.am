@@ -37,6 +37,7 @@ interface Bounty {
   reward_points: number;
   is_repeatable: boolean;
   max_completions: number | null;
+  require_photo: boolean;
   status: BountyStatus;
   created_at: string;
   expires_at: string | null;
@@ -95,11 +96,11 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
   }
 
   async function handleSubmitProof() {
-    if (!proofFile) return;
+    if (bounty.require_photo && !proofFile) return;
     setSubmitting(true);
     try {
       const formData = new FormData();
-      formData.append("proof", proofFile);
+      if (proofFile) formData.append("proof", proofFile);
       const res = await fetch(`/api/bounties/${bounty.id}/complete`, { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) { toast.error(data.error ?? L.bounty.submitProofFailed); return; }
@@ -202,6 +203,14 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
               {bounty.creator?.full_name ?? "—"}
             </Link>
 
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <ImageIcon className="h-3.5 w-3.5" />
+              <span>{L.bounty.photoEvidenceLabel}</span>
+            </div>
+            <span className={bounty.require_photo ? "text-orange-600 font-medium" : "text-muted-foreground"}>
+              {bounty.require_photo ? L.bounty.photoRequired : L.bounty.photoOptional}
+            </span>
+
             {bounty.expires_at && (
               <>
                 <div className="flex items-center gap-1.5 text-muted-foreground">
@@ -228,9 +237,11 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
                 {t(myCompletion.resolution === "auto_accepted" ? L.bounty.autoAcceptedBanner : L.bounty.acceptedBanner, { points: bounty.reward_points })}
               </p>
             )}
-            <div className="relative w-full h-48 rounded-lg overflow-hidden">
-              <Image src={myCompletion.proof_url} alt="My proof" fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" />
-            </div>
+            {myCompletion.proof_url && (
+              <div className="relative w-full h-48 rounded-lg overflow-hidden">
+                <Image src={myCompletion.proof_url} alt="My proof" fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" />
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -240,7 +251,9 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
         <Card>
           <CardContent className="pt-4 space-y-3">
             <p className="text-sm font-semibold">{L.bounty.completeTitle}</p>
-            <p className="text-xs text-muted-foreground">{L.bounty.uploadProofHint}</p>
+            <p className="text-xs text-muted-foreground">
+              {bounty.require_photo ? L.bounty.uploadProofHint : L.bounty.uploadProofOptionalHint}
+            </p>
 
             <input
               ref={fileInputRef}
@@ -259,10 +272,10 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
 
             <Button variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()} type="button">
               <Upload className="h-4 w-4 mr-2" />
-              {L.bounty.uploadBtn}
+              {bounty.require_photo ? L.bounty.uploadBtn : L.bounty.uploadBtnOptional}
             </Button>
 
-            {proofFile && (
+            {(!bounty.require_photo || proofFile) && (
               <Button className="w-full" onClick={handleSubmitProof} disabled={submitting}>
                 {L.bounty.submitProofBtn}
               </Button>
@@ -293,9 +306,11 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
                       {COMP_LABELS[c.status]}
                     </Badge>
                   </div>
-                  <div className="relative w-full h-48 rounded-lg overflow-hidden">
-                    <Image src={c.proof_url} alt="Proof" fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" loading="lazy" />
-                  </div>
+                  {c.proof_url && (
+                    <div className="relative w-full h-48 rounded-lg overflow-hidden">
+                      <Image src={c.proof_url} alt="Proof" fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" loading="lazy" />
+                    </div>
+                  )}
                   {c.status === "accepted" && (
                     confirmingDispute === c.id ? (
                       <div className="flex flex-col gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-2">

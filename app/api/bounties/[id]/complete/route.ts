@@ -14,23 +14,25 @@ export async function POST(
 
   const formData = await req.formData();
   const file = formData.get("proof") as File | null;
-  if (!file) return NextResponse.json({ error: "No proof uploaded" }, { status: 400 });
 
-  const ext = file.name.split(".").pop() ?? "jpg";
-  const path = `${bountyId}/${user.id}.${ext}`;
+  let proofUrl: string | null = null;
+  if (file && file.size > 0) {
+    const ext = file.name.split(".").pop() ?? "jpg";
+    const path = `${bountyId}/${user.id}.${ext}`;
 
-  const { error: uploadError } = await admin.storage
-    .from("bounty-proofs")
-    .upload(path, file, { upsert: true, contentType: file.type });
+    const { error: uploadError } = await admin.storage
+      .from("bounty-proofs")
+      .upload(path, file, { upsert: true, contentType: file.type });
 
-  if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 500 });
+    if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 500 });
 
-  const { data: { publicUrl } } = admin.storage.from("bounty-proofs").getPublicUrl(path);
+    proofUrl = admin.storage.from("bounty-proofs").getPublicUrl(path).data.publicUrl;
+  }
 
   const { data, error } = await admin.rpc("submit_bounty_completion", {
     p_bounty_id: bountyId,
     p_user_id:   user.id,
-    p_proof_url: publicUrl,
+    p_proof_url: proofUrl,
   });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

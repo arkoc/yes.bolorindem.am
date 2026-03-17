@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { title, description, proofHint, rewardPoints, isRepeatable, maxCompletions, expiresAt } = body;
+  const { title, description, proofHint, rewardPoints, isRepeatable, maxCompletions, expiresAt, requirePhoto } = body;
 
   if (!title?.trim() || !description?.trim()) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
     p_is_repeatable:   isRepeatable ?? false,
     p_max_completions: isRepeatable && maxCompletions >= 2 ? maxCompletions : null,
     p_expires_at:      expiresAt || null,
+    p_require_photo:   requirePhoto !== false,
   });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

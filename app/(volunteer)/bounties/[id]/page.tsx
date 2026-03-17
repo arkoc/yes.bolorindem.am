@@ -19,7 +19,7 @@ export default async function BountyPage({
     .from("user_bounties")
     .select(`
       id, title, description, proof_hint, reward_points,
-      is_repeatable, max_completions, status,
+      is_repeatable, max_completions, require_photo, status,
       created_at, expires_at, creator_id,
       creator:profiles!user_bounties_creator_id_fkey(full_name),
       completions:bounty_completions(
