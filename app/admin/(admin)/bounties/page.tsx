@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Coins, AlertCircle, RefreshCw } from "lucide-react";
 import L, { t } from "@/lib/labels";
 import { AdminBountyActions } from "@/components/admin/AdminBountyActions";
+import { AdminBountyDeleteButton } from "@/components/admin/AdminBountyDeleteButton";
 
 type CompletionRow = {
   id: string;
@@ -150,9 +151,12 @@ export default async function AdminBountiesPage() {
                       <span>{new Date(b.created_at).toLocaleDateString()}</span>
                     </div>
                   </div>
-                  <Badge variant={BOUNTY_VARIANTS[b.status] ?? "secondary"} className="shrink-0 mt-0.5">
-                    {b.status}
-                  </Badge>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <Badge variant={BOUNTY_VARIANTS[b.status] ?? "secondary"} className="mt-0.5">
+                      {b.status}
+                    </Badge>
+                    <AdminBountyDeleteButton bountyId={b.id} bountyTitle={b.title} />
+                  </div>
                 </div>
               </CardContent>
             </Card>
