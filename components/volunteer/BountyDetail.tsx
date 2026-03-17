@@ -9,8 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
-  ChevronLeft, Coins, User, Clock, ImageIcon,
-  AlertCircle, XCircle, Upload, RefreshCw
+  ChevronLeft, ChevronRight, Coins, User, Clock, ImageIcon,
+  AlertCircle, X, XCircle, Upload, RefreshCw
 } from "lucide-react";
 import { toast } from "sonner";
 import L, { t } from "@/lib/labels";
@@ -78,6 +78,8 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
   const [submitting, setSubmitting] = useState(false);
   const [actingOn, setActingOn] = useState<string | null>(null);
   const [confirmingDispute, setConfirmingDispute] = useState<string | null>(null);
+
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const isCreator = currentUserId === bounty.creator_id;
   const myCompletion = bounty.completions.find(c => c.user_id === currentUserId);
@@ -170,14 +172,71 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
         </div>
       )}
 
+      {/* Lightbox */}
+      {lightboxIndex !== null && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+          onClick={() => setLightboxIndex(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white/80 hover:text-white p-2"
+            onClick={() => setLightboxIndex(null)}
+          >
+            <X className="h-6 w-6" />
+          </button>
+          {lightboxIndex > 0 && (
+            <button
+              className="absolute left-3 text-white/80 hover:text-white p-2"
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex - 1); }}
+            >
+              <ChevronLeft className="h-8 w-8" />
+            </button>
+          )}
+          {lightboxIndex < bounty.image_urls.length - 1 && (
+            <button
+              className="absolute right-3 text-white/80 hover:text-white p-2"
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex + 1); }}
+            >
+              <ChevronRight className="h-8 w-8" />
+            </button>
+          )}
+          <div className="relative w-full max-w-2xl max-h-[80vh] mx-12" onClick={e => e.stopPropagation()}>
+            <Image
+              src={bounty.image_urls[lightboxIndex]}
+              alt=""
+              width={800}
+              height={600}
+              className="object-contain w-full h-full max-h-[80vh] rounded-lg"
+              sizes="(max-width: 672px) 100vw, 672px"
+            />
+          </div>
+          {bounty.image_urls.length > 1 && (
+            <div className="absolute bottom-4 flex gap-1.5">
+              {bounty.image_urls.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={(e) => { e.stopPropagation(); setLightboxIndex(i); }}
+                  className={`w-2 h-2 rounded-full transition-colors ${i === lightboxIndex ? "bg-white" : "bg-white/40"}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Details card */}
       <Card className="overflow-hidden">
         {bounty.image_urls?.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto p-3 pb-0">
+          <div className={`grid gap-1.5 p-3 pb-0 ${bounty.image_urls.length === 1 ? "grid-cols-1" : bounty.image_urls.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
             {bounty.image_urls.map((url, i) => (
-              <div key={i} className="relative shrink-0 w-48 h-36 rounded-lg overflow-hidden border">
-                <Image src={url} alt="" fill className="object-cover" sizes="192px" />
-              </div>
+              <button
+                key={i}
+                type="button"
+                onClick={() => setLightboxIndex(i)}
+                className="relative aspect-square rounded-lg overflow-hidden border hover:opacity-90 transition-opacity"
+              >
+                <Image src={url} alt="" fill className="object-cover" sizes="(max-width: 672px) 33vw, 224px" />
+              </button>
             ))}
           </div>
         )}
