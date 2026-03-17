@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, ChevronLeft, Coins, ImageIcon, Loader2, RefreshCw, X } from "lucide-react";
+import { AlertCircle, Camera, ChevronLeft, Coins, ImageIcon, Loader2, LockKeyhole, RefreshCw, Undo2, X } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import L, { t } from "@/lib/labels";
@@ -94,6 +94,27 @@ export function BountyCreateForm({ creatorBalance }: BountyCreateFormProps) {
         <h1 className="text-2xl font-bold">{L.bounty.createTitle}</h1>
         <p className="text-muted-foreground text-sm mt-1">{L.bounty.createSubtitle}</p>
       </div>
+
+      {/* How it works */}
+      <Card className="bg-muted/40 border-muted">
+        <CardContent className="pt-4 pb-4 space-y-3">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{L.bounty.howItWorksTitle}</p>
+          <div className="space-y-2.5">
+            <div className="flex gap-2.5">
+              <LockKeyhole className="h-4 w-4 text-yellow-500 shrink-0 mt-0.5" />
+              <p className="text-xs text-muted-foreground leading-relaxed">{L.bounty.howItWorksEscrow}</p>
+            </div>
+            <div className="flex gap-2.5">
+              <Undo2 className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+              <p className="text-xs text-muted-foreground leading-relaxed">{L.bounty.howItWorksCancel}</p>
+            </div>
+            <div className="flex gap-2.5">
+              <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+              <p className="text-xs text-muted-foreground leading-relaxed">{L.bounty.howItWorksDispute}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <form onSubmit={handleSubmit}>
         <Card>
