@@ -203,10 +203,12 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
   const handleGetLocation = useCallback(async () => {
     if (userLocation) {
       mapRef.current?.flyTo({ center: [userLocation.lng, userLocation.lat], zoom: 16, duration: 800 });
-    } else {
+    } else if (locationError !== null) {
+      // Only restart watch if there was an error — don't interrupt an in-progress acquisition
       setLocationError(null);
       startWatch(true);
     }
+    // If userLocation is null and no error: GPS is still acquiring, do nothing
     // Refresh all dots from DB so claimed/unclaimed status is up to date
     try {
       const supabase = createClient();
@@ -221,7 +223,7 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
         );
       }
     } catch { /* silent — realtime subscription is the primary update path */ }
-  }, [userLocation, startWatch, projectId]);
+  }, [userLocation, locationError, startWatch, projectId]);
 
   const handleClaim = useCallback(async () => {
     if (!selectedPoint || !userLocation) return;

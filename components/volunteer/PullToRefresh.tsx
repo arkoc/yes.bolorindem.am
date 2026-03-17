@@ -1,15 +1,21 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 
 const THRESHOLD = 90; // px needed to trigger refresh
 const MAX_PULL = 130;
 
 export function PullToRefresh() {
+  const pathname = usePathname();
   const [pullDistance, setPullDistance] = useState(0);
   const pr = useRef({ startY: 0, pulling: false, distance: 0 });
 
+  // Disabled on fullscreen map — map captures touch events and has its own scroll lock
+  const disabled = pathname.startsWith("/heatmap");
+
   useEffect(() => {
+    if (disabled) return;
     const onTouchStart = (e: TouchEvent) => {
       pr.current.startY = e.touches[0].clientY;
       pr.current.pulling = window.scrollY === 0;
