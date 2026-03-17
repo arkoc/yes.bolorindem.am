@@ -199,31 +199,15 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
     [points]
   );
 
-  // Re-center on user and refresh all dot statuses from DB
-  const handleGetLocation = useCallback(async () => {
+  // Re-center on user; retry watch only if location errored
+  const handleGetLocation = useCallback(() => {
     if (userLocation) {
       mapRef.current?.flyTo({ center: [userLocation.lng, userLocation.lat], zoom: 16, duration: 800 });
     } else if (locationError !== null) {
-      // Only restart watch if there was an error — don't interrupt an in-progress acquisition
       setLocationError(null);
       startWatch(true);
     }
-    // If userLocation is null and no error: GPS is still acquiring, do nothing
-    // Refresh all dots from DB so claimed/unclaimed status is up to date
-    try {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from("heatmap_points")
-        .select("id, lat, lng, points, claimed_by, claimed_at, profiles(full_name)")
-        .eq("project_id", projectId);
-      if (data) {
-        setPoints(
-          (data as unknown as { id: string; lat: number; lng: number; points: number; claimed_by: string | null; claimed_at: string | null; profiles: { full_name: string } | null }[])
-            .map((p) => ({ id: p.id, lat: p.lat, lng: p.lng, points: p.points, claimed_by: p.claimed_by, claimed_at: p.claimed_at, claimer_name: p.profiles?.full_name ?? null }))
-        );
-      }
-    } catch { /* silent — realtime subscription is the primary update path */ }
-  }, [userLocation, locationError, startWatch, projectId]);
+  }, [userLocation, locationError, startWatch]);
 
   const handleClaim = useCallback(async () => {
     if (!selectedPoint || !userLocation) return;
