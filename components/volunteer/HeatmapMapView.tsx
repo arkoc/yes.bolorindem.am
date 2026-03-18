@@ -276,7 +276,7 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
             zIndex: 20,
             background: locationError === 1 ? "#7f1d1d" : "#78350f",
             color: "white",
-            fontSize: 13,
+            fontSize: 14,
             padding: "10px 16px",
             display: "flex",
             alignItems: "center",
@@ -293,7 +293,7 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
           {locationError !== 1 && (
             <button
               onClick={() => { setLocationError(null); startWatch(true); }}
-              style={{ color: "white", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", fontSize: 13, flexShrink: 0 }}
+              style={{ color: "white", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", fontSize: 14, flexShrink: 0, minHeight: 44, padding: "0 4px" }}
             >
               {L.heatmap.recenterBtn}
             </button>
@@ -419,8 +419,8 @@ export function HeatmapMapView({ initialPoints, projectId, currentUserId, curren
           transition: "bottom 0.2s ease",
         }}
         className={selectedPoint
-          ? "bottom-[300px] md:bottom-[220px]"
-          : "bottom-[104px] md:bottom-6"}
+          ? "bottom-[calc(300px+env(safe-area-inset-bottom))] md:bottom-[220px]"
+          : "bottom-[calc(104px+env(safe-area-inset-bottom))] md:bottom-6"}
         title="Center on my location"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

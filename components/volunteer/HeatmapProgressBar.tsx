@@ -35,7 +35,7 @@ export function HeatmapProgressBar({ claimed, total, userClaimed, userPoints, da
         borderRadius: 12,
         padding: "10px 14px",
         boxShadow: "0 2px 12px rgba(0,0,0,0.12)",
-        maxWidth: 340,
+        maxWidth: "min(340px, calc(100vw - 24px))",
         margin: "0 auto",
       }}
     >

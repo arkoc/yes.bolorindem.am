@@ -24,7 +24,7 @@ export default async function AdminLayout({
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminNav />
-      <main className="md:ml-64 pt-14 md:pt-0">
+      <main className="md:ml-64 pt-[calc(3.5rem+env(safe-area-inset-top))] md:pt-0">
         <div className="p-4 md:p-6">{children}</div>
       </main>
     </div>

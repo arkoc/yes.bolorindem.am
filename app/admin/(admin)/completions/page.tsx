@@ -109,7 +109,7 @@ export default async function AdminCompletionsPage({
                             <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
                               {L.admin.completions.formData}
                             </summary>
-                            <pre className="mt-1 text-[10px] md:text-xs bg-muted p-2 rounded overflow-x-auto max-w-[min(100%,24rem)]">
+                            <pre className="mt-1 text-[10px] md:text-xs bg-muted p-2 rounded overflow-x-auto w-full max-w-[24rem] whitespace-pre-wrap break-all">
                               {JSON.stringify(c.form_data, null, 2)}
                             </pre>
                           </details>

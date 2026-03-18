@@ -56,7 +56,7 @@ export function HeatmapClaimPanel({
         borderRadius: "16px 16px 0 0",
         boxShadow: "0 -4px 24px rgba(0,0,0,0.15)",
         zIndex: 10,
-        maxWidth: 480,
+        maxWidth: "min(480px, 100%)",
         margin: "0 auto",
       }}
       className="px-5 pt-5 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-8"
