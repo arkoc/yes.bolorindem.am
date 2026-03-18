@@ -4,8 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FolderOpen, Calendar, ArrowRight, Star, MapPin, Coins, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { FolderOpen, Calendar, ArrowRight, Star, MapPin, Coins } from "lucide-react";
 import { formatPoints } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
 import { Progress } from "@/components/ui/progress";
@@ -15,17 +14,12 @@ export default async function ProjectsPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [projectsRaw, profileRaw] = await Promise.all([
+  const [projectsRaw] = await Promise.all([
     supabase
       .from("projects")
       .select("id, title, description, banner_url, status, start_date, end_date, completion_bonus_points, project_type, tasks(id, max_completions_per_user)")
       .eq("status", "active")
       .order("created_at", { ascending: false }),
-    supabase
-      .from("profiles")
-      .select("total_points")
-      .eq("id", user.id)
-      .single(),
   ]);
 
   const projects = (projectsRaw.data ?? []) as {
@@ -40,8 +34,6 @@ export default async function ProjectsPage() {
     project_type: string;
     tasks: { id: string; max_completions_per_user: number | null }[];
   }[];
-
-  const userPoints = profileRaw.data?.total_points ?? 0;
 
   const allTaskIds = projects.flatMap(p => p.tasks.map(t => t.id));
   const { data: completionsRaw } = allTaskIds.length > 0
@@ -149,32 +141,30 @@ export default async function ProjectsPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-6">
-      <div className="pt-2 space-y-3">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold">{L.volunteer.projects.title}</h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              {L.volunteer.projects.subtitle}
-            </p>
-          </div>
-          <Button asChild size="sm" variant="outline" className="shrink-0 gap-1 mt-1 hidden sm:inline-flex">
-            <Link href="/bounties/create">
-              <Plus className="h-3.5 w-3.5" />
-              {L.bounty.createTitle}
-            </Link>
-          </Button>
-        </div>
-        {/* Mobile create bounty button */}
-        <Button asChild className="w-full gap-2 sm:hidden">
-          <Link href="/bounties/create">
-            <Plus className="h-4 w-4" />
-            {L.bounty.createTitle}
-            <span className="ml-auto text-xs opacity-75 font-normal flex items-center gap-1">
-              <Coins className="h-3.5 w-3.5" />{formatPoints(userPoints)}
-            </span>
-          </Link>
-        </Button>
+      <div className="pt-2">
+        <h1 className="text-2xl font-bold">{L.volunteer.projects.title}</h1>
+        <p className="text-muted-foreground text-sm mt-1">
+          {L.volunteer.projects.subtitle}
+        </p>
       </div>
+
+      {/* Bounties link — at top */}
+      <section>
+        <Link href="/bounties" className="block">
+          <Card className="hover:shadow-md transition-all active:scale-[0.99] cursor-pointer border-l-4 border-l-yellow-500">
+            <CardContent className="py-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <Coins className="h-5 w-5 text-yellow-500 shrink-0" />
+                <div>
+                  <p className="font-semibold text-sm">{L.bounty.viewAllBounties}</p>
+                  <p className="text-xs text-muted-foreground">{L.bounty.pageSubtitle}</p>
+                </div>
+              </div>
+              <ArrowRight className="h-4 w-4 text-primary shrink-0" />
+            </CardContent>
+          </Card>
+        </Link>
+      </section>
 
       {/* Location projects (heatmap) */}
       {locationProjects.length > 0 && (
@@ -197,24 +187,6 @@ export default async function ProjectsPage() {
           {campaignProjects.map((p, i) => <ProjectCard key={p.id} project={p} priority={i === 0 && locationProjects.length === 0} />)}
         </section>
       )}
-
-      {/* Bounties link */}
-      <section>
-        <Link href="/bounties" className="block">
-          <Card className="hover:shadow-md transition-all active:scale-[0.99] cursor-pointer border-l-4 border-l-yellow-500">
-            <CardContent className="py-4 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <Coins className="h-5 w-5 text-yellow-500 shrink-0" />
-                <div>
-                  <p className="font-semibold text-sm">{L.bounty.viewAllBounties}</p>
-                  <p className="text-xs text-muted-foreground">{L.bounty.pageSubtitle}</p>
-                </div>
-              </div>
-              <ArrowRight className="h-4 w-4 text-primary shrink-0" />
-            </CardContent>
-          </Card>
-        </Link>
-      </section>
     </div>
   );
 }

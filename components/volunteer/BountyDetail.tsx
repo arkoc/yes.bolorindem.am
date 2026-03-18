@@ -275,19 +275,11 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
               {bounty.creator?.full_name ?? "—"}
             </Link>
 
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <ImageIcon className="h-3.5 w-3.5" />
-              <span>{L.bounty.photoEvidenceLabel}</span>
-            </div>
-            <span className={bounty.require_photo ? "text-orange-600 font-medium" : "text-muted-foreground"}>
-              {bounty.require_photo ? L.bounty.photoRequired : L.bounty.photoOptional}
-            </span>
-
             {bounty.expires_at && (
               <>
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <Clock className="h-3.5 w-3.5" />
-                  <span>{L.bounty.expiresAt.split("{")[0]}</span>
+                  <span>{L.bounty.expiresAtLabel}</span>
                 </div>
                 <span>{new Date(bounty.expires_at).toLocaleDateString()}</span>
               </>
@@ -301,7 +293,7 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
         <Card>
           <CardContent className="pt-4 space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold">{L.bounty.proofHintTitle}</p>
+              <p className="text-sm font-semibold">{L.bounty.mySubmissionTitle}</p>
               <Badge variant={COMP_VARIANTS[myCompletion.status]}>{COMP_LABELS[myCompletion.status]}</Badge>
             </div>
             {myCompletion.status === "accepted" && (
@@ -354,6 +346,11 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
             )}
           </CardContent>
         </Card>
+      )}
+
+      {/* Creator: empty state when no completions yet */}
+      {isCreator && bounty.status === "open" && bounty.completions.length === 0 && (
+        <p className="text-sm text-muted-foreground text-center py-2">{L.bounty.noCompletionsYet}</p>
       )}
 
       {/* Creator: completions list */}

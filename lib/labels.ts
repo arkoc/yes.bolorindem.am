@@ -689,7 +689,7 @@ const L = {
     repeatableHint: "Յուրաքանչյուր օգտատեր կարող է կատարել մեկ անգամ",
     maxCompletionsLabel: "Կատարողների առավ. քանակ *",
     maxCompletionsMin: "Նվազագույնը 2",
-    balanceHintRepeatable: "Կսառեցվի {total} մվր ({reward} × {count})",
+    balanceHintRepeatable: "Հաշ.՝ {balance} մվր · Կսառ.՝ {escrow} մվր ({reward} × {count})",
     expiresLabel: "Ժամկետ (ըստ ցանկության)",
     balanceHint: "Հաշվեկշիռ՝ {balance} մվր · Կսառեցվի {reward} մվր",
     insufficientPoints: "Միավորները չեն բավականացնում",
@@ -712,11 +712,14 @@ const L = {
     reward: "Պարգև",
     rewardPoints: "{points} միավոր",
     expiresAt: "Վերջնաժամկետ՝ {date}",
+    expiresAtLabel: "Վերջնաժամկետ",
     proofHintTitle: "Ինչպես ապացուցել",
+    mySubmissionTitle: "Իմ ներկայացումը",
     noProofHint: "Ցուցումներ չկան",
     photoEvidenceLabel: "Լուս. ապացույց",
     photoRequired: "Պահանջվում է",
     photoOptional: "Կամընտիր",
+    noCompletionsYet: "Դեռ ներկայացված կատարումներ չկան",
 
     // Complete (target user submits proof)
     completeTitle: "Կատարել առաջադրանքը",

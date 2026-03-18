@@ -2,12 +2,12 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { AlertCircle, Camera, ChevronLeft, Coins, ImageIcon, Loader2, LockKeyhole, RefreshCw, Undo2, X } from "lucide-react";
+import { AlertCircle, Camera, ChevronLeft, ChevronDown, ImageIcon, Loader2, LockKeyhole, RefreshCw, Undo2, X } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import L, { t } from "@/lib/labels";
@@ -39,7 +39,7 @@ export function BountyCreateForm({ creatorBalance }: BountyCreateFormProps) {
   function handleImagesChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
-    const newFiles = [...imageFiles, ...files].slice(0, 5); // max 5 images
+    const newFiles = [...imageFiles, ...files].slice(0, 5);
     setImageFiles(newFiles);
     setImagePreviews(newFiles.map(f => URL.createObjectURL(f)));
     if (imageInputRef.current) imageInputRef.current.value = "";
@@ -95,41 +95,19 @@ export function BountyCreateForm({ creatorBalance }: BountyCreateFormProps) {
         <p className="text-muted-foreground text-sm mt-1">{L.bounty.createSubtitle}</p>
       </div>
 
-      {/* How it works */}
-      <Card className="bg-muted/40 border-muted">
-        <CardContent className="pt-4 pb-4 space-y-3">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{L.bounty.howItWorksTitle}</p>
-          <div className="space-y-2.5">
-            <div className="flex gap-2.5">
-              <LockKeyhole className="h-4 w-4 text-yellow-500 shrink-0 mt-0.5" />
-              <p className="text-xs text-muted-foreground leading-relaxed">{L.bounty.howItWorksEscrow}</p>
-            </div>
-            <div className="flex gap-2.5">
-              <Undo2 className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
-              <p className="text-xs text-muted-foreground leading-relaxed">{L.bounty.howItWorksCancel}</p>
-            </div>
-            <div className="flex gap-2.5">
-              <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-              <p className="text-xs text-muted-foreground leading-relaxed">{L.bounty.howItWorksDispute}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Balance / escrow summary */}
+        <div className={`flex items-center justify-between rounded-lg px-3.5 py-2.5 text-sm ${insufficient ? "bg-destructive/10 text-destructive" : "bg-muted"}`}>
+          <span className="text-muted-foreground text-xs">
+            {isRepeatable
+              ? t(L.bounty.balanceHintRepeatable, { balance: creatorBalance, reward: rewardPoints, count: maxCompletions, escrow })
+              : t(L.bounty.balanceHint, { balance: creatorBalance, reward: rewardPoints })}
+          </span>
+          {insufficient && <AlertCircle className="h-4 w-4 shrink-0 ml-2" />}
+        </div>
 
-      <form onSubmit={handleSubmit}>
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Coins className="h-4 w-4 text-yellow-500" />
-              {L.bounty.createTitle}
-            </CardTitle>
-            <CardDescription className="text-xs">
-              {isRepeatable
-                ? t(L.bounty.balanceHintRepeatable, { balance: creatorBalance, reward: rewardPoints, count: maxCompletions })
-                : t(L.bounty.balanceHint, { balance: creatorBalance, reward: rewardPoints })}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="pt-4 space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="title">{L.bounty.titleLabel}</Label>
               <Input
@@ -172,7 +150,7 @@ export function BountyCreateForm({ creatorBalance }: BountyCreateFormProps) {
                 className="hidden"
                 onChange={handleImagesChange}
               />
-              {imagePreviews.length > 0 && (
+              {imagePreviews.length > 0 ? (
                 <div className="grid grid-cols-3 gap-2">
                   {imagePreviews.map((src, i) => (
                     <div key={i} className="relative aspect-square rounded-lg overflow-hidden border">
@@ -198,12 +176,11 @@ export function BountyCreateForm({ creatorBalance }: BountyCreateFormProps) {
                     </button>
                   )}
                 </div>
-              )}
-              {imagePreviews.length === 0 && (
+              ) : (
                 <button
                   type="button"
                   onClick={() => imageInputRef.current?.click()}
-                  className="w-full h-24 rounded-lg border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
+                  className="w-full h-20 rounded-lg border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
                 >
                   <ImageIcon className="h-5 w-5" />
                   <span className="text-xs">{L.bounty.coverImageHint}</span>
@@ -237,59 +214,56 @@ export function BountyCreateForm({ creatorBalance }: BountyCreateFormProps) {
               )}
             </div>
 
-            {/* Require photo toggle */}
-            <div className="flex items-start gap-3 p-3 rounded-lg border bg-muted/30">
-              <input
-                id="requirePhoto"
-                type="checkbox"
-                checked={requirePhoto}
-                onChange={(e) => setRequirePhoto(e.target.checked)}
-                className="mt-0.5 h-4 w-4 accent-primary"
-              />
-              <div className="flex-1 min-w-0">
-                <label htmlFor="requirePhoto" className="text-sm font-medium flex items-center gap-1.5 cursor-pointer">
-                  <Camera className="h-3.5 w-3.5 text-primary" />
-                  {L.bounty.requirePhotoLabel}
-                </label>
-                <p className="text-xs text-muted-foreground mt-0.5">{L.bounty.requirePhotoHint}</p>
+            {/* Options — photo + repeatable in one section */}
+            <div className="rounded-lg border divide-y">
+              <div className="flex items-start gap-3 p-3">
+                <input
+                  id="requirePhoto"
+                  type="checkbox"
+                  checked={requirePhoto}
+                  onChange={(e) => setRequirePhoto(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 accent-primary"
+                />
+                <div className="flex-1 min-w-0">
+                  <label htmlFor="requirePhoto" className="text-sm font-medium flex items-center gap-1.5 cursor-pointer">
+                    <Camera className="h-3.5 w-3.5 text-muted-foreground" />
+                    {L.bounty.requirePhotoLabel}
+                  </label>
+                  <p className="text-xs text-muted-foreground mt-0.5">{L.bounty.requirePhotoHint}</p>
+                </div>
               </div>
-            </div>
 
-            {/* Repeatable toggle */}
-            <div className="flex items-start gap-3 p-3 rounded-lg border bg-muted/30">
-              <input
-                id="repeatable"
-                type="checkbox"
-                checked={isRepeatable}
-                onChange={(e) => setIsRepeatable(e.target.checked)}
-                className="mt-0.5 h-4 w-4 accent-primary"
-              />
-              <div className="flex-1 min-w-0">
-                <label htmlFor="repeatable" className="text-sm font-medium flex items-center gap-1.5 cursor-pointer">
-                  <RefreshCw className="h-3.5 w-3.5 text-primary" />
-                  {L.bounty.repeatableLabel}
-                </label>
-                <p className="text-xs text-muted-foreground mt-0.5">{L.bounty.repeatableHint}</p>
+              <div className="flex items-start gap-3 p-3">
+                <input
+                  id="repeatable"
+                  type="checkbox"
+                  checked={isRepeatable}
+                  onChange={(e) => setIsRepeatable(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 accent-primary"
+                />
+                <div className="flex-1 min-w-0">
+                  <label htmlFor="repeatable" className="text-sm font-medium flex items-center gap-1.5 cursor-pointer">
+                    <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
+                    {L.bounty.repeatableLabel}
+                  </label>
+                  <p className="text-xs text-muted-foreground mt-0.5">{L.bounty.repeatableHint}</p>
+                </div>
               </div>
-            </div>
 
-            {/* Max completions — only shown when repeatable */}
-            {isRepeatable && (
-              <div className="space-y-1.5">
-                <Label htmlFor="maxCompletions">{L.bounty.maxCompletionsLabel}</Label>
+              {/* Max completions — always visible, disabled when not repeatable */}
+              <div className={`px-3 py-2.5 flex items-center gap-3 ${!isRepeatable ? "opacity-40" : ""}`}>
+                <label htmlFor="maxCompletions" className="text-sm flex-1">{L.bounty.maxCompletionsLabel}</label>
                 <Input
                   id="maxCompletions"
                   type="number"
                   value={maxCompletions}
                   onChange={(e) => setMaxCompletions(Math.max(2, Number(e.target.value)))}
                   min={2}
-                  required
+                  disabled={!isRepeatable}
+                  className="w-20 text-right h-8"
                 />
-                {maxCompletions < 2 && (
-                  <p className="text-xs text-destructive">{L.bounty.maxCompletionsMin}</p>
-                )}
               </div>
-            )}
+            </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="expires">{L.bounty.expiresLabel}</Label>
@@ -320,6 +294,28 @@ export function BountyCreateForm({ creatorBalance }: BountyCreateFormProps) {
             </Button>
           </CardContent>
         </Card>
+
+        {/* How it works — collapsible, below the form */}
+        <details className="group">
+          <summary className="flex items-center justify-between cursor-pointer list-none text-sm text-muted-foreground hover:text-foreground px-1 py-1 select-none">
+            <span className="font-medium">{L.bounty.howItWorksTitle}</span>
+            <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="mt-2 rounded-lg border bg-muted/40 px-4 py-3 space-y-2.5">
+            <div className="flex gap-2.5">
+              <LockKeyhole className="h-4 w-4 text-yellow-500 shrink-0 mt-0.5" />
+              <p className="text-xs text-muted-foreground leading-relaxed">{L.bounty.howItWorksEscrow}</p>
+            </div>
+            <div className="flex gap-2.5">
+              <Undo2 className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+              <p className="text-xs text-muted-foreground leading-relaxed">{L.bounty.howItWorksCancel}</p>
+            </div>
+            <div className="flex gap-2.5">
+              <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+              <p className="text-xs text-muted-foreground leading-relaxed">{L.bounty.howItWorksDispute}</p>
+            </div>
+          </div>
+        </details>
       </form>
     </div>
   );
