@@ -15,12 +15,12 @@ export function AdminBountyDeleteButton({ bountyId, bountyTitle }: { bountyId: s
     setDeleting(true);
     try {
       const res = await fetch(`/api/admin/bounties/${bountyId}/delete`, { method: "DELETE" });
+      const data = await res.json();
       if (!res.ok) {
-        const data = await res.json();
         toast.error(data.error ?? "Չհաջողվեց ջնջել");
         return;
       }
-      toast.success("Բոնուսը ջնջված է");
+      toast.success(data.refunded > 0 ? `Բոնուսը ջնջված է · ${data.refunded} մվր վերադարձվեց` : "Բոնուսը ջնջված է");
       router.refresh();
     } catch {
       toast.error("Չհաջողվեց ջնջել");

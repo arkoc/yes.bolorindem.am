@@ -21,8 +21,9 @@ export async function DELETE(
   const { id } = await params;
   const admin = createAdminClient();
 
-  const { error } = await admin.from("user_bounties").delete().eq("id", id);
+  const { data, error } = await admin.rpc("admin_delete_bounty", { p_bounty_id: id });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (!data.ok) return NextResponse.json({ error: data.reason }, { status: 422 });
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, refunded: data.refunded });
 }
