@@ -30,7 +30,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes
-  const publicRoutes = ["/login", "/register", "/auth/callback"];
+  const publicRoutes = ["/login", "/register", "/auth/callback", "/api/cron/"];
   const isPublic = publicRoutes.some((r) => pathname.startsWith(r));
 
   // Redirect unauthenticated users to login
