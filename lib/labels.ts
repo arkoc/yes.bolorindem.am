@@ -124,6 +124,7 @@ const L = {
       typeDefault: "Առաջադրանք",
       periodDay: "Օրական՝ {limit}×",
       periodWeek: "Շաբաթական՝ {limit}×",
+      totalCompletions: "{count} կատ.",
     },
 
     leaderboard: {
@@ -771,7 +772,7 @@ const L = {
 
     // Bounties list page
     pageTitle: "Բոնուսներ",
-    pageSubtitle: "Ստեղծեք կամ կատարեք առաջադրանքներ",
+    pageSubtitle: "Ստեղծեք կամ կատարեք համայնքի առաջադրանքներ",
     tabOthers: "Բոլոր բոնուսները",
     tabMine: "Իմ բոնուսները",
     sortByReward: "Ըստ պարգևի",

@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
-import { ArrowLeft, MapPin, ClipboardList, FileText, Camera, Repeat, Clock } from "lucide-react";
+import { ArrowLeft, MapPin, ClipboardList, FileText, Camera, Repeat, Clock, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { StandardCompletion } from "@/components/tasks/CompletionFlow/StandardCompletion";
@@ -31,13 +31,20 @@ export default async function TaskDetailPage({
 
   if (!task) notFound();
 
-  // Get user's completions for this task (count + location data for per-point counts)
-  const { data: userCompletionRows, count: completionCount } = await supabase
-    .from("task_completions")
-    .select("location_data", { count: "exact" })
-    .eq("task_id", id)
-    .eq("user_id", user.id)
-    .eq("status", "approved");
+  // Get user's completions + total completions for this task
+  const [{ data: userCompletionRows, count: completionCount }, { count: totalCompletionCount }] = await Promise.all([
+    supabase
+      .from("task_completions")
+      .select("location_data", { count: "exact" })
+      .eq("task_id", id)
+      .eq("user_id", user.id)
+      .eq("status", "approved"),
+    supabase
+      .from("task_completions")
+      .select("*", { count: "exact", head: true })
+      .eq("task_id", id)
+      .eq("status", "approved"),
+  ]);
 
   const userCompletions = completionCount ?? 0;
 
@@ -111,6 +118,12 @@ export default async function TaskDetailPage({
                   <Badge variant="outline" className="text-xs flex items-center gap-1 text-muted-foreground">
                     <Clock className="h-3 w-3" />
                     {t(L.volunteer.taskDetail.periodWeek, { limit: task.period_limit ?? 1 })}
+                  </Badge>
+                )}
+                {(totalCompletionCount ?? 0) > 0 && (
+                  <Badge variant="outline" className="text-xs flex items-center gap-1 text-muted-foreground">
+                    <Users className="h-3 w-3" />
+                    {t(L.volunteer.taskDetail.totalCompletions, { count: totalCompletionCount ?? 0 })}
                   </Badge>
                 )}
               </div>

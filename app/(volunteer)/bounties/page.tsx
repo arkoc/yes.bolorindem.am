@@ -215,12 +215,17 @@ export default async function BountiesPage({
                     {b.status === "closed" ? L.bounty.statusClosed : L.bounty.statusCancelled}
                   </Badge>
                 )}
-                {b.is_repeatable && (
+                {b.is_repeatable ? (
                   <Badge variant="secondary" className="text-xs gap-1">
                     <Repeat2 className="h-3 w-3" />
                     {acceptedCount}/{b.max_completions ?? "∞"}
                   </Badge>
-                )}
+                ) : acceptedCount > 0 ? (
+                  <Badge variant="secondary" className="text-xs gap-1">
+                    <Repeat2 className="h-3 w-3" />
+                    {acceptedCount}
+                  </Badge>
+                ) : null}
                 <Badge variant={closed ? "outline" : "success"} className="text-xs">
                   +{b.reward_points}
                 </Badge>

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, MapPin, ClipboardList, Star, CheckCircle, Repeat, FileText, Calendar } from "lucide-react";
+import { ArrowLeft, MapPin, ClipboardList, Star, CheckCircle, Repeat, FileText, Calendar, Users } from "lucide-react";
 import { formatPoints } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import L, { t } from "@/lib/labels";
@@ -21,6 +21,7 @@ interface TaskWithCompletion {
   is_active: boolean;
   order_index: number;
   userCompletions: number;
+  totalCompletions: number;
 }
 
 export default async function ProjectDetailPage({
@@ -51,21 +52,34 @@ export default async function ProjectDetailPage({
   const project = projectRes.data;
   const tasks = tasksRes.data ?? [];
 
-  // Get user's completions for these tasks
+  // Get user's completions + total completions for these tasks
   const taskIds = tasks.map((t: { id: string }) => t.id);
-  const { data: completions } = taskIds.length > 0
-    ? await supabase
-        .from("task_completions")
-        .select("task_id, completion_number")
-        .eq("user_id", user.id)
-        .eq("status", "approved")
-        .in("task_id", taskIds)
-    : { data: [] };
+  const [{ data: completions }, { data: allCompletions }] = taskIds.length > 0
+    ? await Promise.all([
+        supabase
+          .from("task_completions")
+          .select("task_id, completion_number")
+          .eq("user_id", user.id)
+          .eq("status", "approved")
+          .in("task_id", taskIds),
+        supabase
+          .from("task_completions")
+          .select("task_id")
+          .eq("status", "approved")
+          .in("task_id", taskIds),
+      ])
+    : [{ data: [] }, { data: [] }];
 
-  // Count completions per task
+  // Count user completions per task
   const completionCount: Record<string, number> = {};
   (completions ?? []).forEach((c: { task_id: string }) => {
     completionCount[c.task_id] = (completionCount[c.task_id] || 0) + 1;
+  });
+
+  // Count total completions per task (all users)
+  const totalCompletionCount: Record<string, number> = {};
+  (allCompletions ?? []).forEach((c: { task_id: string }) => {
+    totalCompletionCount[c.task_id] = (totalCompletionCount[c.task_id] || 0) + 1;
   });
 
   const tasksWithCompletion: TaskWithCompletion[] = tasks.map((t: {
@@ -80,6 +94,7 @@ export default async function ProjectDetailPage({
   }) => ({
     ...t,
     userCompletions: completionCount[t.id] ?? 0,
+    totalCompletions: totalCompletionCount[t.id] ?? 0,
   }));
 
   const completedCount = tasksWithCompletion.filter(
@@ -175,6 +190,12 @@ export default async function ProjectDetailPage({
                             <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
                               <Repeat className="h-3 w-3" />
                               {task.userCompletions}/{maxCompletions}
+                            </span>
+                          )}
+                          {task.totalCompletions > 0 && (
+                            <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
+                              <Users className="h-3 w-3" />
+                              {t(L.volunteer.taskDetail.totalCompletions, { count: task.totalCompletions })}
                             </span>
                           )}
                         </div>

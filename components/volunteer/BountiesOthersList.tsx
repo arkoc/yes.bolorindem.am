@@ -113,12 +113,17 @@ export function BountiesOthersList({ initialBounties, initialHasMore, excludeUse
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-base leading-snug">{b.title}</CardTitle>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      {b.is_repeatable && (
+                      {b.is_repeatable ? (
                         <Badge variant="secondary" className="text-xs gap-1">
                           <Repeat2 className="h-3 w-3" />
                           {acceptedCount}/{b.max_completions ?? "∞"}
                         </Badge>
-                      )}
+                      ) : acceptedCount > 0 ? (
+                        <Badge variant="secondary" className="text-xs gap-1">
+                          <Repeat2 className="h-3 w-3" />
+                          {acceptedCount}
+                        </Badge>
+                      ) : null}
                       <Badge variant="success" className="text-xs">+{b.reward_points}</Badge>
                     </div>
                   </div>
