@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/cron/expire-bounties",
+      "path": "/api/cron/expire",
       "schedule": "0 * * * *"
     }
   ]
