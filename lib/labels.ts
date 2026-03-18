@@ -728,6 +728,7 @@ const L = {
     submitProofBtn: "Ուղարկել ապացույցը",
     submitProofSuccess: "Ապացույցն ընդունված է, {points} մվր շնորհվել է",
     submitProofFailed: "Չհաջողվեց ուղարկել",
+    expiredError: "Բոնուսի ժամկետն անցել է",
 
     // Auto-accept countdown
     autoAcceptIn: "Ինքնաշխատ հաստատում {hours}ժ-ից",

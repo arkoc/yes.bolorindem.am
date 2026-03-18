@@ -106,7 +106,10 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
       if (proofFile) formData.append("proof", proofFile);
       const res = await fetch(`/api/bounties/${bounty.id}/complete`, { method: "POST", body: formData });
       const data = await res.json();
-      if (!res.ok) { toast.error(data.error ?? L.bounty.submitProofFailed); return; }
+      if (!res.ok) {
+        toast.error(data.error === "expired" ? L.bounty.expiredError : (data.error ?? L.bounty.submitProofFailed));
+        return;
+      }
       toast.success(t(L.bounty.submitProofSuccess, { points: data.points ?? bounty.reward_points }));
       router.refresh();
     } catch { toast.error(L.bounty.submitProofFailed); }
