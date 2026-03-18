@@ -75,6 +75,7 @@ export const tasks = pgTable("tasks", {
   periodType: text("period_type"), // 'day' | 'week' | null
   periodLimit: integer("period_limit").default(1), // completions allowed per period
   allowBatchSubmission: boolean("allow_batch_submission").notNull().default(false),
+  attachmentUrls: text("attachment_urls").array().notNull().default(sql`'{}'`),
   isActive: boolean("is_active").notNull().default(true),
   orderIndex: integer("order_index").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true })

@@ -1,7 +1,7 @@
 "use client";
 
 import L from "@/lib/labels";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -22,7 +22,7 @@ import { Separator } from "@/components/ui/separator";
 import { createClient } from "@/lib/supabase/client";
 import { FormSchemaBuilder } from "./FormSchemaBuilder";
 import { LocationDataBuilder } from "./LocationDataBuilder";
-import { Camera, Loader2, Trash2 } from "lucide-react";
+import { Camera, ImageIcon, Loader2, Trash2, X } from "lucide-react";
 import { type Task, type FormSchema, type TaskLocationData } from "@/lib/db/schema";
 
 const taskSchema = z.object({
@@ -59,6 +59,10 @@ export function TaskForm({ projectId, task, onSuccess }: TaskFormProps) {
     }
   );
 
+  const [attachmentUrls, setAttachmentUrls] = useState<string[]>(task?.attachmentUrls ?? []);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
   const [unlimited, setUnlimited] = useState(task?.maxCompletionsPerUser === null);
   const [periodType, setPeriodType] = useState<"none" | "day" | "week">(
     (task?.periodType as "day" | "week" | null) ?? "none"
@@ -81,6 +85,22 @@ export function TaskForm({ projectId, task, onSuccess }: TaskFormProps) {
 
   const taskType = watch("task_type");
 
+  async function handleImagesChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    if (imageInputRef.current) imageInputRef.current.value = "";
+    setUploadingImages(true);
+    try {
+      const formData = new FormData();
+      files.slice(0, 5 - attachmentUrls.length).forEach(f => formData.append("images", f));
+      const res = await fetch("/api/admin/tasks/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.error ?? "Upload failed"); return; }
+      setAttachmentUrls(prev => [...prev, ...data.urls].slice(0, 5));
+    } catch { toast.error("Upload failed"); }
+    finally { setUploadingImages(false); }
+  }
+
   async function onSubmit(data: TaskFormValues) {
     setLoading(true);
     try {
@@ -99,6 +119,7 @@ export function TaskForm({ projectId, task, onSuccess }: TaskFormProps) {
         order_index: data.order_index,
         form_schema: data.task_type === "form" ? formSchema : null,
         location_data: data.task_type === "location" ? locationData : null,
+        attachment_urls: attachmentUrls,
       };
 
       if (task?.id) {
@@ -282,6 +303,48 @@ export function TaskForm({ projectId, task, onSuccess }: TaskFormProps) {
           </div>
         </>
       )}
+
+      {/* Attachments */}
+      <Separator />
+      <div className="space-y-2">
+        <Label>{L.forms.task.attachmentsLabel}</Label>
+        <input
+          ref={imageInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={handleImagesChange}
+        />
+        {attachmentUrls.length > 0 && (
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+            {attachmentUrls.map((url, i) => (
+              <div key={i} className="relative aspect-square rounded-lg overflow-hidden border">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={url} alt="" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setAttachmentUrls(prev => prev.filter((_, j) => j !== i))}
+                  className="absolute top-1 right-1 bg-background/80 rounded-full p-0.5 hover:bg-background"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        {attachmentUrls.length < 5 && (
+          <button
+            type="button"
+            onClick={() => imageInputRef.current?.click()}
+            disabled={uploadingImages}
+            className="h-16 w-full rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center gap-2 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors disabled:opacity-50"
+          >
+            {uploadingImages ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+            <span className="text-xs">{uploadingImages ? L.forms.task.uploading : L.forms.task.attachmentsHint}</span>
+          </button>
+        )}
+      </div>
 
       <Separator />
 

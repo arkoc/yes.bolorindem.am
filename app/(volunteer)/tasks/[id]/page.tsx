@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
-import { ArrowLeft, MapPin, ClipboardList, FileText, Camera, Repeat, Clock, Users } from "lucide-react";
+import { ArrowLeft, MapPin, ClipboardList, FileText, Camera, Repeat, Clock, Users, Paperclip } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { StandardCompletion } from "@/components/tasks/CompletionFlow/StandardCompletion";
@@ -11,6 +11,7 @@ import { FormCompletion } from "@/components/tasks/CompletionFlow/FormCompletion
 import { LocationCompletion } from "@/components/tasks/CompletionFlow/LocationCompletion";
 import { PhotoCompletion } from "@/components/tasks/CompletionFlow/PhotoCompletion";
 import { type FormSchema, type TaskLocationData } from "@/lib/db/schema";
+import { TaskAttachments } from "@/components/volunteer/TaskAttachments";
 import L, { t } from "@/lib/labels";
 
 export default async function TaskDetailPage({
@@ -25,7 +26,7 @@ export default async function TaskDetailPage({
 
   const { data: task } = await supabase
     .from("tasks")
-    .select("id, title, description, task_type, completion_points, max_completions_per_user, requires_evidence, form_schema, location_data, is_active, project_id, allow_batch_submission, period_type, period_limit, projects(id, title)")
+    .select("id, title, description, task_type, completion_points, max_completions_per_user, requires_evidence, form_schema, location_data, is_active, project_id, allow_batch_submission, period_type, period_limit, attachment_urls, projects(id, title)")
     .eq("id", id)
     .single();
 
@@ -136,6 +137,19 @@ export default async function TaskDetailPage({
           )}
         </CardContent>
       </Card>
+
+      {/* Attachments */}
+      {(task.attachment_urls as string[] | null)?.length ? (
+        <Card>
+          <CardContent className="pt-4 pb-4 space-y-3">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+              <Paperclip className="h-3.5 w-3.5" />
+              {L.forms.task.attachmentsLabel}
+            </p>
+            <TaskAttachments urls={task.attachment_urls as string[]} />
+          </CardContent>
+        </Card>
+      ) : null}
 
       {/* Completion UI */}
       {task.task_type === "standard" && (
