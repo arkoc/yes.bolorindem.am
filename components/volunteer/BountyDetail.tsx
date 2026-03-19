@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
   ChevronLeft, ChevronRight, Coins, User, Clock, ImageIcon,
-  CheckCircle, XCircle, X, Upload, RefreshCw
+  CheckCircle, XCircle, X, Upload, RefreshCw, Download
 } from "lucide-react";
 import { toast } from "sonner";
 import L, { t } from "@/lib/labels";
@@ -77,7 +77,31 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
   const [actingOn, setActingOn] = useState<string | null>(null);
   const [confirmingReject, setConfirmingReject] = useState<string | null>(null);
 
+  const [lightboxUrls, setLightboxUrls] = useState<string[]>([]);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  function openLightbox(urls: string[], idx = 0) {
+    setLightboxUrls(urls);
+    setLightboxIndex(idx);
+  }
+  function closeLightbox() {
+    setLightboxIndex(null);
+    setLightboxUrls([]);
+  }
+
+  async function handleDownload(url: string) {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = url.split("/").pop()?.split("?")[0] ?? "image";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch {
+      window.open(url, "_blank");
+    }
+  }
 
   const isCreator = currentUserId === bounty.creator_id;
   const myCompletion = bounty.completions.find(c => c.user_id === currentUserId);
@@ -187,17 +211,28 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
       )}
 
       {/* Lightbox */}
-      {lightboxIndex !== null && (
+      {lightboxIndex !== null && lightboxUrls.length > 0 && (
         <div
           className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
-          onClick={() => setLightboxIndex(null)}
+          onClick={closeLightbox}
         >
-          <button
-            className="absolute top-4 right-4 text-white/80 hover:text-white p-2"
-            onClick={() => setLightboxIndex(null)}
-          >
-            <X className="h-6 w-6" />
-          </button>
+          {/* Top controls */}
+          <div className="absolute top-4 right-4 flex gap-2" onClick={e => e.stopPropagation()}>
+            <button
+              className="text-white/80 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors"
+              onClick={() => handleDownload(lightboxUrls[lightboxIndex])}
+              title="Download"
+            >
+              <Download className="h-5 w-5" />
+            </button>
+            <button
+              className="text-white/80 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors"
+              onClick={closeLightbox}
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
           {lightboxIndex > 0 && (
             <button
               className="absolute left-3 text-white/80 hover:text-white p-2"
@@ -206,7 +241,7 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
               <ChevronLeft className="h-8 w-8" />
             </button>
           )}
-          {lightboxIndex < bounty.image_urls.length - 1 && (
+          {lightboxIndex < lightboxUrls.length - 1 && (
             <button
               className="absolute right-3 text-white/80 hover:text-white p-2"
               onClick={(e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex + 1); }}
@@ -214,9 +249,10 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
               <ChevronRight className="h-8 w-8" />
             </button>
           )}
-          <div className="relative w-full max-w-2xl max-h-[80vh] mx-12" onClick={e => e.stopPropagation()}>
+
+          <div className="relative w-full max-w-2xl max-h-[80vh] mx-14" onClick={e => e.stopPropagation()}>
             <Image
-              src={bounty.image_urls[lightboxIndex]}
+              src={lightboxUrls[lightboxIndex]}
               alt=""
               width={800}
               height={600}
@@ -224,9 +260,10 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
               sizes="(max-width: 672px) 100vw, 672px"
             />
           </div>
-          {bounty.image_urls.length > 1 && (
+
+          {lightboxUrls.length > 1 && (
             <div className="absolute bottom-4 flex gap-1.5">
-              {bounty.image_urls.map((_, i) => (
+              {lightboxUrls.map((_, i) => (
                 <button
                   key={i}
                   onClick={(e) => { e.stopPropagation(); setLightboxIndex(i); }}
@@ -246,7 +283,7 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
               <button
                 key={i}
                 type="button"
-                onClick={() => setLightboxIndex(i)}
+                onClick={() => openLightbox(bounty.image_urls, i)}
                 className="relative aspect-square rounded-lg overflow-hidden border hover:opacity-90 transition-opacity"
               >
                 <Image src={url} alt="" fill className="object-cover" sizes="(max-width: 672px) 33vw, 224px" />
@@ -319,9 +356,13 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
               <p className="text-xs text-muted-foreground">{L.bounty.rejectedBanner}</p>
             )}
             {myCompletion.proof_url && (
-              <div className="relative w-full h-48 rounded-lg overflow-hidden">
+              <button
+                type="button"
+                onClick={() => openLightbox([myCompletion.proof_url!], 0)}
+                className="relative w-full h-48 rounded-lg overflow-hidden hover:opacity-90 transition-opacity"
+              >
                 <Image src={myCompletion.proof_url} alt="My proof" fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" />
-              </div>
+              </button>
             )}
           </CardContent>
         </Card>
@@ -393,9 +434,13 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
                     </Badge>
                   </div>
                   {c.proof_url && (
-                    <div className="relative w-full h-48 rounded-lg overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => openLightbox([c.proof_url!], 0)}
+                      className="relative w-full h-48 rounded-lg overflow-hidden hover:opacity-90 transition-opacity"
+                    >
                       <Image src={c.proof_url} alt="Proof" fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" loading="lazy" />
-                    </div>
+                    </button>
                   )}
                   {c.status === "pending_review" && (
                     <div className="flex gap-2">
