@@ -16,18 +16,9 @@ export async function POST(
   if (!completionId) return NextResponse.json({ error: "completionId required" }, { status: 400 });
 
   const admin = createAdminClient();
-  const { data: bounty } = await admin
-    .from("user_bounties")
-    .select("creator_id")
-    .eq("id", bountyId)
-    .single();
-
-  if (!bounty) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  if (bounty.creator_id !== user.id) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-
-  const { data, error } = await admin.rpc("accept_bounty_completion", {
+  const { data, error } = await admin.rpc("creator_accept_completion", {
     p_completion_id: completionId,
-    p_resolver_id:   user.id,
+    p_creator_id:    user.id,
   });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

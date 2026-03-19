@@ -745,25 +745,24 @@ const L = {
 
     // Creator actions
     acceptBtn: "Ընդունել",
-    disputeBtn: "Վիճարկել",
-    disputeConfirmPrompt: "Համոզվա՞ծ եք, որ ուզում եք վիճարկել",
-    disputeConfirmYes: "Այո, վիճարկել",
+    rejectBtn: "Մերժել",
+    rejectConfirmYes: "Այո, մերժել",
     disputeConfirmCancel: "Ոչ",
     cancelBtn: "Չեղարկել",
     completionsCount: "{accepted} / {max} կատարված",
     completionsHeader: "Ներկայացված ապացույցներ",
     cancelConfirm: "Չեղարկե՞լ բոնուսը (կվերադարձվի {points} մվր)",
-    acceptSuccess: "{points} մվր փոխանցվեց {name}-ին",
+    acceptSuccess: "{points} մվր փոխանցվեց",
     acceptFailed: "Չհաջողվեց հաստատել",
-    disputeSuccess: "Վիճարկումն ուղարկված է ադմինին",
-    disputeFailed: "Չհաջողվեց վիճարկել",
+    rejectSuccess: "Ներկայացումը մերժված է",
+    rejectFailed: "Չհաջողվեց մերժել",
     cancelSuccess: "{points} մվր վերադարձվեց",
     cancelFailed: "Չհաջողվեց չեղարկել",
 
     // Results
+    submitProofSuccess2: "Ներկայացումն ուղարկված է. սպասեք հաստատմանը",
     acceptedBanner: "Բոնուսը հաստատված է · {points} մվր շնորհվեց",
-    autoAcceptedBanner: "Ժամկետն անցել է, հաստատվեց ինքնաշխատ · {points} մվր",
-    disputedBanner: "Վիճարկված է. սպասեք ադմինի որոշմանը",
+    rejectedBanner: "Ներկայացումը մերժված է",
     cancelledBanner: "Բոնուսը չեղարկված է",
 
     // Profile page button

@@ -10,18 +10,18 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
   ChevronLeft, ChevronRight, Coins, User, Clock, ImageIcon,
-  AlertCircle, X, XCircle, Upload, RefreshCw
+  CheckCircle, XCircle, X, Upload, RefreshCw
 } from "lucide-react";
 import { toast } from "sonner";
 import L, { t } from "@/lib/labels";
 
 type BountyStatus = "open" | "closed" | "cancelled";
-type CompletionStatus = "pending_review" | "accepted" | "disputed" | "rejected";
+type CompletionStatus = "pending_review" | "accepted" | "rejected";
 
 interface BountyCompletion {
   id: string;
   user_id: string;
-  proof_url: string;
+  proof_url: string | null;
   status: CompletionStatus;
   created_at: string;
   resolved_at: string | null;
@@ -60,13 +60,11 @@ const BOUNTY_LABELS: Record<BountyStatus, string> = {
 const COMP_VARIANTS: Record<CompletionStatus, "default" | "secondary" | "success" | "warning" | "destructive"> = {
   pending_review: "warning",
   accepted: "success",
-  disputed: "destructive",
   rejected: "secondary",
 };
 const COMP_LABELS: Record<CompletionStatus, string> = {
   pending_review: L.bounty.statusPendingReview,
   accepted: L.bounty.statusAccepted,
-  disputed: L.bounty.statusDisputed,
   rejected: L.bounty.statusRejected,
 };
 
@@ -77,7 +75,7 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
   const [proofPreview, setProofPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [actingOn, setActingOn] = useState<string | null>(null);
-  const [confirmingDispute, setConfirmingDispute] = useState<string | null>(null);
+  const [confirmingReject, setConfirmingReject] = useState<string | null>(null);
 
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
@@ -85,11 +83,8 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
   const myCompletion = bounty.completions.find(c => c.user_id === currentUserId);
   const acceptedCount = bounty.completions.filter(c => c.status === "accepted").length;
 
-  // Can user submit a new completion?
-  const canComplete = !isCreator
-    && bounty.status === "open"
-    && !myCompletion
-    && (bounty.is_repeatable || bounty.completions.filter(c => c.status === "accepted").length === 0);
+  // Volunteer can submit if bounty is open and they haven't submitted yet
+  const canComplete = !isCreator && bounty.status === "open" && !myCompletion;
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -110,25 +105,41 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
         toast.error(data.error === "expired" ? L.bounty.expiredError : (data.error ?? L.bounty.submitProofFailed));
         return;
       }
-      toast.success(t(L.bounty.submitProofSuccess, { points: data.points ?? bounty.reward_points }));
+      toast.success(L.bounty.submitProofSuccess2);
       router.refresh();
     } catch { toast.error(L.bounty.submitProofFailed); }
     finally { setSubmitting(false); }
   }
 
-  async function handleDispute(completionId: string) {
+  async function handleAccept(completionId: string) {
     setActingOn(completionId);
     try {
-      const res = await fetch(`/api/bounties/${bounty.id}/dispute`, {
+      const res = await fetch(`/api/bounties/${bounty.id}/accept`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ completionId }),
       });
-      if (!res.ok) { toast.error(L.bounty.disputeFailed); return; }
-      toast.success(L.bounty.disputeSuccess);
+      const data = await res.json();
+      if (!res.ok) { toast.error(L.bounty.acceptFailed); return; }
+      toast.success(t(L.bounty.acceptSuccess, { points: data.points ?? bounty.reward_points }));
       router.refresh();
-    } catch { toast.error(L.bounty.disputeFailed); }
+    } catch { toast.error(L.bounty.acceptFailed); }
     finally { setActingOn(null); }
+  }
+
+  async function handleReject(completionId: string) {
+    setActingOn(completionId);
+    try {
+      const res = await fetch(`/api/bounties/${bounty.id}/reject`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completionId }),
+      });
+      if (!res.ok) { toast.error(L.bounty.rejectFailed); return; }
+      toast.success(L.bounty.rejectSuccess);
+      router.refresh();
+    } catch { toast.error(L.bounty.rejectFailed); }
+    finally { setActingOn(null); setConfirmingReject(null); }
   }
 
   async function handleCancel() {
@@ -288,7 +299,7 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
         </CardContent>
       </Card>
 
-      {/* My completion status (non-creator) */}
+      {/* My submission status (non-creator) */}
       {myCompletion && (
         <Card>
           <CardContent className="pt-4 space-y-3">
@@ -296,10 +307,16 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
               <p className="text-sm font-semibold">{L.bounty.mySubmissionTitle}</p>
               <Badge variant={COMP_VARIANTS[myCompletion.status]}>{COMP_LABELS[myCompletion.status]}</Badge>
             </div>
+            {myCompletion.status === "pending_review" && (
+              <p className="text-xs text-muted-foreground">{L.bounty.pendingReviewHint}</p>
+            )}
             {myCompletion.status === "accepted" && (
               <p className="text-xs text-green-600">
-                {t(myCompletion.resolution === "auto_accepted" ? L.bounty.autoAcceptedBanner : L.bounty.acceptedBanner, { points: bounty.reward_points })}
+                {t(L.bounty.acceptedBanner, { points: bounty.reward_points })}
               </p>
+            )}
+            {myCompletion.status === "rejected" && (
+              <p className="text-xs text-muted-foreground">{L.bounty.rejectedBanner}</p>
             )}
             {myCompletion.proof_url && (
               <div className="relative w-full h-48 rounded-lg overflow-hidden">
@@ -310,7 +327,7 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
         </Card>
       )}
 
-      {/* Anyone: submit proof */}
+      {/* Submit proof (volunteer) */}
       {canComplete && (
         <Card>
           <CardContent className="pt-4 space-y-3">
@@ -348,12 +365,12 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
         </Card>
       )}
 
-      {/* Creator: empty state when no completions yet */}
-      {isCreator && bounty.status === "open" && bounty.completions.length === 0 && (
+      {/* Creator: empty state */}
+      {isCreator && bounty.status === "open" && bounty.completions.filter(c => c.status === "pending_review").length === 0 && (
         <p className="text-sm text-muted-foreground text-center py-2">{L.bounty.noCompletionsYet}</p>
       )}
 
-      {/* Creator: completions list */}
+      {/* Creator: review submissions */}
       {isCreator && bounty.completions.length > 0 && (
         <Card>
           <CardHeader className="pb-2">
@@ -380,25 +397,50 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
                       <Image src={c.proof_url} alt="Proof" fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" loading="lazy" />
                     </div>
                   )}
-                  {c.status === "accepted" && (
-                    confirmingDispute === c.id ? (
-                      <div className="flex flex-col gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-2">
-                        <p className="text-xs text-destructive text-center">{L.bounty.disputeConfirmPrompt}</p>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="ghost" className="flex-1 h-7 text-xs" onClick={() => setConfirmingDispute(null)}>
+                  {c.status === "pending_review" && (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => handleAccept(c.id)}
+                        disabled={actingOn === c.id}
+                      >
+                        <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+                        {L.bounty.acceptBtn}
+                      </Button>
+                      {confirmingReject === c.id ? (
+                        <div className="flex gap-1.5 flex-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="flex-1 h-9 text-xs"
+                            onClick={() => setConfirmingReject(null)}
+                          >
                             {L.bounty.disputeConfirmCancel}
                           </Button>
-                          <Button size="sm" variant="destructive" className="flex-1 h-7 text-xs" onClick={() => { setConfirmingDispute(null); handleDispute(c.id); }} disabled={actingOn === c.id}>
-                            {L.bounty.disputeConfirmYes}
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="flex-1 h-9 text-xs"
+                            onClick={() => handleReject(c.id)}
+                            disabled={actingOn === c.id}
+                          >
+                            {L.bounty.rejectConfirmYes}
                           </Button>
                         </div>
-                      </div>
-                    ) : (
-                      <Button size="sm" variant="outline" className="w-full text-destructive" onClick={() => setConfirmingDispute(c.id)} disabled={actingOn === c.id}>
-                        <AlertCircle className="h-3.5 w-3.5 mr-1.5" />
-                        {L.bounty.disputeBtn}
-                      </Button>
-                    )
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 text-destructive"
+                          onClick={() => setConfirmingReject(c.id)}
+                          disabled={actingOn === c.id}
+                        >
+                          <XCircle className="h-3.5 w-3.5 mr-1.5" />
+                          {L.bounty.rejectBtn}
+                        </Button>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
