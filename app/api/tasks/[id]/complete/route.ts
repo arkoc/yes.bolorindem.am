@@ -3,16 +3,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { completionSchema } from "@/lib/validations/completion";
 import { type FormSchema, type TaskLocationData } from "@/lib/db/schema";
 
-/** Haversine distance in meters between two lat/lng coordinates. */
-function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371000;
-  const dLat = (lat2 - lat1) * (Math.PI / 180);
-  const dLng = (lng2 - lng1) * (Math.PI / 180);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
+import { haversineMeters } from "@/lib/geo";
 
 export async function POST(
   request: NextRequest,
@@ -209,27 +200,28 @@ export async function POST(
   if (payload.taskType === "photo") baseData.evidence_urls = payload.evidenceUrls;
   if ("notes" in payload && payload.notes) baseData.notes = payload.notes;
 
-  // Insert completions sequentially (triggers fire per-row for atomic point updates)
-  let lastCompletion: { id: string; points_awarded: number; completion_number: number } | null = null;
-  for (let i = 0; i < batchCount; i++) {
-    const { data, error: insertError } = await supabase
-      .from("task_completions")
-      .insert({ ...baseData, completion_number: nextNumber + i + 1 })
-      .select("id, points_awarded, completion_number")
-      .single();
+  // Insert all completions in one round-trip; triggers fire per-row atomically
+  const rows = Array.from({ length: batchCount }, (_, i) => ({
+    ...baseData,
+    completion_number: nextNumber + i + 1,
+  }));
 
-    if (insertError) {
-      if (insertError.message?.includes("task_at_capacity")) {
-        return NextResponse.json(
-          { error: "This task has reached its maximum completions." },
-          { status: 409 }
-        );
-      }
-      console.error("Completion insert error:", insertError);
-      return NextResponse.json({ error: "Failed to record completion." }, { status: 500 });
+  const { data: inserted, error: insertError } = await supabase
+    .from("task_completions")
+    .insert(rows)
+    .select("id, points_awarded, completion_number");
+
+  if (insertError) {
+    if (insertError.message?.includes("task_at_capacity")) {
+      return NextResponse.json(
+        { error: "This task has reached its maximum completions." },
+        { status: 409 }
+      );
     }
-    lastCompletion = data;
+    return NextResponse.json({ error: "Failed to record completion." }, { status: 500 });
   }
+
+  const lastCompletion = inserted?.[inserted.length - 1] ?? null;
 
   // Fetch updated profile points (trigger has already updated total_points atomically)
   const { data: profile } = await supabase

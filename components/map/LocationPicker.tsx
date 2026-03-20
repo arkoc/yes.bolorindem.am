@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Loader2, Navigation, ExternalLink, CheckCircle, AlertCircle } from "lucide-react";
 import { type TaskLocationData, type LocationTargetPoint } from "@/lib/db/schema";
 import L, { t } from "@/lib/labels";
+import { haversineMeters } from "@/lib/geo";
 
 const MapView = dynamic(
   () => import("./MapView").then((m) => ({ default: m.MapView })),
@@ -35,16 +36,6 @@ function buildYandexUrl(points: LocationTargetPoint[], center: [number, number],
   return `https://yandex.com/maps/?pt=${pt}&z=14`;
 }
 
-/** Haversine distance in meters between two lat/lng coordinates. */
-function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371000;
-  const dLat = (lat2 - lat1) * (Math.PI / 180);
-  const dLng = (lng2 - lng1) * (Math.PI / 180);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
 
 export function LocationPicker({ locationData, onConfirm, disabled, perPointCompletions = {} }: LocationPickerProps) {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
