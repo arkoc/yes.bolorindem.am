@@ -85,7 +85,7 @@ export default async function ElectionsPage() {
           </div>
         </Link>
 
-        <Link href="/elections/register?type=candidate" className="block rounded-2xl border-2 border-amber-500/20 bg-amber-50 p-5">
+        <Link href="/elections/register?type=candidate" className="block rounded-2xl border-2 border-green-500/20 bg-green-50 p-5">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-bold text-base">{L.elections.registerCandidate}</p>

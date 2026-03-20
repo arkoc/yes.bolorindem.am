@@ -87,7 +87,8 @@ export async function POST(req: NextRequest) {
     if (insertError.code === "23505") {
       return NextResponse.json({ error: "duplicate" }, { status: 409 });
     }
-    return NextResponse.json({ error: "Failed to register" }, { status: 500 });
+    console.error("election insert error:", insertError);
+    return NextResponse.json({ error: insertError.message, code: insertError.code, details: insertError.details }, { status: 500 });
   }
 
   // Initialize payment with AmeriBank
@@ -115,7 +116,8 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     // Delete the registration since payment init failed
     await adminClient.from("election_registrations").delete().eq("id", reg.id);
-    console.error("AmeriBank InitPayment error:", err);
-    return NextResponse.json({ error: "Payment initialization failed" }, { status: 502 });
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("AmeriBank InitPayment error:", msg);
+    return NextResponse.json({ error: msg }, { status: 502 });
   }
 }
