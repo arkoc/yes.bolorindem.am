@@ -61,16 +61,17 @@ const LAW_URL = "https://www.arlis.am/hy/acts/107373";
 
 function LegalQuote({ article = "80", point, children }: { article?: string; point: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-muted bg-muted/30 px-4 py-3 space-y-1.5">
+    <div className="border-l-2 border-primary/25 pl-3 space-y-1.5">
+      <p className="text-xs text-muted-foreground leading-relaxed italic">{children}</p>
       <a
         href={LAW_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+        className="inline-flex items-center gap-1 text-[11px] text-primary/60 hover:text-primary transition-colors"
       >
-        ՀՀ Ընտրական օրենսգիրք, հոդված {article}, կետ {point} <ExternalLink className="h-3 w-3" />
+        ՀՀ Ընտրական օրենսգիրք, հոդված {article}, կետ {point}
+        <ExternalLink className="h-2.5 w-2.5" />
       </a>
-      <p className="text-xs text-muted-foreground leading-relaxed">{children}</p>
     </div>
   );
 }
