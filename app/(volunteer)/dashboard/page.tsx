@@ -21,7 +21,7 @@ export default async function DashboardPage() {
 
   const adminClient = createAdminClient();
 
-  const [profileRes, rankRes, activeProjectsRes, earnedBadgesRes, allBadgesRes, referralRes, recentActivityRes, openBountiesRes] = await Promise.all([
+  const [profileRes, rankRes, activeProjectsRes, earnedBadgesRes, allBadgesRes, referralRes, recentActivityRes, openBountiesRes, electionRegRes] = await Promise.all([
     supabase
       .from("profiles")
       .select("full_name, total_points, role, referral_code, avatar_url")
@@ -58,6 +58,12 @@ export default async function DashboardPage() {
       .select("id, reward_points", { count: "exact" })
       .eq("target_user_id", user.id)
       .eq("status", "open"),
+    adminClient
+      .from("election_registrations")
+      .select("type")
+      .eq("user_id", user.id)
+      .eq("payment_status", "paid")
+      .neq("status", "rejected"),
   ]);
 
   const profile = profileRes.data;
@@ -92,6 +98,9 @@ export default async function DashboardPage() {
   const referralCode = (profile as { referral_code?: string | null } | null)?.referral_code ?? null;
   const referralCount = referralRes.count ?? 0;
   const openBountyCount = openBountiesRes.count ?? 0;
+  const electionRegs = (electionRegRes.data ?? []) as { type: string }[];
+  const isRegisteredVoter = electionRegs.some(r => r.type === "voter");
+  const isRegisteredCandidate = electionRegs.some(r => r.type === "candidate");
   const openBountyPoints = ((openBountiesRes.data ?? []) as { reward_points: number }[]).reduce((s, b) => s + b.reward_points, 0);
   const earnedBadgeIds = new Set(earnedBadges.map(b => b.badge_id));
   const earnedList = earnedBadges.slice(0, 5).map(b => ({ id: b.badge_id, ...b.badges, earned: true }));
@@ -146,6 +155,26 @@ export default async function DashboardPage() {
 
       {/* Push notification banner */}
       <PushNotificationBanner />
+
+      {/* Election registration status */}
+      {(isRegisteredVoter || isRegisteredCandidate) && (
+        <Link href="/elections">
+          <Card className="border-2 border-green-500/30 bg-green-50 hover:shadow-md transition-all active:scale-[0.99]">
+            <CardContent className="py-3 px-4 flex items-center gap-3">
+              <span className="text-2xl shrink-0">✅</span>
+              <div className="flex-1 min-w-0 space-y-0.5">
+                {isRegisteredVoter && (
+                  <p className="text-sm font-semibold text-green-800">{L.elections.registeredVoterBadge}</p>
+                )}
+                {isRegisteredCandidate && (
+                  <p className="text-sm font-semibold text-green-800">{L.elections.registeredCandidateBadge}</p>
+                )}
+              </div>
+              <ArrowRight className="h-4 w-4 text-green-700 shrink-0" />
+            </CardContent>
+          </Card>
+        </Link>
+      )}
 
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-3">

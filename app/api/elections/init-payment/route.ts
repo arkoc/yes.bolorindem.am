@@ -64,6 +64,7 @@ export async function POST(req: NextRequest) {
   const { data: reg, error: insertError } = await adminClient
     .from("election_registrations")
     .insert({
+      user_id: user.id,
       type,
       full_name: full_name.trim(),
       document_number_hash,

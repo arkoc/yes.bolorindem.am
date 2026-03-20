@@ -1,29 +1,43 @@
-import { createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient, createServerClient } from "@/lib/supabase/server";
 import { Progress } from "@/components/ui/progress";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, CheckCircle2, Clock } from "lucide-react";
 import Link from "next/link";
 import { VOTER_GOAL, CANDIDATE_GOAL, formatAMD, VOTER_FEE, CANDIDATE_FEE } from "@/lib/elections-config";
 import L from "@/lib/labels";
+import { CancelRegistrationButton } from "@/components/elections/CancelRegistrationButton";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function ElectionsPage() {
-  const supabase = createAdminClient();
-  const [{ data: counts }, { data: candidates }] = await Promise.all([
-    supabase.from("election_counts").select("*").single(),
-    supabase
+  const adminClient = createAdminClient();
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const [{ data: counts }, { data: candidates }, { data: myRegs }] = await Promise.all([
+    adminClient.from("election_counts").select("*").single(),
+    adminClient
       .from("election_registrations")
       .select("id, full_name, created_at")
       .eq("type", "candidate")
       .eq("payment_status", "paid")
       .neq("status", "rejected")
       .order("created_at", { ascending: true }),
+    user
+      ? adminClient
+          .from("election_registrations")
+          .select("type, payment_status")
+          .eq("user_id", user.id)
+          .neq("status", "rejected")
+      : Promise.resolve({ data: [] }),
   ]);
 
   const voterCount = Number(counts?.voter_count ?? 0);
   const candidateCount = Number(counts?.candidate_count ?? 0);
   const voterPct = Math.min(100, (voterCount / VOTER_GOAL) * 100);
   const candidatePct = Math.min(100, (candidateCount / CANDIDATE_GOAL) * 100);
+
+  const myVoterReg = (myRegs ?? []).find(r => r.type === "voter");
+  const myCandidateReg = (myRegs ?? []).find(r => r.type === "candidate");
 
   return (
     <div className="p-4 md:p-6 max-w-lg mx-auto space-y-8">
@@ -73,27 +87,67 @@ export default async function ElectionsPage() {
         </div>
       </div>
 
-      {/* CTA cards */}
+      {/* Registration cards */}
       <div className="space-y-3">
-        <Link href="/elections/register?type=voter" className="block rounded-2xl border-2 border-primary/20 bg-primary/5 p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-bold text-base">{L.elections.registerVoter}</p>
-              <p className="text-sm text-muted-foreground mt-0.5">{L.elections.voterFeeLabel}: {formatAMD(VOTER_FEE)}</p>
+        {/* Voter card — show only if not registered as candidate */}
+        {!myCandidateReg && myVoterReg && (
+          <div className={`rounded-2xl border-2 p-5 ${myVoterReg.payment_status === "paid" ? "border-green-500/30 bg-green-50" : "border-yellow-400/30 bg-yellow-50"}`}>
+            <div className="flex items-center gap-3 mb-3">
+              {myVoterReg.payment_status === "paid"
+                ? <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
+                : <Clock className="h-5 w-5 text-yellow-600 shrink-0" />}
+              <div>
+                <p className="font-bold text-base">{L.elections.registeredVoterBadge}</p>
+                <p className="text-xs text-muted-foreground">
+                  {myVoterReg.payment_status === "paid" ? L.elections.registeredVoterDesc : L.elections.registeredPendingDesc}
+                </p>
+              </div>
+              <span className="text-2xl ml-auto">🗳</span>
             </div>
-            <span className="text-2xl">🗳</span>
+            <CancelRegistrationButton type="voter" />
           </div>
-        </Link>
+        )}
+        {!myCandidateReg && !myVoterReg && (
+          <Link href="/elections/register?type=voter" className="block rounded-2xl border-2 border-primary/20 bg-primary/5 p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-bold text-base">{L.elections.registerVoter}</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{L.elections.voterFeeLabel}: {formatAMD(VOTER_FEE)}</p>
+              </div>
+              <span className="text-2xl">🗳</span>
+            </div>
+          </Link>
+        )}
 
-        <Link href="/elections/register?type=candidate" className="block rounded-2xl border-2 border-green-500/20 bg-green-50 p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-bold text-base">{L.elections.registerCandidate}</p>
-              <p className="text-sm text-muted-foreground mt-0.5">{L.elections.candidateFeeLabel}: {formatAMD(CANDIDATE_FEE)}</p>
+        {/* Candidate card — show only if not registered as voter */}
+        {!myVoterReg && myCandidateReg && (
+          <div className={`rounded-2xl border-2 p-5 ${myCandidateReg.payment_status === "paid" ? "border-green-500/30 bg-green-50" : "border-yellow-400/30 bg-yellow-50"}`}>
+            <div className="flex items-center gap-3 mb-3">
+              {myCandidateReg.payment_status === "paid"
+                ? <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
+                : <Clock className="h-5 w-5 text-yellow-600 shrink-0" />}
+              <div>
+                <p className="font-bold text-base">{L.elections.registeredCandidateBadge}</p>
+                <p className="text-xs text-muted-foreground">
+                  {myCandidateReg.payment_status === "paid" ? L.elections.registeredCandidateDesc : L.elections.registeredPendingDesc}
+                </p>
+              </div>
+              <span className="text-2xl ml-auto">🏛</span>
             </div>
-            <span className="text-2xl">🏛</span>
+            <CancelRegistrationButton type="candidate" />
           </div>
-        </Link>
+        )}
+        {!myVoterReg && !myCandidateReg && (
+          <Link href="/elections/register?type=candidate" className="block rounded-2xl border-2 border-green-500/20 bg-green-50 p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-bold text-base">{L.elections.registerCandidate}</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{L.elections.candidateFeeLabel}: {formatAMD(CANDIDATE_FEE)}</p>
+              </div>
+              <span className="text-2xl">🏛</span>
+            </div>
+          </Link>
+        )}
       </div>
 
       {/* Candidates list */}
@@ -114,7 +168,6 @@ export default async function ElectionsPage() {
           </div>
         )}
       </div>
-
     </div>
   );
 }

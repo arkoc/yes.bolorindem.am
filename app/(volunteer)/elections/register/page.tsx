@@ -14,6 +14,18 @@ export default async function ElectionsRegisterPage({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  // Block if already registered as this type or as the other type
+  const { createAdminClient } = await import("@/lib/supabase/server");
+  const adminClient = createAdminClient();
+  const { data: existing } = await adminClient
+    .from("election_registrations")
+    .select("type")
+    .eq("user_id", user.id)
+    .neq("status", "rejected")
+    .limit(1)
+    .maybeSingle();
+  if (existing) redirect("/elections");
+
   const { data: profile } = await supabase
     .from("profiles")
     .select("full_name, phone")
