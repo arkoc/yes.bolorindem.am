@@ -9,7 +9,16 @@ export const revalidate = 60;
 
 export default async function ElectionsPage() {
   const supabase = createAdminClient();
-  const { data: counts } = await supabase.from("election_counts").select("*").single();
+  const [{ data: counts }, { data: candidates }] = await Promise.all([
+    supabase.from("election_counts").select("*").single(),
+    supabase
+      .from("election_registrations")
+      .select("id, full_name, created_at")
+      .eq("type", "candidate")
+      .eq("payment_status", "paid")
+      .neq("status", "rejected")
+      .order("created_at", { ascending: true }),
+  ]);
 
   const voterCount = Number(counts?.voter_count ?? 0);
   const candidateCount = Number(counts?.candidate_count ?? 0);
@@ -85,6 +94,25 @@ export default async function ElectionsPage() {
             <span className="text-2xl">🏛</span>
           </div>
         </Link>
+      </div>
+
+      {/* Candidates list */}
+      <div className="space-y-3">
+        <h2 className="font-bold text-base">{L.elections.candidatesTitle}</h2>
+        {!candidates || candidates.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-4 text-center">{L.elections.candidatesEmpty}</p>
+        ) : (
+          <div className="space-y-2">
+            {candidates.map((c, i) => (
+              <div key={c.id} className="flex items-center gap-3 rounded-2xl border px-4 py-3">
+                <span className="text-sm font-bold text-muted-foreground tabular-nums w-7 shrink-0">
+                  {L.elections.candidateNumber.replace("{n}", String(i + 1))}
+                </span>
+                <span className="text-sm font-medium">{c.full_name}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
     </div>

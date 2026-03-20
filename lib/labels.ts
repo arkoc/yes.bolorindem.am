@@ -602,7 +602,7 @@ const L = {
     stepOf: "{step} / {total}",
     nextBtn: "Առաջ",
     backBtn: "Հետ",
-    submitBtn: "Հաստատել",
+    submitBtn: "Վճարել",
     // Step labels
     stepIdentityTitle: "Անձնական տվյալներ",
     fullNameLabel: "Անուն Ազգանուն",
@@ -635,7 +635,7 @@ const L = {
     armenianSchoolText: "Հաստատում եմ, որ ավարտել եմ հայկական դպրոց:",
     acceptArmenianSchool: "Ավարտել եմ հայկական դպրոց",
     stepPaymentTitle: "Վճարում",
-    paymentInstructions: "Հայտն ուղարկելուց հետո Ձեզ կփոխանցվեն վճարման մանրամասները:",
+    paymentInstructions: "Կուղղվեք AmeriaBank-ի վճարային էջ: Վճարումն ավարտելուց հետո կկատարվի ավտոմատ վերադարձ և ձեր գրանցումը կհաստատվի:",
     paymentAmountLabel: "Վճարման ենթակա գումար",
     paymentNote: "Գրանցումը կհաստատվի վճարումը ադմինիստրատորի կողմից ստուգվելուց հետո:",
     successTitle: "Հայտն ընդունված է",
@@ -662,6 +662,9 @@ const L = {
     paymentFailedBody: "Վճարման ընթացքում խնդիր է առաջացել: Կարող եք կրկին փորձել:",
     backToElections: "← Վերադառնալ",
     tryAgainBtn: "Կրկին փորձել",
+    candidatesTitle: "Թեկնածուների ցուցակ",
+    candidatesEmpty: "Դեռ գրանցված թեկնածուներ չկան",
+    candidateNumber: "#{n}",
   },
 
   reverseButton: {

@@ -286,7 +286,7 @@ export function RegistrationWizard({
             }
           }}
         >
-          {loading ? "..." : isPaymentStep ? L.elections.submitBtn : L.elections.nextBtn}
+          {loading ? "..." : isPaymentStep ? `${L.elections.submitBtn} ${formatAMD(fee)}` : L.elections.nextBtn}
         </Button>
       </div>
     </div>
