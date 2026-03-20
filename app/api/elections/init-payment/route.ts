@@ -33,18 +33,23 @@ export async function POST(req: NextRequest) {
     acceptance_age_25,
     acceptance_only_armenian,
     acceptance_lived_in_armenia,
-    acceptance_armenian_school,
+    acceptance_voting_right,
+    acceptance_armenian_language,
   } = body;
 
-  if (!type || !full_name || !document_number || !phone || !acceptance_movement || !acceptance_citizenship) {
+  if (!type || !full_name || !document_number || !phone || !acceptance_movement) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
   if (type !== "voter" && type !== "candidate") {
     return NextResponse.json({ error: "Invalid type" }, { status: 400 });
   }
+  if (type === "voter" && !acceptance_citizenship) {
+    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
   if (type === "candidate" && (
     !acceptance_self_restriction || !acceptance_age_25 ||
-    !acceptance_only_armenian || !acceptance_lived_in_armenia || !acceptance_armenian_school
+    !acceptance_only_armenian || !acceptance_lived_in_armenia ||
+    !acceptance_voting_right || !acceptance_armenian_language
   )) {
     return NextResponse.json({ error: "Missing candidate acceptances" }, { status: 400 });
   }
@@ -72,7 +77,8 @@ export async function POST(req: NextRequest) {
       acceptance_age_25: type === "candidate" ? acceptance_age_25 : null,
       acceptance_only_armenian: type === "candidate" ? acceptance_only_armenian : null,
       acceptance_lived_in_armenia: type === "candidate" ? acceptance_lived_in_armenia : null,
-      acceptance_armenian_school: type === "candidate" ? acceptance_armenian_school : null,
+      acceptance_voting_right: type === "candidate" ? acceptance_voting_right : null,
+      acceptance_armenian_language: type === "candidate" ? acceptance_armenian_language : null,
     })
     .select("id")
     .single();

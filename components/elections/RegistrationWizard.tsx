@@ -23,7 +23,8 @@ interface FormData {
   acceptance_age_25: boolean;
   acceptance_only_armenian: boolean;
   acceptance_lived_in_armenia: boolean;
-  acceptance_armenian_school: boolean;
+  acceptance_voting_right: boolean;
+  acceptance_armenian_language: boolean;
 }
 
 
@@ -81,7 +82,7 @@ export function RegistrationWizard({
     acceptance_movement: false, acceptance_citizenship: false,
     acceptance_self_restriction: false, acceptance_age_25: false,
     acceptance_only_armenian: false, acceptance_lived_in_armenia: false,
-    acceptance_armenian_school: false,
+    acceptance_voting_right: false, acceptance_armenian_language: false,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -92,12 +93,16 @@ export function RegistrationWizard({
   function canProceed() {
     if (step === 1) return form.full_name.trim().length >= 2 && form.document_number.trim().length >= 4 && form.phone.trim().length >= 5;
     if (step === 2) return form.acceptance_movement;
-    if (step === 3) return form.acceptance_citizenship;
-    if (step === 4) return form.acceptance_self_restriction;
-    if (step === 5) return form.acceptance_age_25;
-    if (step === 6) return form.acceptance_only_armenian;
-    if (step === 7) return form.acceptance_lived_in_armenia;
-    if (step === 8) return form.acceptance_armenian_school;
+    if (!isCandidate) {
+      if (step === 3) return form.acceptance_citizenship;
+    } else {
+      if (step === 3) return form.acceptance_self_restriction;
+      if (step === 4) return form.acceptance_age_25;
+      if (step === 5) return form.acceptance_only_armenian;
+      if (step === 6) return form.acceptance_lived_in_armenia;
+      if (step === 7) return form.acceptance_voting_right;
+      if (step === 8) return form.acceptance_armenian_language;
+    }
     return true;
   }
 
@@ -166,54 +171,67 @@ export function RegistrationWizard({
         </CheckRow>
       </div>
     );
-    if (step === 3) return (
-      <div className="space-y-4">
-        <p className="text-sm text-muted-foreground leading-relaxed">{L.elections.citizenshipText}</p>
-        <CheckRow checked={form.acceptance_citizenship} onChange={(v) => set("acceptance_citizenship", v)}>
-          {L.elections.acceptCitizenship}
-        </CheckRow>
-      </div>
-    );
-    if (step === 4) return (
-      <div className="space-y-4">
-        <p className="text-sm text-muted-foreground leading-relaxed">{L.elections.selfRestrictionText}</p>
-        <CheckRow checked={form.acceptance_self_restriction} onChange={(v) => set("acceptance_self_restriction", v)}>
-          {L.elections.acceptSelfRestriction}
-        </CheckRow>
-      </div>
-    );
-    if (step === 5) return (
-      <div className="space-y-4">
-        <p className="text-sm text-muted-foreground leading-relaxed">{L.elections.age25Text}</p>
-        <CheckRow checked={form.acceptance_age_25} onChange={(v) => set("acceptance_age_25", v)}>
-          {L.elections.acceptAge25}
-        </CheckRow>
-      </div>
-    );
-    if (step === 6) return (
-      <div className="space-y-4">
-        <p className="text-sm text-muted-foreground leading-relaxed">{L.elections.onlyArmenianText}</p>
-        <CheckRow checked={form.acceptance_only_armenian} onChange={(v) => set("acceptance_only_armenian", v)}>
-          {L.elections.acceptOnlyArmenian}
-        </CheckRow>
-      </div>
-    );
-    if (step === 7) return (
-      <div className="space-y-4">
-        <p className="text-sm text-muted-foreground leading-relaxed">{L.elections.livedInArmeniaText}</p>
-        <CheckRow checked={form.acceptance_lived_in_armenia} onChange={(v) => set("acceptance_lived_in_armenia", v)}>
-          {L.elections.acceptLivedInArmenia}
-        </CheckRow>
-      </div>
-    );
-    if (step === 8) return (
-      <div className="space-y-4">
-        <p className="text-sm text-muted-foreground leading-relaxed">{L.elections.armenianSchoolText}</p>
-        <CheckRow checked={form.acceptance_armenian_school} onChange={(v) => set("acceptance_armenian_school", v)}>
-          {L.elections.acceptArmenianSchool}
-        </CheckRow>
-      </div>
-    );
+    if (!isCandidate) {
+      // Voter step 3: citizenship
+      if (step === 3) return (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground leading-relaxed">{L.elections.citizenshipText}</p>
+          <CheckRow checked={form.acceptance_citizenship} onChange={(v) => set("acceptance_citizenship", v)}>
+            {L.elections.acceptCitizenship}
+          </CheckRow>
+        </div>
+      );
+    } else {
+      // Candidate steps 3–8
+      if (step === 3) return (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground leading-relaxed">{L.elections.selfRestrictionText}</p>
+          <CheckRow checked={form.acceptance_self_restriction} onChange={(v) => set("acceptance_self_restriction", v)}>
+            {L.elections.acceptSelfRestriction}
+          </CheckRow>
+        </div>
+      );
+      if (step === 4) return (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground leading-relaxed">{L.elections.age25Text}</p>
+          <CheckRow checked={form.acceptance_age_25} onChange={(v) => set("acceptance_age_25", v)}>
+            {L.elections.acceptAge25}
+          </CheckRow>
+        </div>
+      );
+      if (step === 5) return (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground leading-relaxed">{L.elections.onlyArmenianText}</p>
+          <CheckRow checked={form.acceptance_only_armenian} onChange={(v) => set("acceptance_only_armenian", v)}>
+            {L.elections.acceptOnlyArmenian}
+          </CheckRow>
+        </div>
+      );
+      if (step === 6) return (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground leading-relaxed">{L.elections.livedInArmeniaText}</p>
+          <CheckRow checked={form.acceptance_lived_in_armenia} onChange={(v) => set("acceptance_lived_in_armenia", v)}>
+            {L.elections.acceptLivedInArmenia}
+          </CheckRow>
+        </div>
+      );
+      if (step === 7) return (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground leading-relaxed">{L.elections.votingRightText}</p>
+          <CheckRow checked={form.acceptance_voting_right} onChange={(v) => set("acceptance_voting_right", v)}>
+            {L.elections.acceptVotingRight}
+          </CheckRow>
+        </div>
+      );
+      if (step === 8) return (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground leading-relaxed">{L.elections.armenianLanguageText}</p>
+          <CheckRow checked={form.acceptance_armenian_language} onChange={(v) => set("acceptance_armenian_language", v)}>
+            {L.elections.acceptArmenianLanguage}
+          </CheckRow>
+        </div>
+      );
+    }
     // Payment step
     return (
       <div className="space-y-5">
@@ -230,18 +248,23 @@ export function RegistrationWizard({
   }
 
   function stepTitle() {
-    const titles: Record<number, string> = {
-      1: L.elections.stepIdentityTitle,
-      2: L.elections.stepMovementTitle,
-      3: L.elections.stepCitizenshipTitle,
-      4: L.elections.stepSelfRestrictionTitle,
-      5: L.elections.stepAge25Title,
-      6: L.elections.stepOnlyArmenianTitle,
-      7: L.elections.stepLivedInArmeniaTitle,
-      8: L.elections.stepArmenianSchoolTitle,
-      [paymentStep]: L.elections.stepPaymentTitle,
-    };
-    return titles[step] ?? "";
+    if (step === 1) return L.elections.stepIdentityTitle;
+    if (step === 2) return L.elections.stepMovementTitle;
+    if (step === paymentStep) return L.elections.stepPaymentTitle;
+    if (!isCandidate) {
+      if (step === 3) return L.elections.stepCitizenshipTitle;
+    } else {
+      const titles: Record<number, string> = {
+        3: L.elections.stepSelfRestrictionTitle,
+        4: L.elections.stepAge25Title,
+        5: L.elections.stepOnlyArmenianTitle,
+        6: L.elections.stepLivedInArmeniaTitle,
+        7: L.elections.stepVotingRightTitle,
+        8: L.elections.stepArmenianLanguageTitle,
+      };
+      return titles[step] ?? "";
+    }
+    return "";
   }
 
   // actual steps (1..totalSteps+1 including payment)
