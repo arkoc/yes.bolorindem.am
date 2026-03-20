@@ -95,8 +95,8 @@ export async function POST(req: NextRequest) {
   const origin = req.headers.get("origin") ?? process.env.NEXT_PUBLIC_APP_URL ?? "";
   const backUrl = `${origin}/api/elections/payment-callback`;
   const description = type === "voter"
-    ? "Ընտրողի գրանցում — Բոլոր Ինդեմ ԱՄ"
-    : "Թեկնածուի գրանցում — Բոլոր Ինդեմ ԱՄ";
+    ? `Voter registration`
+    : `Candidate registration`;
 
   try {
     const { paymentId, paymentUrl } = await initPayment({
