@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import L from "@/lib/labels";
 import { formatAMD, VOTER_FEE, CANDIDATE_FEE } from "@/lib/elections-config";
@@ -54,6 +54,25 @@ function CheckRow({
       </div>
       <span className="text-sm font-medium leading-relaxed">{children}</span>
     </button>
+  );
+}
+
+const LAW_URL = "https://www.arlis.am/hy/acts/107373";
+const LAW_ARTICLE = "ՀՀ Ընտրական օրենսգիրք, հոդված 80";
+
+function LegalQuote({ point, children }: { point: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-muted bg-muted/30 px-4 py-3 space-y-1.5">
+      <a
+        href={LAW_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+      >
+        {LAW_ARTICLE}, կետ {point} <ExternalLink className="h-3 w-3" />
+      </a>
+      <p className="text-xs text-muted-foreground leading-relaxed">{children}</p>
+    </div>
   );
 }
 
@@ -194,6 +213,9 @@ export function RegistrationWizard({
       if (step === 4) return (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground leading-relaxed">{L.elections.age25Text}</p>
+          <LegalQuote point="1">
+            Ազգային ժողովի պատգամավոր կարող է ընտրվել քսանհինգ տարին լրացած, վերջին չորս տարում միայն Հայաստանի Հանրապետության քաղաքացի հանդիսացող, վերջին չորս տարում Հայաստանի Հանրապետությունում մշտապես բնակվող, ընտրական իրավունք ունեցող և հայերենին տիրապետող յուրաքանչյուր ոք
+          </LegalQuote>
           <CheckRow checked={form.acceptance_age_25} onChange={(v) => set("acceptance_age_25", v)}>
             {L.elections.acceptAge25}
           </CheckRow>
@@ -202,6 +224,9 @@ export function RegistrationWizard({
       if (step === 5) return (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground leading-relaxed">{L.elections.onlyArmenianText}</p>
+          <LegalQuote point="1">
+            Ազգային ժողովի պատգամավոր կարող է ընտրվել քսանհինգ տարին լրացած, վերջին չորս տարում միայն Հայաստանի Հանրապետության քաղաքացի հանդիսացող, վերջին չորս տարում Հայաստանի Հանրապետությունում մշտապես բնակվող, ընտրական իրավունք ունեցող և հայերենին տիրապետող յուրաքանչյուր ոք
+          </LegalQuote>
           <CheckRow checked={form.acceptance_only_armenian} onChange={(v) => set("acceptance_only_armenian", v)}>
             {L.elections.acceptOnlyArmenian}
           </CheckRow>
@@ -210,6 +235,9 @@ export function RegistrationWizard({
       if (step === 6) return (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground leading-relaxed">{L.elections.livedInArmeniaText}</p>
+          <LegalQuote point="2">
+            Քաղաքացին վերջին չորս տարում Հայաստանի Հանրապետությունում մշտապես բնակվող չի համարվում, եթե թեկնածուի գրանցման համար մշտապես բնակվելու մասին տեղեկանքը ստանալու նպատակով լիազոր մարմնին դիմում տալու օրվան նախորդող 1 461 օրերի ընթացքում նա առնվազն 731 օր բացակայել է Հայաստանի Հանրապետությունից, բացառությամբ այն դեպքերի, երբ բացակայությունը պայմանավորված է եղել Հայաստանի Հանրապետության հանրային ծառայության մեջ գտնվող անձի ծառայողական նպատակներով գործուղվելու կամ արտերկրում բարձրագույն ուսումնական հաստատություններում ուսումնառության հանգամանքներով:
+          </LegalQuote>
           <CheckRow checked={form.acceptance_lived_in_armenia} onChange={(v) => set("acceptance_lived_in_armenia", v)}>
             {L.elections.acceptLivedInArmenia}
           </CheckRow>
@@ -226,6 +254,9 @@ export function RegistrationWizard({
       if (step === 8) return (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground leading-relaxed">{L.elections.armenianLanguageText}</p>
+          <LegalQuote point="3">
+            Հայերենին տիրապետելու հանգամանքը հավաստվում է ուսումնական հաստատություններում հայերենով կրթություն ստացած կամ կրթական ծրագրերով նախատեսված հայոց լեզու առարկայի ուսումնառությունն ավարտած և ամփոփիչ ատեստավորում անցած լինելու վերաբերյալ ուսումնական հաստատությունների կողմից տրված ավարտական փաստաթղթով (վկայական, ատեստատ, դիպլոմ): Հայերենին տիրապետելու հանգամանքը հավաստող ավարտական փաստաթղթի բացակայության դեպքում հայերենին տիրապետելու հանգամանքը ստուգվում է Հայաստանի Հանրապետության կրթության և գիտության նախարարության սահմանած կարգով, որը պետք է նախատեսի հայերենին տիրապետելու հանգամանքի ստուգման ողջամիտ, օբյեկտիվ չափորոշիչներ, ինչպես նաև գործընթացի վերահսկողության ընթացակարգեր: Ստուգման արդյունքները եռօրյա ժամկետում կարող են բողոքարկվել դատարան
+          </LegalQuote>
           <CheckRow checked={form.acceptance_armenian_language} onChange={(v) => set("acceptance_armenian_language", v)}>
             {L.elections.acceptArmenianLanguage}
           </CheckRow>
