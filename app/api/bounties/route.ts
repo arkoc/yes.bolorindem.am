@@ -68,7 +68,10 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await admin.rpc("create_user_bounty", rpcParams);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("create_user_bounty error:", error);
+    return NextResponse.json({ error: error.message, code: error.code, details: error.details }, { status: 500 });
+  }
   if (!data.ok) return NextResponse.json({ error: data.reason }, { status: 422 });
 
   return NextResponse.json({ id: data.id });

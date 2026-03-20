@@ -69,7 +69,7 @@ export function BountyCreateForm({ creatorBalance }: BountyCreateFormProps) {
       const res = await fetch("/api/bounties", { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) {
-        toast.error(data.error === "insufficient_points" ? L.bounty.insufficientPoints : (data.error ?? L.bounty.createFailed));
+        toast.error(data.error === "insufficient_points" ? L.bounty.insufficientPoints : (data.error ?? data.details ?? L.bounty.createFailed));
         return;
       }
       toast.success(L.bounty.createSuccess);
