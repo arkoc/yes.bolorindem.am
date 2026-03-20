@@ -58,9 +58,8 @@ function CheckRow({
 }
 
 const LAW_URL = "https://www.arlis.am/hy/acts/107373";
-const LAW_ARTICLE = "ՀՀ Ընտրական օրենսգիրք, հոդված 80";
 
-function LegalQuote({ point, children }: { point: string; children: React.ReactNode }) {
+function LegalQuote({ article = "80", point, children }: { article?: string; point: string; children: React.ReactNode }) {
   return (
     <div className="rounded-xl border border-muted bg-muted/30 px-4 py-3 space-y-1.5">
       <a
@@ -69,7 +68,7 @@ function LegalQuote({ point, children }: { point: string; children: React.ReactN
         rel="noopener noreferrer"
         className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
       >
-        {LAW_ARTICLE}, կետ {point} <ExternalLink className="h-3 w-3" />
+        ՀՀ Ընտրական օրենսգիրք, հոդված {article}, կետ {point} <ExternalLink className="h-3 w-3" />
       </a>
       <p className="text-xs text-muted-foreground leading-relaxed">{children}</p>
     </div>
@@ -195,6 +194,9 @@ export function RegistrationWizard({
       if (step === 3) return (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground leading-relaxed">{L.elections.citizenshipText}</p>
+          <LegalQuote article="2" point="1">
+            Ազգային ժողովի ընտրությունների ժամանակ ընտրելու իրավունք ունեն ընտրության օրը (այսուհետ` քվեարկության օրը) 18 տարին լրացած Հայաստանի Հանրապետության քաղաքացիները
+          </LegalQuote>
           <CheckRow checked={form.acceptance_citizenship} onChange={(v) => set("acceptance_citizenship", v)}>
             {L.elections.acceptCitizenship}
           </CheckRow>
@@ -246,6 +248,9 @@ export function RegistrationWizard({
       if (step === 7) return (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground leading-relaxed">{L.elections.votingRightText}</p>
+          <LegalQuote article="2" point="1">
+            Ազգային ժողովի ընտրությունների ժամանակ ընտրելու իրավունք ունեն ընտրության օրը (այսուհետ` քվեարկության օրը) 18 տարին լրացած Հայաստանի Հանրապետության քաղաքացիները
+          </LegalQuote>
           <CheckRow checked={form.acceptance_voting_right} onChange={(v) => set("acceptance_voting_right", v)}>
             {L.elections.acceptVotingRight}
           </CheckRow>
