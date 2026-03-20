@@ -677,6 +677,7 @@ const L = {
     candidatesTitle: "Թեկնածուների ցուցակ",
     candidatesEmpty: "Դեռ գրանցված թեկնածուներ չկան",
     candidateNumber: "#{n}",
+    continueToPayment: "Շարունակել վճարումը",
   },
 
   reverseButton: {
