@@ -10,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createClient } from "@/lib/supabase/client";
 
 interface UserRoleSelectProps {
   userId: string;
@@ -20,18 +19,18 @@ interface UserRoleSelectProps {
 export function UserRoleSelect({ userId, currentRole }: UserRoleSelectProps) {
   const [role, setRole] = useState(currentRole);
   const router = useRouter();
-  const supabase = createClient();
 
   async function handleChange(newRole: string) {
     const prev = role;
     setRole(newRole);
 
-    const { error } = await supabase
-      .from("profiles")
-      .update({ role: newRole })
-      .eq("id", userId);
+    const res = await fetch(`/api/admin/users/${userId}/role`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: newRole }),
+    });
 
-    if (error) {
+    if (!res.ok) {
       toast.error("Failed to update role.");
       setRole(prev);
     } else {
