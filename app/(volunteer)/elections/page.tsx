@@ -1,6 +1,7 @@
-import { createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient, createServerClient } from "@/lib/supabase/server";
 import { Progress } from "@/components/ui/progress";
 import { ExternalLink } from "lucide-react";
+import Link from "next/link";
 import { VOTER_GOAL, CANDIDATE_GOAL, formatAMD, VOTER_FEE, CANDIDATE_FEE } from "@/lib/elections-config";
 import L from "@/lib/labels";
 
@@ -8,7 +9,18 @@ export const revalidate = 60;
 
 export default async function ElectionsPage() {
   const supabase = createAdminClient();
-  const { data: counts } = await supabase.from("election_counts").select("*").single();
+  const authClient = await createServerClient();
+
+  const [{ data: counts }, { data: { user } }] = await Promise.all([
+    supabase.from("election_counts").select("*").single(),
+    authClient.auth.getUser(),
+  ]);
+
+  let isAdmin = false;
+  if (user) {
+    const { data: profile } = await authClient.from("profiles").select("role").eq("id", user.id).single();
+    isAdmin = profile?.role === "admin" || profile?.role === "leader";
+  }
 
   const voterCount = Number(counts?.voter_count ?? 0);
   const candidateCount = Number(counts?.candidate_count ?? 0);
@@ -63,9 +75,9 @@ export default async function ElectionsPage() {
         </div>
       </div>
 
-      {/* CTA cards — disabled */}
-      <div className="space-y-3 opacity-40 pointer-events-none select-none">
-        <div className="rounded-2xl border-2 border-primary/20 bg-primary/5 p-5">
+      {/* CTA cards */}
+      <div className={`space-y-3${isAdmin ? "" : " opacity-40 pointer-events-none select-none"}`}>
+        <Link href="/elections/register?type=voter" className="block rounded-2xl border-2 border-primary/20 bg-primary/5 p-5">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-bold text-base">{L.elections.registerVoter}</p>
@@ -73,9 +85,9 @@ export default async function ElectionsPage() {
             </div>
             <span className="text-2xl">🗳</span>
           </div>
-        </div>
+        </Link>
 
-        <div className="rounded-2xl border-2 border-amber-500/20 bg-amber-50 p-5">
+        <Link href="/elections/register?type=candidate" className="block rounded-2xl border-2 border-amber-500/20 bg-amber-50 p-5">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-bold text-base">{L.elections.registerCandidate}</p>
@@ -83,13 +95,14 @@ export default async function ElectionsPage() {
             </div>
             <span className="text-2xl">🏛</span>
           </div>
-        </div>
+        </Link>
       </div>
 
-            {/* Coming soon note */}
-      <div className="rounded-2xl bg-muted border text-center px-5 py-4">
-        <p className="text-sm font-semibold">Գրանցումները կբացվեն Մարտի վերջում</p>
-      </div>
+      {!isAdmin && (
+        <div className="rounded-2xl bg-muted border text-center px-5 py-4">
+          <p className="text-sm font-semibold">Գրանցումները կբացվեն Մարտի վերջում</p>
+        </div>
+      )}
     </div>
   );
 }
