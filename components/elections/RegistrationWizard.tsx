@@ -85,7 +85,6 @@ export function RegistrationWizard({
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [successId, setSuccessId] = useState("");
 
   const set = (key: keyof FormData, value: string | boolean) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -106,41 +105,20 @@ export function RegistrationWizard({
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/elections/register", {
+      const res = await fetch("/api/elections/init-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type, ...form }),
       });
       const json = await res.json();
       if (res.status === 409) { setError(L.elections.duplicateError); return; }
-      if (!res.ok) { setError(L.elections.genericError); return; }
-      setSuccessId(json.id);
-    } finally {
+      if (!res.ok) { setError(json.error ?? L.elections.genericError); return; }
+      // Redirect to AmeriBank payment page — loading stays true intentionally
+      window.location.href = json.paymentUrl;
+    } catch {
+      setError(L.elections.genericError);
       setLoading(false);
     }
-  }
-
-  // Success screen
-  if (successId) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center gap-6">
-        <div className="h-20 w-20 rounded-full bg-green-100 flex items-center justify-center">
-          <CheckCircle2 className="h-10 w-10 text-green-600" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold mb-2">Արձанагрваc e!</h1>
-          <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto mb-4">
-            Ձеr ardzanagrumе steghtsvaс e: Vcharman masin kkpachazharvirek:
-          </p>
-          <p className="text-xs text-muted-foreground font-mono bg-muted px-3 py-1.5 rounded-lg inline-block">
-            #{successId.slice(0, 8).toUpperCase()}
-          </p>
-        </div>
-        <Button variant="outline" asChild>
-          <a href="/elections">Вернуться</a>
-        </Button>
-      </div>
-    );
   }
 
   // Payment / submit step

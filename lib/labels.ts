@@ -656,6 +656,12 @@ const L = {
     dashboardBannerTitle: "2026թ․ Խորհրդարանական Ընտրություններ",
     dashboardBannerText: "Մասնակցիր «Բոլորին դեմ եմ» ժողովրդավարական կուսակցության ցուցակի կազմմանը",
     dashboardBannerBtn: "Գրանցվել հիմա →",
+    paymentSuccessTitle: "Վճարումն ընդունված է",
+    paymentSuccessBody: "Ձեր գրանցումը հաստատված է։ Շնորհակալություն մասնակցության համար:",
+    paymentFailedTitle: "Վճարումը չհաջողվեց",
+    paymentFailedBody: "Վճարման ընթացքում խնդիր է առաջացել: Կարող եք կրկին փորձել:",
+    backToElections: "← Վերադառնալ",
+    tryAgainBtn: "Կրկին փորձել",
   },
 
   reverseButton: {
