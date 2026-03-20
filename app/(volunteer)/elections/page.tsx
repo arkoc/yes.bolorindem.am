@@ -1,4 +1,4 @@
-import { createAdminClient, createServerClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { Progress } from "@/components/ui/progress";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
@@ -9,18 +9,7 @@ export const revalidate = 60;
 
 export default async function ElectionsPage() {
   const supabase = createAdminClient();
-  const authClient = await createServerClient();
-
-  const [{ data: counts }, { data: { user } }] = await Promise.all([
-    supabase.from("election_counts").select("*").single(),
-    authClient.auth.getUser(),
-  ]);
-
-  let isAdmin = false;
-  if (user) {
-    const { data: profile } = await authClient.from("profiles").select("role").eq("id", user.id).single();
-    isAdmin = profile?.role === "admin" || profile?.role === "leader";
-  }
+  const { data: counts } = await supabase.from("election_counts").select("*").single();
 
   const voterCount = Number(counts?.voter_count ?? 0);
   const candidateCount = Number(counts?.candidate_count ?? 0);
@@ -76,7 +65,7 @@ export default async function ElectionsPage() {
       </div>
 
       {/* CTA cards */}
-      <div className={`space-y-3${isAdmin ? "" : " opacity-40 pointer-events-none select-none"}`}>
+      <div className="space-y-3">
         <Link href="/elections/register?type=voter" className="block rounded-2xl border-2 border-primary/20 bg-primary/5 p-5">
           <div className="flex items-center justify-between">
             <div>
@@ -98,11 +87,6 @@ export default async function ElectionsPage() {
         </Link>
       </div>
 
-      {!isAdmin && (
-        <div className="rounded-2xl bg-muted border text-center px-5 py-4">
-          <p className="text-sm font-semibold">Գրանցումները կբացվեն Մարտի վերջում</p>
-        </div>
-      )}
     </div>
   );
 }
