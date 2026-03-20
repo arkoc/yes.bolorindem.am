@@ -116,8 +116,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     // Delete the registration since payment init failed
     await adminClient.from("election_registrations").delete().eq("id", reg.id);
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error("AmeriBank InitPayment error:", msg);
-    return NextResponse.json({ error: msg }, { status: 502 });
+    console.error("AmeriBank InitPayment error:", err);
+    return NextResponse.json({ error: "Payment initialization failed" }, { status: 502 });
   }
 }

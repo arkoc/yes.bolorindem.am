@@ -1,5 +1,5 @@
 const BASE_URL = "https://services.ameriabank.am/VPOS/api/VPOS";
-const PAY_URL  = "https://payments.ameriabank.am/VPOS/Payments/Pay";
+const PAY_URL  = "https://services.ameriabank.am/VPOS/Payments/Pay";
 
 function creds() {
   return {
@@ -42,7 +42,7 @@ export async function initPayment(params: {
 
   return {
     paymentId: data.PaymentID,
-    paymentUrl: `${PAY_URL}?id=${data.PaymentID}&lang=am`,
+    paymentUrl: `${PAY_URL}?id=${data.PaymentID}`,
   };
 }
 
