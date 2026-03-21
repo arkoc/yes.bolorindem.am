@@ -182,7 +182,7 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
   return (
     <div className="max-w-lg mx-auto p-4 md:p-6 space-y-4">
       <div className="pt-2">
-        <Link href="/projects" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-3">
+        <Link href="/bounties" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-3">
           <ChevronLeft className="h-4 w-4" />
           {L.bounty.backLink}
         </Link>
