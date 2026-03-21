@@ -21,7 +21,7 @@ export default async function DashboardPage() {
 
   const adminClient = createAdminClient();
 
-  const [profileRes, rankRes, activeProjectsRes, earnedBadgesRes, allBadgesRes, referralRes, recentActivityRes, openBountiesRes, electionRegRes] = await Promise.all([
+  const [profileRes, rankRes, activeProjectsRes, earnedBadgesRes, allBadgesRes, referralRes, recentActivityRes, openBountiesRes, electionRegRes, taskCompletionsRes] = await Promise.all([
     supabase
       .from("profiles")
       .select("full_name, total_points, role, referral_code, avatar_url")
@@ -64,6 +64,11 @@ export default async function DashboardPage() {
       .eq("user_id", user.id)
       .eq("payment_status", "paid")
       .neq("status", "rejected"),
+    supabase
+      .from("task_completions")
+      .select("task_id")
+      .eq("user_id", user.id)
+      .eq("status", "approved"),
   ]);
 
   const profile = profileRes.data;
@@ -78,18 +83,8 @@ export default async function DashboardPage() {
     tasks: { id: string; max_completions_per_user: number | null }[];
   }[];
 
-  // Fetch user's approved completions for all tasks in active projects
-  const allDashTaskIds = activeProjects.flatMap(p => p.tasks.map(t => t.id));
-  const { data: dashCompletions } = allDashTaskIds.length > 0
-    ? await supabase
-        .from("task_completions")
-        .select("task_id")
-        .eq("user_id", user.id)
-        .eq("status", "approved")
-        .in("task_id", allDashTaskIds)
-    : { data: [] };
   const taskCompletionCount: Record<string, number> = {};
-  for (const c of (dashCompletions ?? []) as { task_id: string }[]) {
+  for (const c of (taskCompletionsRes.data ?? []) as { task_id: string }[]) {
     taskCompletionCount[c.task_id] = (taskCompletionCount[c.task_id] ?? 0) + 1;
   }
   const earnedBadges = (earnedBadgesRes.data ?? []) as unknown as { badge_id: string; badges: { icon: string; name_hy: string; description_hy: string | null; image_url: string | null } }[];
