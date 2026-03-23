@@ -2,7 +2,7 @@ import { createAdminClient, createServerClient } from "@/lib/supabase/server";
 import { Progress } from "@/components/ui/progress";
 import { ExternalLink, CheckCircle2, Clock } from "lucide-react";
 import Link from "next/link";
-import { VOTER_GOAL, CANDIDATE_GOAL, formatAMD, VOTER_FEE, CANDIDATE_FEE } from "@/lib/elections-config";
+import { VOTER_GOAL, CANDIDATE_GOAL, formatAMD, VOTER_FEE, CANDIDATE_FEE, VOTER_POINTS, CANDIDATE_POINTS } from "@/lib/elections-config";
 import L from "@/lib/labels";
 import { CancelRegistrationButton } from "@/components/elections/CancelRegistrationButton";
 import { PaymentToast } from "@/components/elections/PaymentToast";
@@ -133,6 +133,7 @@ export default async function ElectionsPage({
               <div>
                 <p className="font-bold text-base">{L.elections.registerVoter}</p>
                 <p className="text-sm text-muted-foreground mt-0.5">{L.elections.voterFeeLabel}: {formatAMD(VOTER_FEE)}</p>
+                <p className="text-xs text-yellow-600 font-semibold mt-1">+{VOTER_POINTS.toLocaleString()} միավոր</p>
               </div>
               <span className="text-2xl">🗳</span>
             </div>
@@ -173,6 +174,7 @@ export default async function ElectionsPage({
               <div>
                 <p className="font-bold text-base">{L.elections.registerCandidate}</p>
                 <p className="text-sm text-muted-foreground mt-0.5">{L.elections.candidateFeeLabel}: {formatAMD(CANDIDATE_FEE)}</p>
+                <p className="text-xs text-yellow-600 font-semibold mt-1">+{CANDIDATE_POINTS.toLocaleString()} միավոր</p>
               </div>
               <span className="text-2xl">🏛</span>
             </div>
