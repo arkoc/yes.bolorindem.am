@@ -124,7 +124,7 @@ export default async function ElectionsPage({
                 {L.elections.continueToPayment} <ExternalLink className="h-3.5 w-3.5" />
               </a>
             )}
-            <CancelRegistrationButton type="voter" />
+            {myVoterReg.payment_status !== "paid" && <CancelRegistrationButton type="voter" />}
           </div>
         )}
         {!myCandidateReg && !myVoterReg && (
@@ -164,7 +164,7 @@ export default async function ElectionsPage({
                 {L.elections.continueToPayment} <ExternalLink className="h-3.5 w-3.5" />
               </a>
             )}
-            <CancelRegistrationButton type="candidate" />
+            {myCandidateReg.payment_status !== "paid" && <CancelRegistrationButton type="candidate" />}
           </div>
         )}
         {!myVoterReg && !myCandidateReg && (
