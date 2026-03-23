@@ -12,7 +12,7 @@ export default async function AdminUsersPage() {
 
   const { data: users } = await supabase
     .from("profiles")
-    .select("id, full_name, phone, total_points, role, created_at")
+    .select("id, full_name, phone, total_points, role, created_at, avatar_url")
     .order("total_points", { ascending: false });
 
   return (
@@ -32,12 +32,13 @@ export default async function AdminUsersPage() {
               total_points: number;
               role: string;
               created_at: string;
+              avatar_url: string | null;
             }, index: number) => (
               <div key={u.id} className="flex items-center gap-3 px-4 py-3">
                 <span className="hidden sm:inline text-sm font-semibold text-muted-foreground w-6 text-center shrink-0">
                   {index + 1}
                 </span>
-                <UserAvatar name={u.full_name} size={40} className="shrink-0" />
+                <UserAvatar name={u.full_name} avatarUrl={u.avatar_url} size={40} className="shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{u.full_name}</p>
                   <p className="text-xs text-muted-foreground truncate">{u.phone}</p>

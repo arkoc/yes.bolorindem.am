@@ -10,14 +10,16 @@ import L, { t } from "@/lib/labels";
 type ReferralRow = {
   id: string;
   full_name: string;
+  avatar_url: string | null;
   created_at: string;
   referred_by: string | null;
-  referrer: { full_name: string } | null;
+  referrer: { full_name: string; avatar_url: string | null } | null;
 };
 
 type ReferrerStat = {
   id: string;
   full_name: string;
+  avatar_url: string | null;
   referral_count: number;
   points_from_referrals: number;
 };
@@ -28,7 +30,7 @@ export default async function AdminReferralsPage() {
   const [referralsRes, transactionsRes] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id, full_name, created_at, referred_by")
+      .select("id, full_name, avatar_url, created_at, referred_by")
       .not("referred_by", "is", null)
       .order("created_at", { ascending: false }),
     supabase
@@ -46,13 +48,13 @@ export default async function AdminReferralsPage() {
   // Fetch referrer names in a single query
   const referrerIds = [...new Set(rawReferrals.map((r) => r.referred_by))];
   const { data: referrerProfiles } = referrerIds.length > 0
-    ? await supabase.from("profiles").select("id, full_name").in("id", referrerIds)
+    ? await supabase.from("profiles").select("id, full_name, avatar_url").in("id", referrerIds)
     : { data: [] };
-  const referrerMap = new Map((referrerProfiles ?? []).map((p) => [p.id, p.full_name]));
+  const referrerMap = new Map((referrerProfiles ?? []).map((p) => [p.id, { full_name: p.full_name, avatar_url: p.avatar_url as string | null }]));
 
   const referrals: ReferralRow[] = rawReferrals.map((r) => ({
     ...r,
-    referrer: referrerMap.has(r.referred_by) ? { full_name: referrerMap.get(r.referred_by)! } : null,
+    referrer: referrerMap.has(r.referred_by) ? referrerMap.get(r.referred_by)! : null,
   }));
 
   // Build per-referrer stats
@@ -63,6 +65,7 @@ export default async function AdminReferralsPage() {
       statsMap.set(r.referred_by, {
         id: r.referred_by,
         full_name: r.referrer?.full_name ?? "—",
+        avatar_url: r.referrer?.avatar_url ?? null,
         referral_count: 0,
         points_from_referrals: 0,
       });
@@ -101,7 +104,7 @@ export default async function AdminReferralsPage() {
                     <span className="text-sm font-semibold text-muted-foreground w-5 text-center shrink-0">
                       {i + 1}
                     </span>
-                    <UserAvatar name={r.full_name} size={36} className="shrink-0" />
+                    <UserAvatar name={r.full_name} avatarUrl={r.avatar_url} size={36} className="shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm">{r.full_name}</p>
                       <p className="text-xs text-muted-foreground">
@@ -130,12 +133,12 @@ export default async function AdminReferralsPage() {
             <div className="divide-y">
               {referrals.map((r) => (
                 <div key={r.id} className="flex items-center gap-3 px-5 py-3">
-                  <UserAvatar name={r.referrer?.full_name ?? "?"} size={32} className="shrink-0" />
+                  <UserAvatar name={r.referrer?.full_name ?? "?"} avatarUrl={r.referrer?.avatar_url} size={32} className="shrink-0" />
                   <div className="text-sm font-medium min-w-0 truncate">
                     {r.referrer?.full_name ?? "—"}
                   </div>
                   <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                  <UserAvatar name={r.full_name} size={32} className="shrink-0" />
+                  <UserAvatar name={r.full_name} avatarUrl={r.avatar_url} size={32} className="shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{r.full_name}</p>
                     <p className="text-xs text-muted-foreground">
