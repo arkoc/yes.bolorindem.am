@@ -18,7 +18,7 @@ export default async function EditTaskPage({
 
   const { data: raw } = await supabase
     .from("tasks")
-    .select("*")
+    .select("id, title, description, task_type, completion_points, max_completions_per_user, total_completions_allowed, is_active, order_index, period_type, period_limit, allow_batch_submission, form_schema, location_data, requires_evidence, project_id, attachments, created_at, updated_at")
     .eq("id", id)
     .single();
 

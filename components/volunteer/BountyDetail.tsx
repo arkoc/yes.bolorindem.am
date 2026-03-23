@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
-  ChevronLeft, ChevronRight, Coins, User, Clock, ImageIcon,
+  ArrowLeft, ChevronLeft, ChevronRight, Coins, User, Clock, ImageIcon,
   CheckCircle, XCircle, X, Upload, RefreshCw, Download
 } from "lucide-react";
 import { toast } from "sonner";
@@ -183,7 +183,7 @@ export function BountyDetail({ bounty, currentUserId }: { bounty: Bounty; curren
     <div className="max-w-lg mx-auto p-4 md:p-6 space-y-4">
       <div className="pt-2">
         <Link href="/bounties" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-3">
-          <ChevronLeft className="h-4 w-4" />
+          <ArrowLeft className="h-4 w-4" />
           {L.bounty.backLink}
         </Link>
         <div className="flex items-start justify-between gap-2">

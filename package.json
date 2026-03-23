@@ -35,7 +35,6 @@
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.38.3",
     "input-otp": "^1.4.2",
-    "leaflet": "^1.9.4",
     "lucide-react": "^0.475.0",
     "maplibre-gl": "^5.19.0",
     "next": "14.2.29",
@@ -44,7 +43,6 @@
     "react": "^18",
     "react-dom": "^18",
     "react-hook-form": "^7.54.2",
-    "react-leaflet": "^4.2.1",
     "react-map-gl": "^8.1.0",
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.6.0",
@@ -53,7 +51,6 @@
   },
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",
-    "@types/leaflet": "^1.9.14",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

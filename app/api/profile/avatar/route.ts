@@ -21,6 +21,18 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "avatar_url is required" }, { status: 400 });
   }
 
+  // Only allow HTTPS URLs from trusted Supabase storage
+  const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace("https://", "") ?? "";
+  let parsedUrl: URL;
+  try {
+    parsedUrl = new URL(avatar_url);
+  } catch {
+    return NextResponse.json({ error: "Invalid avatar_url" }, { status: 400 });
+  }
+  if (parsedUrl.protocol !== "https:" || !parsedUrl.hostname.endsWith(supabaseHost)) {
+    return NextResponse.json({ error: "avatar_url must be a Supabase storage URL" }, { status: 400 });
+  }
+
   const { error } = await supabase
     .from("profiles")
     .update({ avatar_url, updated_at: new Date().toISOString() })

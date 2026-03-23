@@ -42,7 +42,7 @@ export default async function AdminReferralsPage() {
 
   if (referralsRes.error) console.error("Referrals query error:", referralsRes.error);
 
-  const rawReferrals = (referralsRes.data ?? []) as { id: string; full_name: string; created_at: string; referred_by: string }[];
+  const rawReferrals = (referralsRes.data ?? []) as { id: string; full_name: string; avatar_url: string | null; created_at: string; referred_by: string }[];
   const transactions = transactionsRes.data ?? [];
 
   // Fetch referrer names in a single query
