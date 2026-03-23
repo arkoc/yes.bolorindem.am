@@ -5,10 +5,16 @@ import Link from "next/link";
 import { VOTER_GOAL, CANDIDATE_GOAL, formatAMD, VOTER_FEE, CANDIDATE_FEE } from "@/lib/elections-config";
 import L from "@/lib/labels";
 import { CancelRegistrationButton } from "@/components/elections/CancelRegistrationButton";
+import { PaymentToast } from "@/components/elections/PaymentToast";
 
 export const dynamic = "force-dynamic";
 
-export default async function ElectionsPage() {
+export default async function ElectionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ payment?: string }>;
+}) {
+  const { payment } = await searchParams;
   const adminClient = createAdminClient();
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -44,6 +50,7 @@ export default async function ElectionsPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-lg mx-auto space-y-8">
+      <PaymentToast status={payment} />
       {/* Header */}
       <div className="rounded-2xl bg-gradient-to-br from-primary to-red-800 text-white px-6 py-8 text-center">
         <p className="text-xs font-semibold uppercase tracking-widest text-red-200 mb-1">

@@ -224,13 +224,18 @@ export function RegistrationWizard({
         </div>
         <div className="space-y-2">
           <Label>{L.elections.phoneLabel}</Label>
-          <Input
-            value={form.phone}
-            onChange={(e) => set("phone", e.target.value)}
-            placeholder={L.elections.phonePlaceholder}
-            type="tel"
-            className="h-12 text-base"
-          />
+          <div className="flex gap-2 items-center">
+            <span className="h-12 px-3 flex items-center rounded-md border bg-muted text-sm text-muted-foreground shrink-0 select-none">+374</span>
+            <Input
+              value={form.phone.startsWith("+374") ? form.phone.slice(4) : form.phone}
+              onChange={(e) => set("phone", "+374" + e.target.value.replace(/\D/g, ""))}
+              placeholder="XXXXXXXX"
+              type="tel"
+              inputMode="numeric"
+              maxLength={8}
+              className="h-12 text-base"
+            />
+          </div>
         </div>
       </div>
     );
@@ -362,9 +367,9 @@ export function RegistrationWizard({
   const progressPct = ((displayStep - 1) / (displayTotal - 1)) * 100;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-svh flex flex-col overflow-hidden">
       {/* Top bar */}
-      <div className="sticky top-0 bg-background border-b z-10 px-4 py-3 flex items-center gap-3">
+      <div className="shrink-0 bg-background border-b z-10 px-4 py-3 flex items-center gap-3">
         <button
           onClick={() => step === 1 ? router.push("/elections") : setStep((s) => s - 1)}
           className="p-2 -ml-1 rounded-lg hover:bg-accent transition-colors"
@@ -379,14 +384,14 @@ export function RegistrationWizard({
         </span>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 px-5 pt-8 pb-6 max-w-lg mx-auto w-full flex flex-col gap-8">
+      {/* Content — scrollable */}
+      <div className="flex-1 overflow-y-auto px-5 pt-8 pb-6 max-w-lg mx-auto w-full flex flex-col gap-8">
         <h2 className="text-xl font-bold">{stepTitle()}</h2>
-        <div className="flex-1">{stepContent()}</div>
+        <div>{stepContent()}</div>
       </div>
 
-      {/* Bottom button */}
-      <div className="sticky bottom-0 bg-background border-t px-5 py-4">
+      {/* Bottom button — always visible */}
+      <div className="shrink-0 bg-background border-t px-5 py-4">
         <Button
           className="w-full h-12 text-base"
           disabled={!canProceed() || loading}

@@ -1,6 +1,9 @@
 export const VOTER_FEE = 5000;
 export const CANDIDATE_FEE = 50000;
 
+export const VOTER_POINTS = 1000;
+export const CANDIDATE_POINTS = 5000;
+
 export const VOTER_GOAL = 1000;
 export const CANDIDATE_GOAL = 100;
 
