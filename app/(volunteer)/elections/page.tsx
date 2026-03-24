@@ -19,15 +19,23 @@ export default async function ElectionsPage({
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: counts }, { data: candidates }, { data: myRegs }] = await Promise.all([
+  const [{ data: counts }, { data: candidates }, { data: voters }, { data: myRegs }] = await Promise.all([
     adminClient.from("election_counts").select("*").single(),
     adminClient
       .from("election_registrations")
-      .select("id, full_name, created_at")
+      .select("id, full_name, created_at, user_id")
       .eq("type", "candidate")
       .eq("payment_status", "paid")
       .neq("status", "rejected")
       .order("created_at", { ascending: true }),
+    adminClient
+      .from("election_registrations")
+      .select("id, full_name, created_at, user_id")
+      .in("type", ["voter", "candidate"])
+      .eq("payment_status", "paid")
+      .neq("status", "rejected")
+      .order("created_at", { ascending: true })
+      .limit(200),
     user
       ? adminClient
           .from("election_registrations")
@@ -184,18 +192,48 @@ export default async function ElectionsPage({
 
       {/* Candidates list */}
       <div className="space-y-3">
-        <h2 className="font-bold text-base">{L.elections.candidatesTitle}</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="font-bold text-base">{L.elections.candidatesTitle}</h2>
+          <span className="text-xs text-muted-foreground tabular-nums">{candidateCount}</span>
+        </div>
         {!candidates || candidates.length === 0 ? (
           <p className="text-sm text-muted-foreground py-4 text-center">{L.elections.candidatesEmpty}</p>
         ) : (
           <div className="space-y-2">
             {candidates.map((c, i) => (
-              <div key={c.id} className="flex items-center gap-3 rounded-2xl border px-4 py-3">
+              <Link key={c.id} href={c.user_id ? `/profile/${c.user_id}` : "#"} className="flex items-center gap-3 rounded-2xl border px-4 py-3 hover:bg-muted/40 transition-colors">
                 <span className="text-sm font-bold text-muted-foreground tabular-nums w-7 shrink-0">
                   {L.elections.candidateNumber.replace("{n}", String(i + 1))}
                 </span>
-                <span className="text-sm font-medium">{c.full_name}</span>
-              </div>
+                <span className="text-sm font-medium flex-1">{c.full_name}</span>
+                {c.user_id && <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Voters list */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="font-bold text-base">{L.elections.votersTitle}</h2>
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {voterCount.toLocaleString()}
+            {(voters?.length ?? 0) < voterCount ? ` (${L.elections.showingFirst.replace("{n}", String(voters?.length ?? 0))})` : ""}
+          </span>
+        </div>
+        {!voters || voters.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-4 text-center">{L.elections.votersEmpty}</p>
+        ) : (
+          <div className="space-y-2">
+            {voters.map((v, i) => (
+              <Link key={v.id} href={v.user_id ? `/profile/${v.user_id}` : "#"} className="flex items-center gap-3 rounded-2xl border px-4 py-3 hover:bg-muted/40 transition-colors">
+                <span className="text-sm font-bold text-muted-foreground tabular-nums w-7 shrink-0">
+                  {i + 1}
+                </span>
+                <span className="text-sm font-medium flex-1">{v.full_name}</span>
+                {v.user_id && <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
+              </Link>
             ))}
           </div>
         )}

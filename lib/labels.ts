@@ -677,6 +677,9 @@ const L = {
     candidatesTitle: "Թեկնածուների ցուցակ",
     candidatesEmpty: "Դեռ գրանցված թեկնածուներ չկան",
     candidateNumber: "#{n}",
+    votersTitle: "Ընտրողների ցուցակ",
+    votersEmpty: "Դեռ գրանցված ընտրողներ չկան",
+    showingFirst: "առաջին {n}",
     continueToPayment: "Շարունակել վճարումը",
   },
 
