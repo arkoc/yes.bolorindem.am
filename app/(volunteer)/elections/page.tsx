@@ -200,11 +200,11 @@ export default async function ElectionsPage({
           <p className="text-sm text-muted-foreground py-4 text-center">{L.elections.candidatesEmpty}</p>
         ) : (
           <div className="space-y-2">
-            {candidates.map((c, i) => (
+            {candidates.map((c) => (
               <Link key={c.id} href={c.user_id ? `/profile/${c.user_id}` : "#"} className="flex items-center gap-3 rounded-2xl border px-4 py-3 hover:bg-muted/40 transition-colors">
-                <span className="text-sm font-bold text-muted-foreground tabular-nums w-7 shrink-0">
-                  {L.elections.candidateNumber.replace("{n}", String(i + 1))}
-                </span>
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="text-xs font-bold text-primary">{c.full_name.trim().charAt(0).toUpperCase()}</span>
+                </div>
                 <span className="text-sm font-medium flex-1">{c.full_name}</span>
                 {c.user_id && <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
               </Link>
@@ -226,11 +226,11 @@ export default async function ElectionsPage({
           <p className="text-sm text-muted-foreground py-4 text-center">{L.elections.votersEmpty}</p>
         ) : (
           <div className="space-y-2">
-            {voters.map((v, i) => (
+            {voters.map((v) => (
               <Link key={v.id} href={v.user_id ? `/profile/${v.user_id}` : "#"} className="flex items-center gap-3 rounded-2xl border px-4 py-3 hover:bg-muted/40 transition-colors">
-                <span className="text-sm font-bold text-muted-foreground tabular-nums w-7 shrink-0">
-                  {i + 1}
-                </span>
+                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                  <span className="text-xs font-bold text-muted-foreground">{v.full_name.trim().charAt(0).toUpperCase()}</span>
+                </div>
                 <span className="text-sm font-medium flex-1">{v.full_name}</span>
                 {v.user_id && <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
               </Link>
