@@ -25,7 +25,8 @@ export default async function VotingPage() {
   // Fetch user's votes (just poll_ids they voted on)
   const { data: userVotes } = await supabase
     .from("poll_votes")
-    .select("poll_id");
+    .select("poll_id")
+    .eq("user_id", user.id);
 
   const votedPollIds = new Set((userVotes ?? []).map((v: { poll_id: string }) => v.poll_id));
 

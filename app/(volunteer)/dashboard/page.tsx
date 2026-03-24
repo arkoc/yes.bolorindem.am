@@ -56,8 +56,8 @@ export default async function DashboardPage() {
     supabase
       .from("user_bounties")
       .select("id, reward_points", { count: "exact" })
-      .eq("target_user_id", user.id)
-      .eq("status", "open"),
+      .eq("status", "open")
+      .neq("creator_id", user.id),
     adminClient
       .from("election_registrations")
       .select("type")
