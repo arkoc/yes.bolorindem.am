@@ -621,7 +621,7 @@ const L = {
     acceptCitizenship: "Հաստատում եմ",
     stepSelfRestrictionTitle: "Ինքնասահմանափակման հայտարարագիր",
     selfRestrictionText: "Ծանոթացել եմ ինքնասահմանափակման պայմաններին և ընդունում եմ դրանք:",
-    acceptSelfRestriction: "Ընդունում եմ պայմանները",
+    acceptSelfRestriction: "Կարդացել և ընդունում եմ սույն հայտարարությունը",
     stepAge25Title: "Տարիքային սահմանափակում (25+)",
     age25Text: "Հաստատում եմ, որ լրացել է իմ 25 տարին:",
     acceptAge25: "Հաստատում եմ տարիքս",
