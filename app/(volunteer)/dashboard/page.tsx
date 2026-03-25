@@ -302,7 +302,7 @@ export default async function DashboardPage() {
 
       {/* Bounties card */}
       {openBountyCount > 0 && (
-        <Link href="/projects" className="block">
+        <Link href="/bounties" className="block">
           <Card className="hover:shadow-md transition-all active:scale-[0.99] border-l-4 border-l-yellow-500">
             <CardContent className="py-3 px-4 flex items-center gap-3">
               <div className="p-1.5 rounded-lg bg-yellow-100 shrink-0">
