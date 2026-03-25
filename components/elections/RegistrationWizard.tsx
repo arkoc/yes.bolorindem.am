@@ -388,9 +388,9 @@ export function RegistrationWizard({
   const progressPct = ((displayStep - 1) / (displayTotal - 1)) * 100;
 
   return (
-    <div className="flex flex-col">
-      {/* Top bar — sticks to top while scrolling */}
-      <div className="sticky top-0 z-10 bg-background border-b px-4 py-3 flex items-center gap-3">
+    <div className="fixed inset-0 z-[60] bg-background flex flex-col">
+      {/* Top bar */}
+      <div className="shrink-0 border-b px-4 py-3 flex items-center gap-3">
         <button
           onClick={() => step === 1 ? router.push("/elections") : setStep((s) => s - 1)}
           className="p-2 -ml-1 rounded-lg hover:bg-accent transition-colors"
@@ -405,14 +405,16 @@ export function RegistrationWizard({
         </span>
       </div>
 
-      {/* Content — scrolls naturally with the page */}
-      <div className="px-5 pt-8 pb-4 max-w-lg mx-auto w-full space-y-8">
-        <h2 className="text-xl font-bold">{stepTitle()}</h2>
-        <div>{stepContent()}</div>
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="px-5 pt-8 pb-6 max-w-lg mx-auto space-y-8">
+          <h2 className="text-xl font-bold">{stepTitle()}</h2>
+          <div>{stepContent()}</div>
+        </div>
       </div>
 
-      {/* Bottom button — sticks to bottom of viewport */}
-      <div className="sticky bottom-0 bg-background border-t px-5 py-4 mt-4">
+      {/* Bottom button — always at bottom of screen */}
+      <div className="shrink-0 border-t bg-background px-5 py-4" style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
         <Button
           className="w-full h-12 text-base"
           disabled={!canProceed() || loading}
