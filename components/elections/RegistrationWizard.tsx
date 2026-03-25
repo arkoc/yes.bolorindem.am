@@ -266,7 +266,7 @@ export function RegistrationWizard({
         <div className="space-y-4">
           {/* Prominent warning banner */}
           <div className="rounded-xl bg-primary/5 border border-primary/20 px-4 py-3">
-            <p className="text-xs font-bold text-primary uppercase tracking-widest mb-1">Կարևոր փաստաթուղթ</p>
+            <p className="text-xs font-bold text-primary uppercase tracking-widest mb-1">Կարեվոր փաստաթուղթ</p>
             <p className="text-xs text-muted-foreground leading-relaxed">Ստորև ներկայացված հայտարարությունն ուժի մեջ է մտնում ձեր գրանցումից հետո և հրապարակային պարտավորություն է ստեղծում։</p>
           </div>
           {/* Declaration document */}
@@ -388,9 +388,9 @@ export function RegistrationWizard({
   const progressPct = ((displayStep - 1) / (displayTotal - 1)) * 100;
 
   return (
-    <div className="h-svh flex flex-col overflow-hidden">
-      {/* Top bar */}
-      <div className="shrink-0 bg-background border-b z-10 px-4 py-3 flex items-center gap-3">
+    <div className="flex flex-col">
+      {/* Top bar — sticks to top while scrolling */}
+      <div className="sticky top-0 z-10 bg-background border-b px-4 py-3 flex items-center gap-3">
         <button
           onClick={() => step === 1 ? router.push("/elections") : setStep((s) => s - 1)}
           className="p-2 -ml-1 rounded-lg hover:bg-accent transition-colors"
@@ -405,14 +405,14 @@ export function RegistrationWizard({
         </span>
       </div>
 
-      {/* Content — scrollable */}
-      <div className="flex-1 overflow-y-auto px-5 pt-8 pb-6 max-w-lg mx-auto w-full flex flex-col gap-8">
+      {/* Content — scrolls naturally with the page */}
+      <div className="px-5 pt-8 pb-4 max-w-lg mx-auto w-full space-y-8">
         <h2 className="text-xl font-bold">{stepTitle()}</h2>
         <div>{stepContent()}</div>
       </div>
 
-      {/* Bottom button — always visible */}
-      <div className="shrink-0 bg-background border-t px-5 py-4">
+      {/* Bottom button — sticks to bottom of viewport */}
+      <div className="sticky bottom-0 bg-background border-t px-5 py-4 mt-4">
         <Button
           className="w-full h-12 text-base"
           disabled={!canProceed() || loading}
