@@ -60,9 +60,8 @@ export default async function DashboardPage() {
       .neq("creator_id", user.id),
     adminClient
       .from("election_registrations")
-      .select("type")
+      .select("type, payment_status")
       .eq("user_id", user.id)
-      .eq("payment_status", "paid")
       .neq("status", "rejected"),
     supabase
       .from("task_completions")
@@ -93,9 +92,10 @@ export default async function DashboardPage() {
   const referralCode = (profile as { referral_code?: string | null } | null)?.referral_code ?? null;
   const referralCount = referralRes.count ?? 0;
   const openBountyCount = openBountiesRes.count ?? 0;
-  const electionRegs = (electionRegRes.data ?? []) as { type: string }[];
+  const electionRegs = (electionRegRes.data ?? []) as { type: string; payment_status: string }[];
   const isRegisteredVoter = electionRegs.some(r => r.type === "voter");
   const isRegisteredCandidate = electionRegs.some(r => r.type === "candidate");
+  const hasAnyElectionReg = electionRegs.length > 0;
   const openBountyPoints = ((openBountiesRes.data ?? []) as { reward_points: number }[]).reduce((s, b) => s + b.reward_points, 0);
   const earnedBadgeIds = new Set(earnedBadges.map(b => b.badge_id));
   const earnedList = earnedBadges.slice(0, 5).map(b => ({ id: b.badge_id, ...b.badges, earned: true }));
@@ -134,42 +134,40 @@ export default async function DashboardPage() {
       </Card>
       </Link>
 
-      {/* Elections 2026 banner */}
-      {/* <Link href="/elections">
-        <Card className="border-2 border-amber-400/50 bg-gradient-to-r from-amber-50 to-orange-50 hover:shadow-md transition-all active:scale-[0.99]">
-          <CardContent className="py-3 px-4 flex items-center gap-3">
-            <span className="text-2xl shrink-0">🏛</span>
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-sm">{L.elections.dashboardBannerTitle}</p>
-              <p className="text-xs text-muted-foreground leading-tight">{L.elections.dashboardBannerText}</p>
-            </div>
-            <span className="text-xs font-semibold text-amber-700 shrink-0">{L.elections.dashboardBannerBtn}</span>
-          </CardContent>
-        </Card>
-      </Link> */}
-
-      {/* Push notification banner */}
-      <PushNotificationBanner />
-
-      {/* Election registration status */}
-      {(isRegisteredVoter || isRegisteredCandidate) && (
+      {/* Elections 2026 banner — CTA if not registered, status if registered */}
+      {!hasAnyElectionReg ? (
         <Link href="/elections">
-          <Card className="border-2 border-green-500/30 bg-green-50 hover:shadow-md transition-all active:scale-[0.99]">
+          <Card className="border-2 border-amber-400/50 bg-gradient-to-r from-amber-50 to-orange-50 hover:shadow-md transition-all active:scale-[0.99]">
             <CardContent className="py-3 px-4 flex items-center gap-3">
-              <span className="text-2xl shrink-0">✅</span>
+              <span className="text-2xl shrink-0">🏛</span>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-sm">{L.elections.dashboardBannerTitle}</p>
+                <p className="text-xs text-muted-foreground leading-tight">{L.elections.dashboardBannerText}</p>
+              </div>
+              <span className="text-xs font-semibold text-amber-700 shrink-0">{L.elections.dashboardBannerBtn}</span>
+            </CardContent>
+          </Card>
+        </Link>
+      ) : (
+        <Link href="/elections">
+          <Card className={`border-2 hover:shadow-md transition-all active:scale-[0.99] ${electionRegs.every(r => r.payment_status === "paid") ? "border-green-500/30 bg-green-50" : "border-yellow-400/30 bg-yellow-50"}`}>
+            <CardContent className="py-3 px-4 flex items-center gap-3">
+              <span className="text-2xl shrink-0">{electionRegs.every(r => r.payment_status === "paid") ? "✅" : "⏳"}</span>
               <div className="flex-1 min-w-0 space-y-0.5">
-                {isRegisteredVoter && (
-                  <p className="text-sm font-semibold text-green-800">{L.elections.registeredVoterBadge}</p>
-                )}
-                {isRegisteredCandidate && (
-                  <p className="text-sm font-semibold text-green-800">{L.elections.registeredCandidateBadge}</p>
+                {isRegisteredVoter && <p className="text-sm font-semibold">{L.elections.registeredVoterBadge}</p>}
+                {isRegisteredCandidate && <p className="text-sm font-semibold">{L.elections.registeredCandidateBadge}</p>}
+                {electionRegs.some(r => r.payment_status !== "paid") && (
+                  <p className="text-xs text-yellow-700">{L.elections.registeredPendingDesc}</p>
                 )}
               </div>
-              <ArrowRight className="h-4 w-4 text-green-700 shrink-0" />
+              <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
             </CardContent>
           </Card>
         </Link>
       )}
+
+      {/* Push notification banner */}
+      <PushNotificationBanner />
 
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-3">
