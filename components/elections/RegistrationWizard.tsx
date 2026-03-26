@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -157,9 +157,34 @@ export function RegistrationWizard({
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [saved, setSaved] = useState(false);
 
   const set = (key: keyof FormData, value: string | boolean) =>
     setForm((f) => ({ ...f, [key]: value }));
+
+  // Auto-save registration when user reaches payment step
+  useEffect(() => {
+    if (step !== paymentStep || saved || loading) return;
+    setLoading(true);
+    setError("");
+    fetch("/api/elections/init-payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type, ...form }),
+    })
+      .then(async (res) => {
+        const json = await res.json();
+        if (res.status === 409 || res.ok) {
+          // 409 = already saved (duplicate) — treat as success
+          setSaved(true);
+        } else {
+          setError(json.error ?? L.elections.genericError);
+        }
+      })
+      .catch(() => setError(L.elections.genericError))
+      .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
 
   function canProceed() {
     if (step === 1) return form.full_name.trim().length >= 2 && form.document_number.trim().length >= 4 && form.phone.trim().length >= 5;
@@ -177,24 +202,8 @@ export function RegistrationWizard({
     return true;
   }
 
-  async function submit() {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch("/api/elections/init-payment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, ...form }),
-      });
-      const json = await res.json();
-      if (res.status === 409) { setError(L.elections.duplicateError); return; }
-      if (!res.ok) { setError(json.error ?? L.elections.genericError); return; }
-      // Redirect to AmeriBank payment page — loading stays true intentionally
-      window.location.href = json.paymentUrl;
-    } catch {
-      setError(L.elections.genericError);
-      setLoading(false);
-    }
+  function confirmPayment() {
+    router.push("/elections?payment=pending");
   }
 
   // Payment / submit step
@@ -347,17 +356,37 @@ export function RegistrationWizard({
         </div>
       );
     }
-    // Payment step
+    // Payment step — show bank transfer details
     return (
       <div className="space-y-5">
+        {/* Amount */}
         <div className="rounded-2xl bg-primary/5 border-2 border-primary/20 p-5 text-center">
           <p className="text-sm text-muted-foreground mb-1">{L.elections.paymentAmountLabel}</p>
           <p className="text-4xl font-bold text-primary">{formatAMD(fee)}</p>
         </div>
-        <p className="text-sm text-muted-foreground text-center leading-relaxed">
-          {L.elections.paymentInstructions}
-        </p>
+
+        {/* Bank details */}
+        <div className="rounded-xl border divide-y text-sm">
+          {([
+            ["Ռեկվիզիտ", "AMD"],
+            ["Շահառուի բանկ", "Ամերիաբանկ ՓԲԸ"],
+            ["Շահառուի հաշիվ", "1570060173941700"],
+            ["Շահառու", "«ԲՈԼՈՐԻՆ ԴԵՄ ԵՄ» ԺՈՂՈՎՐԴԱՎԱՐԱԿԱՆ ԿՍ"],
+            ["Նպատակ", isCandidate ? "ԱԺ թեկնածուի գրանցման վճար" : "Ընտրողի գրանցման վճար"],
+          ] as [string, string][]).map(([label, value]) => (
+            <div key={label} className="flex gap-3 px-4 py-2.5">
+              <span className="text-muted-foreground shrink-0 w-36">{label}</span>
+              <span className="font-medium select-all">{value}</span>
+            </div>
+          ))}
+        </div>
+
+        {loading && <p className="text-xs text-muted-foreground text-center">Պahpanvum e...</p>}
         {error && <p className="text-sm text-destructive text-center">{error}</p>}
+
+        <p className="text-xs text-muted-foreground text-center leading-relaxed">
+          Vonc vcharumnerе verifitsirven minchrdev faktakan kvearkutyun tberin talarelu:
+        </p>
       </div>
     );
   }
@@ -420,13 +449,13 @@ export function RegistrationWizard({
           disabled={!canProceed() || loading}
           onClick={() => {
             if (isPaymentStep) {
-              submit();
+              confirmPayment();
             } else {
               setStep((s) => s + 1);
             }
           }}
         >
-          {loading ? "..." : isPaymentStep ? `${L.elections.submitBtn} ${formatAMD(fee)}` : L.elections.nextBtn}
+          {loading ? "..." : isPaymentStep ? L.elections.paymentDoneBtn : L.elections.nextBtn}
         </Button>
       </div>
     </div>

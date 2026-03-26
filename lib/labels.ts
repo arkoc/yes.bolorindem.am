@@ -681,6 +681,7 @@ const L = {
     votersEmpty: "Դեռ գրանցված ընտրողներ չկան",
     showingFirst: "առաջին {n}",
     continueToPayment: "Շարունակել վճարումը",
+    paymentDoneBtn: "Վճարումն արված է",
   },
 
   reverseButton: {

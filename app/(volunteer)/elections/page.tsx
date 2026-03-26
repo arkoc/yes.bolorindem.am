@@ -39,7 +39,7 @@ export default async function ElectionsPage({
     user
       ? adminClient
           .from("election_registrations")
-          .select("type, payment_status, ameria_payment_id")
+          .select("type, payment_status")
           .eq("user_id", user.id)
           .neq("status", "rejected")
       : Promise.resolve({ data: [] }),
@@ -50,11 +50,8 @@ export default async function ElectionsPage({
   const voterPct = Math.min(100, (voterCount / VOTER_GOAL) * 100);
   const candidatePct = Math.min(100, (candidateCount / CANDIDATE_GOAL) * 100);
 
-  const myVoterReg = (myRegs ?? []).find(r => r.type === "voter") as { type: string; payment_status: string; ameria_payment_id: string | null } | undefined;
-  const myCandidateReg = (myRegs ?? []).find(r => r.type === "candidate") as { type: string; payment_status: string; ameria_payment_id: string | null } | undefined;
-
-  const payUrl = (paymentId: string | null) =>
-    paymentId ? `https://services.ameriabank.am/VPOS/Payments/Pay?id=${paymentId}` : null;
+  const myVoterReg = (myRegs ?? []).find(r => r.type === "voter") as { type: string; payment_status: string } | undefined;
+  const myCandidateReg = (myRegs ?? []).find(r => r.type === "candidate") as { type: string; payment_status: string } | undefined;
 
   return (
     <div className="p-4 md:p-6 max-w-lg mx-auto space-y-8">
@@ -122,16 +119,6 @@ export default async function ElectionsPage({
               </div>
               <span className="text-2xl ml-auto">🗳</span>
             </div>
-            {myVoterReg.payment_status !== "paid" && payUrl(myVoterReg.ameria_payment_id) && (
-              <a
-                href={payUrl(myVoterReg.ameria_payment_id)!}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-semibold py-2 mb-2 transition-colors"
-              >
-                {L.elections.continueToPayment} <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-            )}
             {myVoterReg.payment_status !== "paid" && <CancelRegistrationButton type="voter" />}
           </div>
         )}
@@ -163,16 +150,6 @@ export default async function ElectionsPage({
               </div>
               <span className="text-2xl ml-auto">🏛</span>
             </div>
-            {myCandidateReg.payment_status !== "paid" && payUrl(myCandidateReg.ameria_payment_id) && (
-              <a
-                href={payUrl(myCandidateReg.ameria_payment_id)!}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-semibold py-2 mb-2 transition-colors"
-              >
-                {L.elections.continueToPayment} <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-            )}
             {myCandidateReg.payment_status !== "paid" && <CancelRegistrationButton type="candidate" />}
           </div>
         )}
