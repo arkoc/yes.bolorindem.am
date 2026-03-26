@@ -119,7 +119,14 @@ export default async function ElectionsPage({
               </div>
               <span className="text-2xl ml-auto">🗳</span>
             </div>
-            {myVoterReg.payment_status !== "paid" && <CancelRegistrationButton type="voter" />}
+            {myVoterReg.payment_status !== "paid" && (
+              <div className="space-y-2">
+                <Link href="/elections/register?type=voter" className="flex items-center justify-center gap-2 w-full rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-semibold py-2 transition-colors">
+                  {L.elections.viewPaymentDetails}
+                </Link>
+                <CancelRegistrationButton type="voter" />
+              </div>
+            )}
           </div>
         )}
         {!myCandidateReg && !myVoterReg && (
@@ -150,7 +157,14 @@ export default async function ElectionsPage({
               </div>
               <span className="text-2xl ml-auto">🏛</span>
             </div>
-            {myCandidateReg.payment_status !== "paid" && <CancelRegistrationButton type="candidate" />}
+            {myCandidateReg.payment_status !== "paid" && (
+              <div className="space-y-2">
+                <Link href="/elections/register?type=candidate" className="flex items-center justify-center gap-2 w-full rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-semibold py-2 transition-colors">
+                  {L.elections.viewPaymentDetails}
+                </Link>
+                <CancelRegistrationButton type="candidate" />
+              </div>
+            )}
           </div>
         )}
         {!myVoterReg && !myCandidateReg && (

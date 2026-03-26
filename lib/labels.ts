@@ -669,7 +669,7 @@ const L = {
     registeredCandidateBadge: "Գրանցված եք որպես թեկնածու",
     registeredVoterDesc: "Ձեր ընտրողի գրանցումը հաստատված է",
     registeredCandidateDesc: "Ձեր թեկնածուի գրանցումը հաստատված է",
-    registeredPendingDesc: "Վճարման ստուգումը ընթացքի մեջ է",
+    registeredPendingDesc: "Դուք դեռ չեք հաստատել վճարումը",
     cancelBtn: "Չեղարկել գրանցումը",
     cancelConfirmBtn: "Այո, չեղարկել",
     cancelAbortBtn: "Հետ",
@@ -682,6 +682,7 @@ const L = {
     showingFirst: "առաջին {n}",
     continueToPayment: "Շարունակել վճարումը",
     paymentDoneBtn: "Վճարումն արված է",
+    viewPaymentDetails: "Վճարման տվյալներ",
   },
 
   reverseButton: {

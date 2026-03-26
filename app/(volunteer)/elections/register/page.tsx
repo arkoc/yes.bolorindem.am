@@ -19,12 +19,14 @@ export default async function ElectionsRegisterPage({
   const adminClient = createAdminClient();
   const { data: existing } = await adminClient
     .from("election_registrations")
-    .select("type")
+    .select("type, payment_status")
     .eq("user_id", user.id)
     .neq("status", "rejected")
     .limit(1)
     .maybeSingle();
-  if (existing) redirect("/elections");
+  // Allow resuming if this exact type is pending; block otherwise
+  if (existing && !(existing.type === type && existing.payment_status === "pending")) redirect("/elections");
+  const resumePayment = !!(existing?.type === type && existing?.payment_status === "pending");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -37,6 +39,7 @@ export default async function ElectionsRegisterPage({
       type={type}
       defaultFullName={profile?.full_name ?? ""}
       defaultPhone={profile?.phone ?? ""}
+      resumePayment={resumePayment}
     />
   );
 }

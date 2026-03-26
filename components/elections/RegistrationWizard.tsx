@@ -132,10 +132,12 @@ export function RegistrationWizard({
   type,
   defaultFullName = "",
   defaultPhone = "",
+  resumePayment = false,
 }: {
   type: RegistrationType;
   defaultFullName?: string;
   defaultPhone?: string;
+  resumePayment?: boolean;
 }) {
   const isCandidate = type === "candidate";
   const fee = isCandidate ? CANDIDATE_FEE : VOTER_FEE;
@@ -147,7 +149,7 @@ export function RegistrationWizard({
   const paymentStep = totalSteps; // step after all inputs
 
   const router = useRouter();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(resumePayment ? paymentStep : 1);
   const [form, setForm] = useState<FormData>({
     full_name: defaultFullName, document_number: "", phone: defaultPhone,
     acceptance_movement: false, acceptance_citizenship: false,
@@ -157,7 +159,7 @@ export function RegistrationWizard({
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState(resumePayment);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   function copyToClipboard(key: string, value: string) {
@@ -426,10 +428,7 @@ export function RegistrationWizard({
     return "";
   }
 
-  // actual steps (1..totalSteps+1 including payment)
-  const displayStep = step;
-  const displayTotal = totalSteps + 1;
-  const progressPct = ((displayStep - 1) / (displayTotal - 1)) * 100;
+  const progressPct = ((step - 1) / (totalSteps - 1)) * 100;
 
   return (
     <div className="fixed inset-0 z-[60] bg-background flex flex-col">
@@ -445,7 +444,7 @@ export function RegistrationWizard({
           <Progress value={progressPct} className="h-2" />
         </div>
         <span className="text-xs text-muted-foreground tabular-nums shrink-0">
-          {displayStep - 1} / {displayTotal - 1}
+          {step} / {totalSteps}
         </span>
       </div>
 
