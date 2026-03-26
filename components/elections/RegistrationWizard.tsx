@@ -376,7 +376,6 @@ export function RegistrationWizard({
         {/* Bank details */}
         <div className="rounded-xl border divide-y text-sm">
           {([
-            ["Ռեկվիզիտ", "AMD"],
             ["Շահառուի բանկ", "Ամերիաբանկ ՓԲԸ"],
             ["Շահառուի հաշիվ", "1570060173941700"],
             ["Շահառու", "«ԲՈԼՈՐԻՆ ԴԵՄ ԵՄ» ԺՈՂՈՎՐԴԱՎԱՐԱԿԱՆ ԿՍ"],
