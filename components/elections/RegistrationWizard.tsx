@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, CheckCircle2, ExternalLink } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ExternalLink, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import L from "@/lib/labels";
 import { formatAMD, VOTER_FEE, CANDIDATE_FEE } from "@/lib/elections-config";
@@ -158,6 +158,14 @@ export function RegistrationWizard({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  function copyToClipboard(key: string, value: string) {
+    navigator.clipboard.writeText(value).then(() => {
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 2000);
+    });
+  }
 
   const set = (key: keyof FormData, value: string | boolean) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -374,18 +382,26 @@ export function RegistrationWizard({
             ["Շահառու", "«ԲՈԼՈՐԻՆ ԴԵՄ ԵՄ» ԺՈՂՈՎՐԴԱՎԱՐԱԿԱՆ ԿՍ"],
             ["Նպատակ", isCandidate ? "ԱԺ թեկնածուի գրանցման վճար" : "Ընտրողի գրանցման վճար"],
           ] as [string, string][]).map(([label, value]) => (
-            <div key={label} className="flex gap-3 px-4 py-2.5">
-              <span className="text-muted-foreground shrink-0 w-36">{label}</span>
-              <span className="font-medium select-all">{value}</span>
+            <div key={label} className="flex items-center gap-3 px-4 py-2.5">
+              <span className="text-muted-foreground shrink-0 w-32">{label}</span>
+              <span className="font-medium flex-1 select-all">{value}</span>
+              <button
+                onClick={() => copyToClipboard(label, value)}
+                className="shrink-0 p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+              >
+                {copiedKey === label
+                  ? <Check className="h-3.5 w-3.5 text-green-600" />
+                  : <Copy className="h-3.5 w-3.5" />}
+              </button>
             </div>
           ))}
         </div>
 
-        {loading && <p className="text-xs text-muted-foreground text-center">Պahpanvum e...</p>}
+        {loading && <p className="text-xs text-muted-foreground text-center">Պահպանվում է...</p>}
         {error && <p className="text-sm text-destructive text-center">{error}</p>}
 
         <p className="text-xs text-muted-foreground text-center leading-relaxed">
-          Vonc vcharumnerе verifitsirven minchrdev faktakan kvearkutyun tberin talarelu:
+          Քվեարկություն կատարելու օրը վճարումները ստուգվելու են։
         </p>
       </div>
     );
