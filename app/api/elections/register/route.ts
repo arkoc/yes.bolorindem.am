@@ -1,12 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
-import { createHash } from "crypto";
 import { VOTER_FEE, CANDIDATE_FEE } from "@/lib/elections-config";
-
-function hashDocument(docNumber: string) {
-  const salt = process.env.DOC_NUMBER_SALT ?? "default-salt";
-  return createHash("sha256").update(salt + docNumber.trim().toUpperCase()).digest("hex");
-}
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -39,7 +33,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing candidate fields" }, { status: 400 });
   }
 
-  const document_number_hash = hashDocument(document_number);
   const payment_amount = type === "voter" ? VOTER_FEE : CANDIDATE_FEE;
 
   const supabase = createAdminClient();
@@ -48,7 +41,7 @@ export async function POST(req: NextRequest) {
     .insert({
       type,
       full_name: full_name.trim(),
-      document_number_hash,
+      document_number: document_number.trim(),
       phone: phone.trim(),
       payment_amount,
       acceptance_movement,

@@ -19,7 +19,7 @@ export default async function ElectionsRegisterPage({
   const adminClient = createAdminClient();
   const { data: existing } = await adminClient
     .from("election_registrations")
-    .select("type, payment_status, full_name, patronymic, document_number_hash, passport_number, phone")
+    .select("type, payment_status, full_name, patronymic, document_number, passport_number, phone")
     .eq("user_id", user.id)
     .neq("status", "rejected")
     .limit(1)
@@ -41,6 +41,7 @@ export default async function ElectionsRegisterPage({
       defaultPhone={existing?.phone ?? profile?.phone ?? ""}
       defaultPatronymic={existing?.patronymic ?? ""}
       defaultPassportNumber={existing?.passport_number ?? ""}
+      defaultDocumentNumber={existing?.document_number ?? ""}
       resumePayment={resumePayment}
     />
   );

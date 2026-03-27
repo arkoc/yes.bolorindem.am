@@ -136,6 +136,7 @@ export function RegistrationWizard({
   defaultPhone = "",
   defaultPatronymic = "",
   defaultPassportNumber = "",
+  defaultDocumentNumber = "",
   resumePayment = false,
 }: {
   type: RegistrationType;
@@ -143,6 +144,7 @@ export function RegistrationWizard({
   defaultPhone?: string;
   defaultPatronymic?: string;
   defaultPassportNumber?: string;
+  defaultDocumentNumber?: string;
   resumePayment?: boolean;
 }) {
   const isCandidate = type === "candidate";
@@ -157,11 +159,11 @@ export function RegistrationWizard({
   const router = useRouter();
   const [step, setStep] = useState(resumePayment ? paymentStep : 1);
   const [form, setForm] = useState<FormData>({
-    full_name: defaultFullName, patronymic: defaultPatronymic, document_number: "", passport_number: defaultPassportNumber, phone: defaultPhone.replace(/^\+?374/, ""),
-    acceptance_movement: false, acceptance_citizenship: false,
-    acceptance_self_restriction: false, acceptance_age_25: false,
-    acceptance_only_armenian: false, acceptance_lived_in_armenia: false,
-    acceptance_voting_right: false, acceptance_armenian_language: false,
+    full_name: defaultFullName, patronymic: defaultPatronymic, document_number: defaultDocumentNumber, passport_number: defaultPassportNumber, phone: defaultPhone.replace(/^\+?374/, ""),
+    acceptance_movement: resumePayment, acceptance_citizenship: resumePayment,
+    acceptance_self_restriction: resumePayment, acceptance_age_25: resumePayment,
+    acceptance_only_armenian: resumePayment, acceptance_lived_in_armenia: resumePayment,
+    acceptance_voting_right: resumePayment, acceptance_armenian_language: resumePayment,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

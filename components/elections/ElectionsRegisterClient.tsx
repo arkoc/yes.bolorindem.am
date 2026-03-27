@@ -8,9 +8,10 @@ interface Props {
   defaultPhone: string;
   defaultPatronymic?: string;
   defaultPassportNumber?: string;
+  defaultDocumentNumber?: string;
   resumePayment?: boolean;
 }
 
-export function ElectionsRegisterClient({ type, defaultFullName, defaultPhone, defaultPatronymic, defaultPassportNumber, resumePayment }: Props) {
-  return <RegistrationWizard type={type} defaultFullName={defaultFullName} defaultPhone={defaultPhone} defaultPatronymic={defaultPatronymic} defaultPassportNumber={defaultPassportNumber} resumePayment={resumePayment} />;
+export function ElectionsRegisterClient({ type, defaultFullName, defaultPhone, defaultPatronymic, defaultPassportNumber, defaultDocumentNumber, resumePayment }: Props) {
+  return <RegistrationWizard type={type} defaultFullName={defaultFullName} defaultPhone={defaultPhone} defaultPatronymic={defaultPatronymic} defaultPassportNumber={defaultPassportNumber} defaultDocumentNumber={defaultDocumentNumber} resumePayment={resumePayment} />;
 }
