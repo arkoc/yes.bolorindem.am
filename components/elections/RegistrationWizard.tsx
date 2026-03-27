@@ -134,11 +134,15 @@ export function RegistrationWizard({
   type,
   defaultFullName = "",
   defaultPhone = "",
+  defaultPatronymic = "",
+  defaultPassportNumber = "",
   resumePayment = false,
 }: {
   type: RegistrationType;
   defaultFullName?: string;
   defaultPhone?: string;
+  defaultPatronymic?: string;
+  defaultPassportNumber?: string;
   resumePayment?: boolean;
 }) {
   const isCandidate = type === "candidate";
@@ -153,7 +157,7 @@ export function RegistrationWizard({
   const router = useRouter();
   const [step, setStep] = useState(resumePayment ? paymentStep : 1);
   const [form, setForm] = useState<FormData>({
-    full_name: defaultFullName, patronymic: "", document_number: "", passport_number: "", phone: defaultPhone.replace(/^\+?374/, ""),
+    full_name: defaultFullName, patronymic: defaultPatronymic, document_number: "", passport_number: defaultPassportNumber, phone: defaultPhone.replace(/^\+?374/, ""),
     acceptance_movement: false, acceptance_citizenship: false,
     acceptance_self_restriction: false, acceptance_age_25: false,
     acceptance_only_armenian: false, acceptance_lived_in_armenia: false,
@@ -390,7 +394,8 @@ export function RegistrationWizard({
       );
     }
     // Payment step — show bank transfer details
-    const purposeValue = `Անդամվճար, ${form.full_name} ${form.patronymic}, ${form.passport_number}, ${form.document_number}`;
+    const purposeParts = ["Անդամավճար", form.full_name, form.patronymic, form.passport_number, form.document_number].filter(Boolean);
+    const purposeValue = purposeParts.join(", ");
     return (
       <div className="space-y-5">
         {/* Amount */}
