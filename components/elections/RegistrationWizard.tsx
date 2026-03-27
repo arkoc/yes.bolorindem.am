@@ -153,7 +153,7 @@ export function RegistrationWizard({
   const router = useRouter();
   const [step, setStep] = useState(resumePayment ? paymentStep : 1);
   const [form, setForm] = useState<FormData>({
-    full_name: defaultFullName, patronymic: "", document_number: "", passport_number: "", phone: defaultPhone,
+    full_name: defaultFullName, patronymic: "", document_number: "", passport_number: "", phone: defaultPhone.replace(/^\+?374/, ""),
     acceptance_movement: false, acceptance_citizenship: false,
     acceptance_self_restriction: false, acceptance_age_25: false,
     acceptance_only_armenian: false, acceptance_lived_in_armenia: false,
@@ -183,7 +183,7 @@ export function RegistrationWizard({
     fetch("/api/elections/init-payment", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type, ...form }),
+      body: JSON.stringify({ type, ...form, phone: "+374" + form.phone }),
     })
       .then(async (res) => {
         const json = await res.json();
@@ -200,7 +200,7 @@ export function RegistrationWizard({
   }, [step]);
 
   function canProceed() {
-    if (step === 1) return form.full_name.trim().length >= 2 && form.patronymic.trim().length >= 2 && form.document_number.trim().length >= 4 && form.passport_number.trim().length >= 4 && form.phone.trim().length >= 5;
+    if (step === 1) return form.full_name.trim().length >= 2 && form.patronymic.trim().length >= 2 && form.document_number.trim().length >= 4 && form.passport_number.trim().length >= 4 && form.phone.trim().length >= 8;
     if (step === 2) return form.acceptance_movement;
     if (!isCandidate) {
       if (step === 3) return form.acceptance_citizenship;
@@ -269,8 +269,8 @@ export function RegistrationWizard({
           <div className="flex gap-2 items-center">
             <span className="h-12 px-3 flex items-center rounded-md border bg-muted text-sm text-muted-foreground shrink-0 select-none">+374</span>
             <Input
-              value={form.phone.startsWith("+374") ? form.phone.slice(4) : form.phone}
-              onChange={(e) => set("phone", "+374" + e.target.value.replace(/\D/g, ""))}
+              value={form.phone}
+              onChange={(e) => set("phone", e.target.value.replace(/\D/g, ""))}
               placeholder="XXXXXXXX"
               type="tel"
               inputMode="numeric"
