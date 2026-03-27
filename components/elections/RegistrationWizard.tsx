@@ -15,7 +15,9 @@ type RegistrationType = "voter" | "candidate";
 
 interface FormData {
   full_name: string;
+  patronymic: string;
   document_number: string;
+  passport_number: string;
   phone: string;
   acceptance_movement: boolean;
   acceptance_citizenship: boolean;
@@ -151,7 +153,7 @@ export function RegistrationWizard({
   const router = useRouter();
   const [step, setStep] = useState(resumePayment ? paymentStep : 1);
   const [form, setForm] = useState<FormData>({
-    full_name: defaultFullName, document_number: "", phone: defaultPhone,
+    full_name: defaultFullName, patronymic: "", document_number: "", passport_number: "", phone: defaultPhone,
     acceptance_movement: false, acceptance_citizenship: false,
     acceptance_self_restriction: false, acceptance_age_25: false,
     acceptance_only_armenian: false, acceptance_lived_in_armenia: false,
@@ -198,7 +200,7 @@ export function RegistrationWizard({
   }, [step]);
 
   function canProceed() {
-    if (step === 1) return form.full_name.trim().length >= 2 && form.document_number.trim().length >= 4 && form.phone.trim().length >= 5;
+    if (step === 1) return form.full_name.trim().length >= 2 && form.patronymic.trim().length >= 2 && form.document_number.trim().length >= 4 && form.passport_number.trim().length >= 4 && form.phone.trim().length >= 5;
     if (step === 2) return form.acceptance_movement;
     if (!isCandidate) {
       if (step === 3) return form.acceptance_citizenship;
@@ -223,14 +225,34 @@ export function RegistrationWizard({
   function stepContent() {
     if (step === 1) return (
       <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label>{L.elections.fullNameLabel}</Label>
+            <Input
+              value={form.full_name}
+              onChange={(e) => set("full_name", e.target.value)}
+              placeholder={L.elections.fullNamePlaceholder}
+              className="h-12 text-base"
+              autoFocus
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>{L.elections.patronymicLabel}</Label>
+            <Input
+              value={form.patronymic}
+              onChange={(e) => set("patronymic", e.target.value)}
+              placeholder={L.elections.patronymicPlaceholder}
+              className="h-12 text-base"
+            />
+          </div>
+        </div>
         <div className="space-y-2">
-          <Label>{L.elections.fullNameLabel}</Label>
+          <Label>{L.elections.passportLabel}</Label>
           <Input
-            value={form.full_name}
-            onChange={(e) => set("full_name", e.target.value)}
-            placeholder={L.elections.fullNamePlaceholder}
+            value={form.passport_number}
+            onChange={(e) => set("passport_number", e.target.value)}
+            placeholder={L.elections.passportPlaceholder}
             className="h-12 text-base"
-            autoFocus
           />
         </div>
         <div className="space-y-2">
@@ -368,6 +390,7 @@ export function RegistrationWizard({
       );
     }
     // Payment step — show bank transfer details
+    const purposeValue = `Անդամվճար, ${form.full_name} ${form.patronymic}, ${form.passport_number}, ${form.document_number}`;
     return (
       <div className="space-y-5">
         {/* Amount */}
@@ -383,7 +406,7 @@ export function RegistrationWizard({
             ["Շահառուի հաշիվ", "1570060173941700"],
             ["Շահառու", "«ԲՈԼՈՐԻՆ ԴԵՄ ԵՄ» ԺՈՂՈՎՐԴԱՎԱՐԱԿԱՆ ԿՍ"],
             ["Նպատակ", isCandidate ? "ԱԺ թեկնածուի գրանցման վճար" : "Ընտրողի գրանցման վճար"],
-          ] as [string, string][]).map(([label, value]) => (
+          ].slice(0, 3) as [string, string][]).map(([label, value]) => (
             <div key={label} className="flex items-center gap-3 px-4 py-2.5">
               <span className="text-muted-foreground shrink-0 w-32">{label}</span>
               <span className="font-medium flex-1 select-all">{value}</span>
@@ -397,6 +420,18 @@ export function RegistrationWizard({
               </button>
             </div>
           ))}
+          <div className="flex items-center gap-3 px-4 py-2.5">
+            <span className="text-muted-foreground shrink-0 w-32">Նշատակ*</span>
+            <span className="font-medium flex-1 select-all text-xs break-all">{purposeValue}</span>
+            <button
+              onClick={() => copyToClipboard("purpose", purposeValue)}
+              className="shrink-0 p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            >
+              {copiedKey === "purpose"
+                ? <Check className="h-3.5 w-3.5 text-green-600" />
+                : <Copy className="h-3.5 w-3.5" />}
+            </button>
+          </div>
         </div>
 
         {loading && <p className="text-xs text-muted-foreground text-center">Պահպանվում է...</p>}

@@ -17,7 +17,9 @@ export async function POST(req: NextRequest) {
   const {
     type,
     full_name,
+    patronymic,
     document_number,
+    passport_number,
     phone,
     acceptance_movement,
     acceptance_citizenship,
@@ -57,6 +59,8 @@ export async function POST(req: NextRequest) {
       user_id: user.id,
       type,
       full_name: full_name.trim(),
+      patronymic: patronymic?.trim() ?? null,
+      passport_number: passport_number?.trim() ?? null,
       document_number_hash,
       phone: phone.trim(),
       payment_amount,
