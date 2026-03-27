@@ -27,14 +27,14 @@ export default async function ElectionsPage({
       .eq("type", "candidate")
       .eq("payment_status", "paid")
       .neq("status", "rejected")
-      .order("created_at", { ascending: true }),
+      .order("full_name", { ascending: true }),
     adminClient
       .from("election_registrations")
       .select("id, full_name, created_at, user_id")
       .in("type", ["voter", "candidate"])
       .eq("payment_status", "paid")
       .neq("status", "rejected")
-      .order("created_at", { ascending: true })
+      .order("full_name", { ascending: true })
       .limit(200),
     user
       ? adminClient
