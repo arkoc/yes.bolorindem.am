@@ -160,6 +160,7 @@ export function RegistrationWizard({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(resumePayment);
+  const [done, setDone] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   function copyToClipboard(key: string, value: string) {
@@ -213,7 +214,7 @@ export function RegistrationWizard({
   }
 
   function confirmPayment() {
-    router.push("/elections?payment=pending");
+    setDone(true);
   }
 
   // Payment / submit step
@@ -429,6 +430,25 @@ export function RegistrationWizard({
   }
 
   const progressPct = ((step - 1) / (totalSteps - 1)) * 100;
+
+  if (done) {
+    return (
+      <div className="fixed inset-0 z-[60] bg-background flex flex-col items-center justify-center px-6 text-center gap-6">
+        <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center">
+          <CheckCircle2 className="h-8 w-8 text-green-600" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-xl font-bold">{L.elections.doneTitle}</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
+            {L.elections.doneDesc}
+          </p>
+        </div>
+        <Button className="w-full max-w-xs" onClick={() => router.push("/elections")}>
+          {L.elections.doneBtn}
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[60] bg-background flex flex-col">

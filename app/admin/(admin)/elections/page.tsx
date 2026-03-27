@@ -102,7 +102,7 @@ export default async function AdminElectionsPage({
                         <Badge variant="success" className="text-xs">Վճারված</Badge>
                       )}
                       {r.payment_status === "pending" && (
-                        <Badge variant="outline" className="text-xs text-yellow-600 border-yellow-300">Սպ. վճar.</Badge>
+                        <Badge variant="outline" className="text-xs text-yellow-600 border-yellow-300">Սպ. վճար.</Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">

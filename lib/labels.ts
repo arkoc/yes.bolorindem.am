@@ -683,6 +683,9 @@ const L = {
     continueToPayment: "Շարունակել վճարումը",
     paymentDoneBtn: "Վճարումն արված է",
     viewPaymentDetails: "Վճարման տվյալներ",
+    doneTitle: "Շնորհակալություն",
+    doneDesc: "Վճարումները հաստատվում են ձեռքով, ադմինիստրատորի հաստատումից հետո, ձեր գրանցումը կհաստատվի։",
+    doneBtn: "Վճարված է",
   },
 
   reverseButton: {
