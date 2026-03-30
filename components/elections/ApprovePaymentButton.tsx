@@ -19,6 +19,7 @@ export function ApprovePaymentButton({ id }: { id: string }) {
     });
     setLoading(false);
     if (res.ok) router.refresh();
+    else { const j = await res.json().catch(() => ({})); alert(j.error ?? "Failed"); }
   }
 
   return (

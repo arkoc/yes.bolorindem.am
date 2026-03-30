@@ -400,6 +400,11 @@ export function RegistrationWizard({
     const purposeValue = purposeParts.join(", ");
     return (
       <div className="space-y-5">
+        {saved && (
+          <div className="rounded-xl bg-yellow-50 border border-yellow-200 px-4 py-3 text-sm text-yellow-800 text-center">
+            Վճարումը սպասում է հաստատման
+          </div>
+        )}
         {/* Amount */}
         <div className="rounded-2xl bg-primary/5 border-2 border-primary/20 p-5 text-center">
           <p className="text-sm text-muted-foreground mb-1">{L.elections.paymentAmountLabel}</p>

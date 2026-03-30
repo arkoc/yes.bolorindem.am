@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   const adminClient = createAdminClient();
   const { error } = await adminClient
     .from("election_registrations")
-    .update({ payment_status: "paid" })
+    .update({ payment_status: "paid", status: "approved" })
     .eq("id", id)
     .eq("payment_status", "pending");
 
