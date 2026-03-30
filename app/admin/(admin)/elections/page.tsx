@@ -99,7 +99,7 @@ export default async function AdminElectionsPage({
                         {r.type === "voter" ? L.elections.adminTypeVoter : L.elections.adminTypeCandidate}
                       </Badge>
                       {r.payment_status === "paid" && (
-                        <Badge variant="success" className="text-xs">Վճারված</Badge>
+                        <Badge variant="success" className="text-xs">Վճարված</Badge>
                       )}
                       {r.payment_status === "pending" && (
                         <Badge variant="outline" className="text-xs text-yellow-600 border-yellow-300">Սպ. վճար.</Badge>
