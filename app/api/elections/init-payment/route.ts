@@ -43,35 +43,57 @@ export async function POST(req: NextRequest) {
   }
 
   const payment_amount = type === "voter" ? VOTER_FEE : CANDIDATE_FEE;
-
   const adminClient = createAdminClient();
+
+  const registrationData = {
+    type,
+    full_name: full_name.trim(),
+    patronymic: patronymic?.trim() ?? null,
+    passport_number: passport_number?.trim() ?? null,
+    document_number: document_number.trim(),
+    phone: phone.trim(),
+    payment_amount,
+    payment_status: "pending",
+    status: "pending",
+    acceptance_movement,
+    acceptance_citizenship,
+    acceptance_self_restriction: type === "candidate" ? acceptance_self_restriction : null,
+    acceptance_age_25: type === "candidate" ? acceptance_age_25 : null,
+    acceptance_only_armenian: type === "candidate" ? acceptance_only_armenian : null,
+    acceptance_lived_in_armenia: type === "candidate" ? acceptance_lived_in_armenia : null,
+    acceptance_voting_right: type === "candidate" ? acceptance_voting_right : null,
+    acceptance_armenian_language: type === "candidate" ? acceptance_armenian_language : null,
+  };
+
+  // If upgrading from voter to candidate, update in place
+  const { data: voterReg } = type === "candidate"
+    ? await adminClient
+        .from("election_registrations")
+        .select("id, type, payment_status")
+        .eq("user_id", user.id)
+        .eq("type", "voter")
+        .neq("status", "rejected")
+        .maybeSingle()
+    : { data: null };
+
+  if (voterReg) {
+    const { error: updateError } = await adminClient
+      .from("election_registrations")
+      .update(registrationData)
+      .eq("id", voterReg.id);
+    if (updateError) {
+      console.error("election upgrade error:", updateError);
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
+    }
+    return NextResponse.json({ success: true });
+  }
 
   const { error: insertError } = await adminClient
     .from("election_registrations")
-    .insert({
-      user_id: user.id,
-      type,
-      full_name: full_name.trim(),
-      patronymic: patronymic?.trim() ?? null,
-      passport_number: passport_number?.trim() ?? null,
-      document_number: document_number.trim(),
-      phone: phone.trim(),
-      payment_amount,
-      payment_status: "pending",
-      acceptance_movement,
-      acceptance_citizenship,
-      acceptance_self_restriction: type === "candidate" ? acceptance_self_restriction : null,
-      acceptance_age_25: type === "candidate" ? acceptance_age_25 : null,
-      acceptance_only_armenian: type === "candidate" ? acceptance_only_armenian : null,
-      acceptance_lived_in_armenia: type === "candidate" ? acceptance_lived_in_armenia : null,
-      acceptance_voting_right: type === "candidate" ? acceptance_voting_right : null,
-      acceptance_armenian_language: type === "candidate" ? acceptance_armenian_language : null,
-    });
+    .insert({ user_id: user.id, ...registrationData });
 
   if (insertError) {
-    if (insertError.code === "23505") {
-      return NextResponse.json({ error: "duplicate" }, { status: 409 });
-    }
+    if (insertError.code === "23505") return NextResponse.json({ error: "duplicate" }, { status: 409 });
     console.error("election insert error:", insertError);
     return NextResponse.json({ error: insertError.message }, { status: 500 });
   }

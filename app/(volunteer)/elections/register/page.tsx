@@ -19,14 +19,17 @@ export default async function ElectionsRegisterPage({
   const adminClient = createAdminClient();
   const { data: existing } = await adminClient
     .from("election_registrations")
-    .select("type, payment_status, full_name, patronymic, document_number, passport_number, phone")
+    .select("type, payment_status, status, full_name, patronymic, document_number, passport_number, phone")
     .eq("user_id", user.id)
     .neq("status", "rejected")
     .limit(1)
     .maybeSingle();
-  // Allow resuming if this exact type is pending; block otherwise
-  if (existing && !(existing.type === type && existing.payment_status === "pending")) redirect("/elections");
-  const resumePayment = !!(existing?.type === type && existing?.payment_status === "pending");
+
+  // Allow: no existing, resuming pending of same type, or voter upgrading to candidate
+  const isVoterUpgrade = type === "candidate" && existing?.type === "voter";
+  const isResume = existing?.type === type && existing?.payment_status === "pending";
+  if (existing && !isResume && !isVoterUpgrade) redirect("/elections");
+  const resumePayment = !!(isResume || (isVoterUpgrade && existing?.payment_status === "paid"));
 
   const { data: profile } = await supabase
     .from("profiles")
