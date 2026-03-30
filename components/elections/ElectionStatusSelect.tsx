@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 const STATUS_OPTIONS = ["pending", "approved", "rejected"];
@@ -32,14 +31,14 @@ export function ElectionStatusSelect({
 }) {
   const [value, setValue] = useState(initial);
   const options = field === "payment_status" ? PAYMENT_OPTIONS : STATUS_OPTIONS;
-  const supabase = createClient();
 
   async function onChange(next: string) {
     setValue(next);
-    await supabase
-      .from("election_registrations")
-      .update({ [field]: next })
-      .eq("id", id);
+    await fetch("/api/admin/elections/update-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, field, value: next }),
+    });
   }
 
   return (

@@ -396,7 +396,7 @@ export function RegistrationWizard({
       );
     }
     // Payment step — show bank transfer details
-    const purposeParts = ["Անդամավճար", form.full_name, form.patronymic, form.passport_number, form.document_number].filter(Boolean);
+    const purposeParts = ["Նվիրատվություն", form.full_name, form.patronymic, form.passport_number, form.document_number].filter(Boolean);
     const purposeValue = purposeParts.join(", ");
     return (
       <div className="space-y-5">

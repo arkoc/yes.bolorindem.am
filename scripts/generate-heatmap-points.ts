@@ -19,16 +19,17 @@ const path = require("path");
 // ─── Configuration ────────────────────────────────────────────────
 
 /**
- * Bounding box centered on Yerevan.
+ * Bounding box centered on Vanadzor.
  * SVG aspect ratio: 55/42 ≈ 1.31
- * At lat 40.19°: 1° lng ≈ 85 km, 1° lat ≈ 111 km
- * Box: ~10 km wide × ~7.6 km tall  →  0.118° lng × 0.069° lat  (aspect ≈ 1.31 ✓)
+ * At lat 40.81°: cos(40.81°) ≈ 0.757 → 1° lng ≈ 84 km, 1° lat ≈ 111 km
+ * lngSpan = latSpan × 1.31 / 0.757 = 0.050 × 1.731 = 0.0866°
+ * Box: ~7.3 km wide × ~5.6 km tall  (aspect ≈ 1.31 ✓)
  */
 const BOUNDS = {
-  latMin: 40.1527,
-  latMax: 40.2217,
-  lngMin: 44.4562,
-  lngMax: 44.5742,
+  latMin: 40.7880,
+  latMax: 40.8380,
+  lngMin: 44.4457,
+  lngMax: 44.5323,
 };
 
 /**
@@ -48,8 +49,8 @@ const DOT_POINTS = 50;
 /** Rasterization scale factor (SVG is 55×42 px, scaled to 1100×840) */
 const SCALE = 20;
 
-/** Pixel sampling stride (~2000 dots) */
-const DEFAULT_STRIDE = 8;
+/** Pixel sampling stride (~900 dots) */
+const DEFAULT_STRIDE = 12;
 
 // ─── Main ─────────────────────────────────────────────────────────
 
@@ -77,25 +78,23 @@ function main() {
 
   process.stderr.write(`Rasterized: ${width}×${height}px, stride=${stride}\n`);
 
-  // First pass (stride=1): find the pixel x-extent of each row.
-  const rowXBounds = ROW_DEFS.map(() => ({ xMin: Infinity, xMax: -Infinity }));
+  // First pass (stride=1): find the global pixel x-extent across all rows.
+  let globalXMin = Infinity, globalXMax = -Infinity;
   for (let py = 0; py < height; py++) {
     const svgY = (py / height) * SVG_HEIGHT;
-    const ri = ROW_DEFS.findIndex((r) => svgY >= r.svgYMin && svgY <= r.svgYMax);
-    if (ri === -1) continue;
+    const inRow = ROW_DEFS.some((r) => svgY >= r.svgYMin && svgY <= r.svgYMax);
+    if (!inRow) continue;
     for (let px = 0; px < width; px++) {
       const idx = (py * width + px) * 4;
       if (pixels[idx + 3] <= 128) continue;
-      if (px < rowXBounds[ri].xMin) rowXBounds[ri].xMin = px;
-      if (px > rowXBounds[ri].xMax) rowXBounds[ri].xMax = px;
+      if (px < globalXMin) globalXMin = px;
+      if (px > globalXMax) globalXMax = px;
     }
   }
-  rowXBounds.forEach((b, i) => {
-    const status = b.xMin === Infinity ? "NO PIXELS FOUND" : `${b.xMin}–${b.xMax} px`;
-    process.stderr.write(`  Row ${i + 1} x: ${status}\n`);
-  });
+  const globalXWidth = globalXMax - globalXMin;
+  process.stderr.write(`  Global x: ${globalXMin}–${globalXMax} px\n`);
 
-  // Second pass (with stride): each row independently fills the full lng range
+  // Second pass (with stride): use global x normalization to preserve SVG proportions
   const dots: Array<{ lat: number; lng: number; points: number }> = [];
   const rowDotCounts = [0, 0, 0];
 
@@ -103,18 +102,13 @@ function main() {
     const svgY = (py / height) * SVG_HEIGHT;
     const ri = ROW_DEFS.findIndex((r) => svgY >= r.svgYMin && svgY <= r.svgYMax);
     if (ri === -1) continue;
-    if (rowXBounds[ri].xMin === Infinity) continue;
-
-    const rowXMin = rowXBounds[ri].xMin;
-    const rowXMax = rowXBounds[ri].xMax;
-    const rowWidth = rowXMax - rowXMin;
 
     for (let px = 0; px < width; px += stride) {
       const idx = (py * width + px) * 4;
       if (pixels[idx + 3] <= 128) continue;
 
-      // Normalize x within this row's own extent → fills full lng bounds
-      const normX = (px - rowXMin) / rowWidth;
+      // Global x normalization — all rows share the same x mapping
+      const normX = (px - globalXMin) / globalXWidth;
       const lng = BOUNDS.lngMin + normX * (BOUNDS.lngMax - BOUNDS.lngMin);
       const lat = BOUNDS.latMax - (py / height) * (BOUNDS.latMax - BOUNDS.latMin);
       dots.push({ lat, lng, points: DOT_POINTS });
@@ -129,8 +123,9 @@ function main() {
   const safeProjectId = projectId.replace(/[^a-zA-Z0-9_-]/g, "");
 
   console.log(`-- Generated ${dots.length} heatmap dots for project ${safeProjectId}`);
-  console.log(`-- All dots in Yerevan (${DOT_POINTS} pts each)`);
   console.log(`-- Run: psql $DATABASE_URL -f seed.sql`);
+  console.log();
+  console.log(`DELETE FROM heatmap_points WHERE project_id = '${safeProjectId}';`);
   console.log();
   console.log("INSERT INTO heatmap_points (project_id, lat, lng, points) VALUES");
 
