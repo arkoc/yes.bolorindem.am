@@ -126,11 +126,13 @@ export default function LoginPage() {
         .eq("id", data.user.id)
         .single();
 
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get("ref");
+      const next = params.get("next");
       if (!profile?.full_name || profile.full_name === "New Volunteer") {
-        const ref = new URLSearchParams(window.location.search).get("ref");
         router.push(ref ? `/register?ref=${ref}` : "/register");
       } else {
-        router.push("/dashboard");
+        router.push(next && next.startsWith("/") ? next : "/dashboard");
       }
       return;
     }
