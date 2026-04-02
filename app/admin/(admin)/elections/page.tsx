@@ -3,8 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import L from "@/lib/labels";
 import { formatAMD } from "@/lib/elections-config";
-import { ElectionStatusSelect } from "@/components/elections/ElectionStatusSelect";
 import { ApprovePaymentButton } from "@/components/elections/ApprovePaymentButton";
+import { RejectRegistrationButton } from "@/components/elections/RejectRegistrationButton";
 
 export const dynamic = "force-dynamic";
 
@@ -113,10 +113,10 @@ export default async function AdminElectionsPage({
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    {r.payment_status === "pending" && r.status !== "rejected" && (
+                    {r.payment_status === "pending" && (
                       <ApprovePaymentButton id={r.id} />
                     )}
-                    <ElectionStatusSelect id={r.id} field="status" value={r.status} />
+                    <RejectRegistrationButton id={r.id} />
                   </div>
                 </div>
               </CardContent>
