@@ -37,6 +37,8 @@ export default async function PublicVotePage() {
   const candidateCount = Number(counts?.candidate_count ?? 0);
   const voterPct = Math.min(100, (voterCount / VOTER_GOAL) * 100);
   const candidatePct = Math.min(100, (candidateCount / CANDIDATE_GOAL) * 100);
+
+  return (
     <div className="min-h-screen bg-background">
       <div className="max-w-lg mx-auto px-4 py-8 space-y-8">
 
