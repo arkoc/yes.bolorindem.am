@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 export default async function PublicVotePage() {
   const adminClient = createAdminClient();
 
-  const [{ data: counts }, { data: candidates }, { data: voters }] = await Promise.all([
+  const [{ data: counts }, { data: candidates }, { data: voters }, pendingVotersRes, pendingCandidatesRes] = await Promise.all([
     adminClient.from("election_counts").select("*").single(),
     adminClient
       .from("election_registrations")
@@ -31,12 +31,16 @@ export default async function PublicVotePage() {
       .neq("status", "rejected")
       .order("full_name", { ascending: true })
       .limit(200),
+    adminClient.from("election_registrations").select("id", { count: "exact", head: true }).eq("type", "voter").eq("payment_status", "pending"),
+    adminClient.from("election_registrations").select("id", { count: "exact", head: true }).eq("type", "candidate").eq("payment_status", "pending"),
   ]);
 
   const voterCount = Number(counts?.voter_count ?? 0);
   const candidateCount = Number(counts?.candidate_count ?? 0);
   const voterPct = Math.min(100, (voterCount / VOTER_GOAL) * 100);
   const candidatePct = Math.min(100, (candidateCount / CANDIDATE_GOAL) * 100);
+  const pendingVoters = pendingVotersRes.count ?? 0;
+  const pendingCandidates = pendingCandidatesRes.count ?? 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -87,6 +91,14 @@ export default async function PublicVotePage() {
             <Progress value={candidatePct} className="h-3" />
           </div>
         </div>
+
+        {/* Pending counts */}
+        {(pendingVoters > 0 || pendingCandidates > 0) && (
+          <div className="rounded-xl border bg-yellow-50 border-yellow-200 px-4 py-3 text-sm text-yellow-800 space-y-0.5">
+            {pendingVoters > 0 && <p>⏳ {pendingVoters} ընտրող սպասում է վճարի հաստատման</p>}
+            {pendingCandidates > 0 && <p>⏳ {pendingCandidates} թեկնածու սպասում է վճարի հաստատման</p>}
+          </div>
+        )}
 
         {/* Register CTAs */}
         <div className="grid grid-cols-2 gap-3">
