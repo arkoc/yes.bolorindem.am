@@ -31,7 +31,7 @@ export function RejectRegistrationButton({ id }: { id: string }) {
       onClick={handleReject}
     >
       <X className="h-3.5 w-3.5" />
-      {loading ? "..." : "Մeratnel"}
+      {loading ? "..." : "Մերժել"}
     </Button>
   );
 }
