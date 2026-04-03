@@ -29,7 +29,7 @@ export default async function ElectionsRegisterPage({
   const isVoterUpgrade = type === "candidate" && existing?.type === "voter";
   const isResume = existing?.type === type && existing?.payment_status === "pending";
   if (existing && !isResume && !isVoterUpgrade) redirect("/elections");
-  const resumePayment = !!(isResume || (isVoterUpgrade && existing?.payment_status === "paid"));
+  const resumePayment = !!isResume;
 
   const { data: profile } = await supabase
     .from("profiles")
