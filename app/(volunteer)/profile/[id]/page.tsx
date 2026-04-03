@@ -23,7 +23,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
   const [profileRes, rankRes, allBadgesRes, userBadgesRes, completionsRes] = await Promise.all([
     adminClient
       .from("profiles")
-      .select("full_name, total_points, role, created_at, bio, social_url")
+      .select("full_name, total_points, role, created_at, bio, social_url, avatar_url")
       .eq("id", params.id)
       .single(),
     adminClient
@@ -72,7 +72,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
       <Card>
         <CardContent className="pt-6 pb-6">
           <div className="flex items-center gap-4">
-            <UserAvatar name={profile.full_name} size={80} className="shrink-0" />
+            <UserAvatar name={profile.full_name} size={80} className="shrink-0" avatarUrl={(profile as { avatar_url?: string | null }).avatar_url} />
             <div className="flex-1 min-w-0">
               <p className="text-xl font-semibold">{profile.full_name}</p>
               <div className="mt-2 flex items-center gap-2 flex-wrap">
