@@ -37,15 +37,18 @@ export default async function AdminElectionsPage({
   const pending = all.filter((r) => r.payment_status === "pending" && r.status !== "rejected");
   const paid = all.filter((r) => r.payment_status === "paid");
 
+  const candidates = all.filter((r) => r.type === "candidate");
   const displayed =
-    filter === "pending" ? pending :
-    filter === "paid"    ? paid    :
+    filter === "pending"   ? pending   :
+    filter === "paid"      ? paid      :
+    filter === "candidate" ? candidates :
     all;
 
   const tabs = [
-    { key: undefined,   label: "Բոլորը",          count: all.length },
-    { key: "pending",   label: "Սպասում է",        count: pending.length },
-    { key: "paid",      label: "Վճարված",          count: paid.length },
+    { key: undefined,     label: "Բոլորը",       count: all.length },
+    { key: "pending",     label: "Սպասում է",     count: pending.length },
+    { key: "paid",        label: "Վճարված",       count: paid.length },
+    { key: "candidate",   label: "Թեկնածուներ",   count: candidates.length },
   ];
 
   return (
