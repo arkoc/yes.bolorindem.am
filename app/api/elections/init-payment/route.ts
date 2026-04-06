@@ -65,29 +65,29 @@ export async function POST(req: NextRequest) {
     acceptance_armenian_language: type === "candidate" ? acceptance_armenian_language : null,
   };
 
-  // If upgrading from voter to candidate, update in place
-  const { data: voterReg } = type === "candidate"
+  // Check for existing pending candidate row (resume case)
+  const { data: existingCandidate } = type === "candidate"
     ? await adminClient
         .from("election_registrations")
-        .select("id, type, payment_status")
+        .select("id")
         .eq("user_id", user.id)
-        .eq("type", "voter")
+        .eq("type", "candidate")
+        .eq("payment_status", "pending")
         .neq("status", "rejected")
         .maybeSingle()
     : { data: null };
 
-  if (voterReg) {
+  if (existingCandidate) {
+    // Resume: update existing pending candidate row
     const { error: updateError } = await adminClient
       .from("election_registrations")
       .update(registrationData)
-      .eq("id", voterReg.id);
-    if (updateError) {
-      console.error("election upgrade error:", updateError);
-      return NextResponse.json({ error: updateError.message }, { status: 500 });
-    }
+      .eq("id", existingCandidate.id);
+    if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
     return NextResponse.json({ success: true });
   }
 
+  // Insert new row — voter row stays untouched until admin approves candidate
   const { error: insertError } = await adminClient
     .from("election_registrations")
     .insert({ user_id: user.id, ...registrationData });

@@ -14,22 +14,28 @@ export default async function ElectionsRegisterPage({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // Block if already registered as this type or as the other type
   const { createAdminClient } = await import("@/lib/supabase/server");
   const adminClient = createAdminClient();
-  const { data: existing } = await adminClient
+  const { data: allRegs } = await adminClient
     .from("election_registrations")
     .select("type, payment_status, status, full_name, patronymic, document_number, passport_number, phone")
     .eq("user_id", user.id)
-    .neq("status", "rejected")
-    .limit(1)
-    .maybeSingle();
+    .neq("status", "rejected");
 
-  // Allow: no existing, resuming pending of same type, or voter upgrading to candidate
-  const isVoterUpgrade = type === "candidate" && existing?.type === "voter";
-  const isResume = existing?.type === type && existing?.payment_status === "pending";
-  if (existing && !isResume && !isVoterUpgrade) redirect("/elections");
-  const resumePayment = !!isResume;
+  const regs = allRegs ?? [];
+  const sameTypeReg = regs.find((r) => r.type === type);
+  const voterReg = regs.find((r) => r.type === "voter");
+
+  const isVoterUpgrade = type === "candidate" && !!voterReg && !sameTypeReg;
+  const isResume = !!sameTypeReg && sameTypeReg.payment_status === "pending";
+  const isApproved = !!sameTypeReg && sameTypeReg.payment_status === "paid";
+
+  // Block: already approved for this type, or has unrelated paid registration
+  if (isApproved) redirect("/elections");
+  if (!isResume && !isVoterUpgrade && regs.length > 0 && !sameTypeReg) redirect("/elections");
+
+  const resumePayment = isResume;
+  const prefill = sameTypeReg ?? voterReg;
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -40,11 +46,11 @@ export default async function ElectionsRegisterPage({
   return (
     <ElectionsRegisterClient
       type={type}
-      defaultFullName={existing?.full_name ?? profile?.full_name ?? ""}
-      defaultPhone={existing?.phone ?? profile?.phone ?? ""}
-      defaultPatronymic={existing?.patronymic ?? ""}
-      defaultPassportNumber={existing?.passport_number ?? ""}
-      defaultDocumentNumber={existing?.document_number ?? ""}
+      defaultFullName={prefill?.full_name ?? profile?.full_name ?? ""}
+      defaultPhone={prefill?.phone ?? profile?.phone ?? ""}
+      defaultPatronymic={prefill?.patronymic ?? ""}
+      defaultPassportNumber={prefill?.passport_number ?? ""}
+      defaultDocumentNumber={prefill?.document_number ?? ""}
       resumePayment={resumePayment}
     />
   );
