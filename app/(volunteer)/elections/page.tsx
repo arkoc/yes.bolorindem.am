@@ -147,7 +147,7 @@ export default async function ElectionsPage({
         )}
 
         {/* Candidate card — show only if not registered as voter */}
-        {!myVoterReg && myCandidateReg && (
+        {myCandidateReg && (
           <div className={`rounded-2xl border-2 p-5 ${myCandidateReg.payment_status === "paid" ? "border-green-500/30 bg-green-50" : "border-yellow-400/30 bg-yellow-50"}`}>
             <div className="flex items-center gap-3 mb-3">
               {myCandidateReg.payment_status === "paid"
