@@ -5,6 +5,7 @@ import L from "@/lib/labels";
 import { formatAMD } from "@/lib/elections-config";
 import { ApprovePaymentButton } from "@/components/elections/ApprovePaymentButton";
 import { RejectRegistrationButton } from "@/components/elections/RejectRegistrationButton";
+import { ExportElectionsButton } from "@/components/elections/ExportElectionsButton";
 
 export const dynamic = "force-dynamic";
 
@@ -53,12 +54,19 @@ export default async function AdminElectionsPage({
 
   return (
     <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-5">
-      <div>
-        <h1 className="text-xl font-bold">{L.elections.adminTitle}</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          {all.filter((r) => r.type === "voter").length} {L.elections.goalVoterLabel} ·{" "}
-          {all.filter((r) => r.type === "candidate").length} {L.elections.goalCandidateLabel}
-        </p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-xl font-bold">{L.elections.adminTitle}</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {all.filter((r) => r.type === "voter").length} {L.elections.goalVoterLabel} ·{" "}
+            {all.filter((r) => r.type === "candidate").length} {L.elections.goalCandidateLabel}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <ExportElectionsButton />
+          <ExportElectionsButton type="voter" />
+          <ExportElectionsButton type="candidate" />
+        </div>
       </div>
 
       {/* Filter tabs */}
