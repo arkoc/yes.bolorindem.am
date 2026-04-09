@@ -446,12 +446,14 @@ export function RegistrationWizard({
           </div>
         </div>
 
-        {loading && <p className="text-xs text-muted-foreground text-center">Պահպանվում է...</p>}
+        {loading && <p className="text-xs text-muted-foreground text-center">Պահпanvum e...</p>}
         {error && <p className="text-sm text-destructive text-center">{error}</p>}
 
-        <p className="text-xs text-muted-foreground text-center leading-relaxed">
-          Քվեարկություն կատարելու օրը վճարումները ստուգվելու են։
-        </p>
+        <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 space-y-1">
+          <p className="text-sm font-semibold text-amber-900">{L.elections.paymentInstructionTitle}</p>
+          <p className="text-xs text-amber-800 leading-relaxed">{L.elections.paymentInstructionBody}</p>
+        </div>
+
       </div>
     );
   }
