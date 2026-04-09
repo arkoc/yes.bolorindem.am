@@ -24,7 +24,7 @@ export function ExportElectionsButton({ type }: { type?: "voter" | "candidate" }
   return (
     <Button size="sm" variant="outline" disabled={loading} onClick={handleExport} className="gap-1.5">
       <Download className="h-3.5 w-3.5" />
-      {loading ? "..." : type === "voter" ? "Yntroghnery" : type === "candidate" ? "Teknadznery" : "Bolor CSV"}
+      {loading ? "..." : type === "voter" ? "Միայն Ընտրողներ" : type === "candidate" ? "Միայն Թեկնածուներ" : "Բոլորը"}
     </Button>
   );
 }
