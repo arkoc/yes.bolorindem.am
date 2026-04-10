@@ -4,8 +4,8 @@ import { ExternalLink, Users, UserCheck } from "lucide-react";
 import Link from "next/link";
 import {
   VOTER_GOAL, CANDIDATE_GOAL,
-  formatAMD, VOTER_FEE, CANDIDATE_FEE,
-  VOTER_POINTS, CANDIDATE_POINTS,
+  formatAMD, VOTER_FEE,
+  VOTER_POINTS,
 } from "@/lib/elections-config";
 import L from "@/lib/labels";
 
@@ -87,27 +87,16 @@ export default async function PublicVotePage() {
             <Progress value={candidatePct} className="h-3" />
           </div>
         </div>
-        {/* Register CTAs */}
-        <div className="grid grid-cols-2 gap-3">
-          <Link
-            href="/login?next=/elections/register?type=voter"
-            className="rounded-2xl border-2 border-primary/20 bg-primary/5 p-4 text-center hover:bg-primary/10 transition-colors"
-          >
-            <span className="text-2xl block mb-1">🗳</span>
-            <p className="font-bold text-sm">{L.elections.registerVoter}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{formatAMD(VOTER_FEE)}</p>
-            <p className="text-xs text-yellow-600 font-semibold mt-1">+{VOTER_POINTS.toLocaleString()} միավոր</p>
-          </Link>
-          <Link
-            href="/login?next=/elections/register?type=candidate"
-            className="rounded-2xl border-2 border-green-500/20 bg-green-50 p-4 text-center hover:bg-green-100 transition-colors"
-          >
-            <span className="text-2xl block mb-1">🏛</span>
-            <p className="font-bold text-sm">{L.elections.registerCandidate}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{formatAMD(CANDIDATE_FEE)}</p>
-            <p className="text-xs text-yellow-600 font-semibold mt-1">+{CANDIDATE_POINTS.toLocaleString()} միավոր</p>
-          </Link>
-        </div>
+        {/* Register CTA */}
+        <Link
+          href="/login?next=/elections/register?type=voter"
+          className="block rounded-2xl border-2 border-primary/20 bg-primary/5 p-5 text-center hover:bg-primary/10 transition-colors"
+        >
+          <span className="text-2xl block mb-1">🗳</span>
+          <p className="font-bold text-sm">{L.elections.registerVoter}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{formatAMD(VOTER_FEE)}</p>
+          <p className="text-xs text-yellow-600 font-semibold mt-1">+{VOTER_POINTS.toLocaleString()} միավոր</p>
+        </Link>
 
         {/* Candidates list */}
         {(candidates ?? []).length > 0 && (

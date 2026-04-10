@@ -2,7 +2,7 @@ import { createAdminClient, createServerClient } from "@/lib/supabase/server";
 import { Progress } from "@/components/ui/progress";
 import { ExternalLink, CheckCircle2, Clock } from "lucide-react";
 import Link from "next/link";
-import { VOTER_GOAL, CANDIDATE_GOAL, formatAMD, VOTER_FEE, CANDIDATE_FEE, VOTER_POINTS, CANDIDATE_POINTS } from "@/lib/elections-config";
+import { VOTER_GOAL, CANDIDATE_GOAL, formatAMD, VOTER_FEE, VOTER_POINTS } from "@/lib/elections-config";
 import L from "@/lib/labels";
 import { CancelRegistrationButton } from "@/components/elections/CancelRegistrationButton";
 import { PaymentToast } from "@/components/elections/PaymentToast";
@@ -109,11 +109,6 @@ export default async function ElectionsPage({
                   {L.elections.viewPaymentDetails}
                 </Link>
               )}
-              {myVoterReg.payment_status === "paid" && (
-                <Link href="/elections/register?type=candidate" className="flex items-center justify-center gap-2 w-full rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold py-2 transition-colors">
-                  {L.elections.registerCandidate}
-                </Link>
-              )}
               {myVoterReg.payment_status !== "paid" && <CancelRegistrationButton type="voter" />}
             </div>
           </div>
@@ -131,10 +126,10 @@ export default async function ElectionsPage({
           </Link>
         )}
 
-        {/* Candidate card — show only if not registered as voter */}
+        {/* Candidate status card — read-only, for existing candidates */}
         {myCandidateReg && (
           <div className={`rounded-2xl border-2 p-5 ${myCandidateReg.payment_status === "paid" ? "border-green-500/30 bg-green-50" : "border-yellow-400/30 bg-yellow-50"}`}>
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-3">
               {myCandidateReg.payment_status === "paid"
                 ? <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
                 : <Clock className="h-5 w-5 text-yellow-600 shrink-0" />}
@@ -146,27 +141,7 @@ export default async function ElectionsPage({
               </div>
               <span className="text-2xl ml-auto">🏛</span>
             </div>
-            {myCandidateReg.payment_status !== "paid" && (
-              <div className="space-y-2">
-                <Link href="/elections/register?type=candidate" className="flex items-center justify-center gap-2 w-full rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-semibold py-2 transition-colors">
-                  {L.elections.viewPaymentDetails}
-                </Link>
-                <CancelRegistrationButton type="candidate" />
-              </div>
-            )}
           </div>
-        )}
-        {!myVoterReg && !myCandidateReg && (
-          <Link href="/elections/register?type=candidate" className="block rounded-2xl border-2 border-green-500/20 bg-green-50 p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-bold text-base">{L.elections.registerCandidate}</p>
-                <p className="text-sm text-muted-foreground mt-0.5">{L.elections.candidateFeeLabel}: {formatAMD(CANDIDATE_FEE)}</p>
-                <p className="text-xs text-yellow-600 font-semibold mt-1">+{CANDIDATE_POINTS.toLocaleString()} միավոր</p>
-              </div>
-              <span className="text-2xl">🏛</span>
-            </div>
-          </Link>
         )}
       </div>
 
