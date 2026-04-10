@@ -19,23 +19,8 @@ export default async function ElectionsPage({
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: counts }, { data: candidates }, { data: voters }, { data: myRegs }] = await Promise.all([
+  const [{ data: counts }, { data: myRegs }] = await Promise.all([
     adminClient.from("election_counts").select("*").single(),
-    adminClient
-      .from("election_registrations")
-      .select("id, full_name, created_at, user_id")
-      .eq("type", "candidate")
-      .eq("payment_status", "paid")
-      .neq("status", "rejected")
-      .order("full_name", { ascending: true }),
-    adminClient
-      .from("election_registrations")
-      .select("id, full_name, created_at, user_id")
-      .in("type", ["voter", "candidate"])
-      .eq("payment_status", "paid")
-      .neq("status", "rejected")
-      .order("full_name", { ascending: true })
-      .limit(200),
     user
       ? adminClient
           .from("election_registrations")
@@ -185,61 +170,17 @@ export default async function ElectionsPage({
         )}
       </div>
 
-      {/* Candidates list */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="font-bold text-base">{L.elections.candidatesTitle}</h2>
-          <span className="text-xs text-muted-foreground tabular-nums">{candidateCount}</span>
-        </div>
-        {!candidates || candidates.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-4 text-center">{L.elections.candidatesEmpty}</p>
-        ) : (
-          <div className="space-y-2">
-            {candidates.map((c) => (
-              <Link key={c.id} href={c.user_id ? `/profile/${c.user_id}` : "#"} className="flex items-center gap-3 rounded-2xl border px-4 py-3 hover:bg-muted/40 transition-colors">
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="text-xs font-bold text-primary">{c.full_name.trim().charAt(0).toUpperCase()}</span>
-                </div>
-                <span className="text-sm font-medium flex-1">{c.full_name}</span>
-                {c.user_id && <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Voters list */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="font-bold text-base">{L.elections.votersTitle}</h2>
-          <span className="text-xs text-muted-foreground tabular-nums">
-            {voterCount.toLocaleString()}
-            {(voters?.length ?? 0) < voterCount ? ` (${L.elections.showingFirst.replace("{n}", String(voters?.length ?? 0))})` : ""}
-          </span>
-        </div>
-        {!voters || voters.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-4 text-center">{L.elections.votersEmpty}</p>
-        ) : (
-          <div className="space-y-2">
-            {voters.map((v) => (
-              <Link key={v.id} href={v.user_id ? `/profile/${v.user_id}` : "#"} className="flex items-center gap-3 rounded-2xl border px-4 py-3 hover:bg-muted/40 transition-colors">
-                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-                  <span className="text-xs font-bold text-muted-foreground">{v.full_name.trim().charAt(0).toUpperCase()}</span>
-                </div>
-                <span className="text-sm font-medium flex-1">{v.full_name}</span>
-                {v.user_id && <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-
       {/* Party candidates link */}
-      <div className="text-center pt-2">
-        <Link href="/candidates" className="text-xs text-muted-foreground underline underline-offset-2">
-          Կուսակցության թեկնածուների ցուցակ
-        </Link>
-      </div>
+      <Link
+        href="/candidates"
+        className="flex items-center justify-between rounded-2xl border-2 border-primary/20 bg-primary/5 px-5 py-4 hover:bg-primary/10 transition-colors"
+      >
+        <div>
+          <p className="font-bold text-base">Կուսակցության թեկնածուների ցուցակ</p>
+          <p className="text-sm text-muted-foreground mt-0.5">{candidateCount} թեկնածու</p>
+        </div>
+        <ExternalLink className="h-4 w-4 text-primary shrink-0" />
+      </Link>
     </div>
   );
 }
