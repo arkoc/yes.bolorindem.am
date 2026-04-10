@@ -233,6 +233,13 @@ export default async function ElectionsPage({
           </div>
         )}
       </div>
+
+      {/* Party candidates link */}
+      <div className="text-center pt-2">
+        <Link href="/candidates" className="text-xs text-muted-foreground underline underline-offset-2">
+          Կուսակցության թեկնածուների ցուցակ
+        </Link>
+      </div>
     </div>
   );
 }

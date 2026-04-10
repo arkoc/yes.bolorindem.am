@@ -158,8 +158,11 @@ export default async function PublicVotePage() {
           </div>
         )}
 
-        {/* Footer link back to app */}
-        <div className="text-center pt-2">
+        {/* Footer links */}
+        <div className="text-center pt-2 flex flex-col gap-2">
+          <Link href="/candidates" className="text-xs text-muted-foreground underline underline-offset-2">
+            Կուսակցության թեկնածուների ցուցակ
+          </Link>
           <Link href="/login" className="text-xs text-muted-foreground underline underline-offset-2">
             Մուտք գործել հարթակ
           </Link>
