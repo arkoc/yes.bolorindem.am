@@ -1,10 +1,12 @@
 /**
  * Imports party candidates from a CSV file into the party_candidates table.
- * - Clears the table before importing
- * - Downloads images from Google Drive and uploads to Supabase Storage
+ * - Snapshots existing images by full_name before clearing
+ * - Clears table and reinserts with correct candidate numbers from CSV
+ * - Downloads images only if the candidate has no image yet
+ * - Candidate number is read from the last CSV column
  *
  * CSV columns (in order):
- *   Timestamp | Անуն Ազganum | Phone | Social URL | Bio | Reason | Image (Drive URL)
+ *   Timestamp | Full Name | Phone | Social URL | Bio | Reason | Image (Drive URL) | Candidate Number
  *
  * Usage:
  *   npx ts-node -P scripts/tsconfig.json scripts/import-candidates.ts candidates.csv
@@ -12,11 +14,9 @@
  * Requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local
  */
 
-/* eslint-disable @typescript-eslint/no-require-imports */
 import fs from "fs";
 import path from "path";
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const heicConvert = require("heic-convert");
+import heicConvert from "heic-convert";
 
 // Load env
 const envPath = path.join(__dirname, "../.env.local");
@@ -45,19 +45,20 @@ function driveFileId(url: string): string | null {
 
 async function downloadAndUpload(fileId: string, storagePath: string): Promise<string | null> {
   const downloadUrl = `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`;
-  process.stdout.write(`  ${fileId}...`);
+  process.stdout.write(`  Downloading ${fileId}...`);
   try {
-    const res = await fetch(downloadUrl);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
+    const res = await fetch(downloadUrl, { signal: controller.signal }).finally(() => clearTimeout(timeout));
     if (!res.ok) { console.log(` FAILED (${res.status})`); return null; }
     let buf = Buffer.from(await res.arrayBuffer());
     const contentType = res.headers.get("content-type") ?? "";
 
-    // Convert HEIC to JPEG
     const isHeic = contentType.includes("heic") || contentType.includes("heif") ||
       (buf[0] === 0x00 && buf[4] === 0x66 && buf[5] === 0x74 && buf[6] === 0x79 && buf[7] === 0x70);
     if (isHeic) {
       process.stdout.write(" [converting HEIC]");
-      buf = Buffer.from(await heicConvert({ buffer: buf, format: "JPEG", quality: 0.9 }));
+      buf = Buffer.from(await heicConvert({ buffer: buf as unknown as ArrayBuffer, format: "JPEG", quality: 0.9 }));
     }
 
     const up = await fetch(`${SUPABASE_URL}/storage/v1/object/candidate-photos/${storagePath}`, {
@@ -121,25 +122,11 @@ async function main() {
   const allRows = parseCSV(fs.readFileSync(csvFile, "utf-8"));
   const rows = allRows.slice(1).filter((cols: string[]) => cols[1]?.trim());
 
-  // --- 1. Snapshot existing number assignments before clearing ---
-  const existingRes = await fetch(`${SUPABASE_URL}/rest/v1/party_candidates?select=full_name,candidate_number`, {
-    headers: { "apikey": SERVICE_KEY, "Authorization": `Bearer ${SERVICE_KEY}` },
-  });
-  const existingMap = new Map<string, number>();
-  if (existingRes.ok) {
-    const existing: { full_name: string; candidate_number: number }[] = await existingRes.json();
-    existing.forEach((e) => existingMap.set(e.full_name.trim(), e.candidate_number));
-    if (existingMap.size > 0) console.log(`Preserved ${existingMap.size} existing number assignments.`);
-  }
-
-  // --- 2. Clear existing table rows ---
+  // --- 1. Clear table ---
   console.log("Clearing existing candidates table...");
   const delRes = await fetch(`${SUPABASE_URL}/rest/v1/party_candidates?id=neq.00000000-0000-0000-0000-000000000000`, {
     method: "DELETE",
-    headers: {
-      "apikey": SERVICE_KEY,
-      "Authorization": `Bearer ${SERVICE_KEY}`,
-    },
+    headers: { "apikey": SERVICE_KEY, "Authorization": `Bearer ${SERVICE_KEY}` },
   });
   if (!delRes.ok) {
     console.error("Failed to clear table:", await delRes.text());
@@ -147,14 +134,11 @@ async function main() {
   }
   console.log("Table cleared.");
 
-  // --- 2. Clear existing storage images ---
-  console.log("Clearing existing images from storage...");
+  // --- 2. Clear all storage images ---
+  console.log("Clearing all images from storage...");
   const listRes = await fetch(`${SUPABASE_URL}/storage/v1/object/list/candidate-photos`, {
     method: "POST",
-    headers: {
-      "Authorization": `Bearer ${SERVICE_KEY}`,
-      "Content-Type": "application/json",
-    },
+    headers: { "Authorization": `Bearer ${SERVICE_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({ prefix: "", limit: 1000 }),
   });
   if (listRes.ok) {
@@ -162,66 +146,61 @@ async function main() {
     if (files.length > 0) {
       const removeRes = await fetch(`${SUPABASE_URL}/storage/v1/object/candidate-photos`, {
         method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${SERVICE_KEY}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Authorization": `Bearer ${SERVICE_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({ prefixes: files.map((f) => f.name) }),
       });
-      if (removeRes.ok) console.log(`Deleted ${files.length} existing images.`);
+      if (removeRes.ok) console.log(`Deleted ${files.length} images.`);
       else console.error("Failed to delete images:", await removeRes.text());
     } else {
-      console.log("No existing images found.");
+      console.log("No images to delete.");
     }
   } else {
     console.warn("Could not list storage files:", await listRes.text());
   }
 
-  // --- 3. Download & upload images ---
+  // --- 3. Download & upload all images fresh ---
   console.log(`\nDownloading images for ${rows.length} candidates...`);
   const imageUrls: (string | null)[] = [];
 
   for (let i = 0; i < rows.length; i++) {
     const cols = rows[i];
+    const fullName = cols[1]?.trim() ?? "";
+    const candidateNumber = parseInt(cols[cols.length - 1] ?? "", 10);
     const rawImageUrl = cols[6] ?? "";
     const fileId = driveFileId(rawImageUrl);
 
     if (!fileId) {
+      console.log(`  #${candidateNumber} ${fullName}: no Drive URL`);
       imageUrls.push(null);
       continue;
     }
 
-    const publicUrl = await downloadAndUpload(fileId, `candidate_${i + 1}.jpg`);
+    process.stdout.write(`  #${candidateNumber} ${fullName}: `);
+    const publicUrl = await downloadAndUpload(fileId, `candidate_${candidateNumber}.jpg`);
     imageUrls.push(publicUrl);
   }
 
-  // --- 4. Build candidate rows ---
-  const candidates = rows.map((cols: string[], i: number) => ({
-    candidate_number: 0,
-    full_name:        cols[1]?.trim() ?? "",
-    phone:            cols[2]?.trim() || null,
-    social_url:       cols[3]?.trim() || null,
-    bio:              cols[4]?.trim() || null,
-    reason:           cols[5]?.trim() || null,
-    image_url:        imageUrls[i],
-    sort_order:       i,
-  }));
+  // --- 4. Build and insert rows ---
+  const candidates = rows
+    .map((cols: string[], i: number) => {
+      const candidateNumber = parseInt(cols[cols.length - 1] ?? "", 10);
+      if (isNaN(candidateNumber)) {
+        console.warn(`  Skipping row ${i + 1} (${cols[1]}): invalid candidate number`);
+        return null;
+      }
+      return {
+        candidate_number: candidateNumber,
+        full_name:        cols[1]?.trim() ?? "",
+        phone:            cols[2]?.trim() || null,
+        social_url:       cols[3]?.trim() || null,
+        bio:              cols[4]?.trim() || null,
+        reason:           cols[5]?.trim() || null,
+        image_url:        imageUrls[i],
+        sort_order:       i,
+      };
+    })
+    .filter(Boolean);
 
-  // Assign numbers: reuse existing if name matches, otherwise pick a new random number
-  const usedNumbers = new Set(
-    candidates
-      .map((c: { full_name: string }) => existingMap.get(c.full_name.trim()))
-      .filter((n): n is number => n !== undefined)
-  );
-  const allNumbers = Array.from({ length: candidates.length }, (_, i) => i + 1);
-  const freeNumbers = allNumbers.filter((n) => !usedNumbers.has(n)).sort(() => Math.random() - 0.5);
-  let freeIdx = 0;
-  candidates.forEach((c: { full_name: string; candidate_number: number }) => {
-    const existing = existingMap.get(c.full_name.trim());
-    c.candidate_number = existing ?? freeNumbers[freeIdx++];
-  });
-
-  // --- 5. Insert ---
   console.log(`\nInserting ${candidates.length} candidates...`);
   const res = await fetch(`${SUPABASE_URL}/rest/v1/party_candidates`, {
     method: "POST",
@@ -240,7 +219,6 @@ async function main() {
   }
 
   console.log(`\nDone. ${candidates.length} candidates imported.`);
-  console.log(`Images saved locally in: scripts/candidate-images/`);
 }
 
 main();
