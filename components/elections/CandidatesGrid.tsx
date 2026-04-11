@@ -16,7 +16,6 @@ type Candidate = {
 export default function CandidatesGrid({ candidates }: { candidates: Candidate[] }) {
   const [selected, setSelected] = useState<Candidate | null>(null);
 
-  // Lock body scroll while modal is open
   useEffect(() => {
     if (selected) {
       document.body.style.overflow = "hidden";
@@ -40,7 +39,7 @@ export default function CandidatesGrid({ candidates }: { candidates: Candidate[]
               <img
                 src={c.image_url}
                 alt={c.full_name}
-                className="absolute inset-0 w-full h-full object-cover grayscale transition-transform duration-300 group-hover:scale-105"
+                className="absolute inset-0 w-full h-full object-cover object-top grayscale transition-transform duration-300 group-hover:scale-105"
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
@@ -61,59 +60,59 @@ export default function CandidatesGrid({ candidates }: { candidates: Candidate[]
         ))}
       </div>
 
-      {/* Detail modal */}
       {selected && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 p-0 sm:p-4"
           onClick={() => setSelected(null)}
         >
           <div
-            className="relative w-full max-w-sm rounded-2xl bg-background shadow-xl overflow-hidden flex flex-col"
-            style={{ maxHeight: "90dvh" }}
+            className="relative w-full sm:max-w-sm max-h-[95dvh] sm:max-h-[90dvh] overflow-y-auto rounded-t-3xl sm:rounded-2xl bg-background shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Drag handle (mobile) */}
+            <div className="sticky top-0 z-10 flex justify-center pt-3 pb-1 sm:hidden bg-background rounded-t-3xl">
+              <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+            </div>
+
             {/* Close button */}
             <button
               onClick={() => setSelected(null)}
-              className="absolute top-3 right-3 z-20 h-8 w-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+              className="absolute top-3 right-3 z-20 h-8 w-8 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
             >
               <X className="h-4 w-4" />
             </button>
 
-            {/* Photo — fixed, never scrolls */}
-            <div className="shrink-0 w-full bg-primary/10" style={{ height: "260px" }}>
-              {selected.image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
+            {/* Photo — natural size, no clipping */}
+            {selected.image_url ? (
+              <div className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={selected.image_url}
                   alt={selected.full_name}
-                  className="w-full h-full object-cover"
+                  className="w-full object-contain max-h-72 bg-black"
                 />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-6xl font-bold text-primary">
-                    {selected.full_name.trim().charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
-            </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/logo.svg"
+                  alt=""
+                  className="absolute bottom-3 left-1/2 -translate-x-1/2 w-14 opacity-90 drop-shadow-md"
+                />
+              </div>
+            ) : (
+              <div className="w-full h-40 bg-primary/10 flex items-center justify-center">
+                <span className="text-6xl font-bold text-primary">
+                  {selected.full_name.trim().charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
 
-            {/* Number badge overlaid on photo */}
-            <span className="absolute top-3 left-3 h-10 w-10 rounded-full bg-primary text-primary-foreground text-base font-bold flex items-center justify-center shadow-md z-10">
+            {/* Number badge */}
+            <span className="absolute top-10 sm:top-3 left-3 h-10 w-10 rounded-full bg-primary text-primary-foreground text-base font-bold flex items-center justify-center shadow-md z-10">
               {selected.candidate_number}
             </span>
 
-            {/* Logo overlaid on photo */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo.svg"
-              alt=""
-              className="absolute z-10 w-14 opacity-90 drop-shadow-md"
-              style={{ bottom: "calc(100% - 260px + 12px)", left: "50%", transform: "translateX(-50%)" }}
-            />
-
-            {/* Scrollable details */}
-            <div className="overflow-y-auto flex-1 p-5 space-y-3">
+            {/* Details */}
+            <div className="p-5 space-y-3">
               <div className="flex items-start justify-between gap-2">
                 <h2 className="text-lg font-bold leading-tight">{selected.full_name}</h2>
                 {selected.social_url && (
@@ -136,6 +135,7 @@ export default function CandidatesGrid({ candidates }: { candidates: Candidate[]
                   <p className="text-sm leading-relaxed">{selected.reason}</p>
                 </div>
               )}
+              <div className="pb-2" />
             </div>
           </div>
         </div>
