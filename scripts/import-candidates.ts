@@ -121,7 +121,18 @@ async function main() {
   const allRows = parseCSV(fs.readFileSync(csvFile, "utf-8"));
   const rows = allRows.slice(1).filter((cols: string[]) => cols[1]?.trim());
 
-  // --- 1. Clear existing table rows ---
+  // --- 1. Snapshot existing number assignments before clearing ---
+  const existingRes = await fetch(`${SUPABASE_URL}/rest/v1/party_candidates?select=full_name,candidate_number`, {
+    headers: { "apikey": SERVICE_KEY, "Authorization": `Bearer ${SERVICE_KEY}` },
+  });
+  const existingMap = new Map<string, number>();
+  if (existingRes.ok) {
+    const existing: { full_name: string; candidate_number: number }[] = await existingRes.json();
+    existing.forEach((e) => existingMap.set(e.full_name.trim(), e.candidate_number));
+    if (existingMap.size > 0) console.log(`Preserved ${existingMap.size} existing number assignments.`);
+  }
+
+  // --- 2. Clear existing table rows ---
   console.log("Clearing existing candidates table...");
   const delRes = await fetch(`${SUPABASE_URL}/rest/v1/party_candidates?id=neq.00000000-0000-0000-0000-000000000000`, {
     method: "DELETE",
@@ -196,10 +207,19 @@ async function main() {
     sort_order:       i,
   }));
 
-  // Assign random unique numbers
-  const numbers = Array.from({ length: candidates.length }, (_, i) => i + 1)
-    .sort(() => Math.random() - 0.5);
-  candidates.forEach((c: { candidate_number: number }, i: number) => { c.candidate_number = numbers[i]; });
+  // Assign numbers: reuse existing if name matches, otherwise pick a new random number
+  const usedNumbers = new Set(
+    candidates
+      .map((c: { full_name: string }) => existingMap.get(c.full_name.trim()))
+      .filter((n): n is number => n !== undefined)
+  );
+  const allNumbers = Array.from({ length: candidates.length }, (_, i) => i + 1);
+  const freeNumbers = allNumbers.filter((n) => !usedNumbers.has(n)).sort(() => Math.random() - 0.5);
+  let freeIdx = 0;
+  candidates.forEach((c: { full_name: string; candidate_number: number }) => {
+    const existing = existingMap.get(c.full_name.trim());
+    c.candidate_number = existing ?? freeNumbers[freeIdx++];
+  });
 
   // --- 5. Insert ---
   console.log(`\nInserting ${candidates.length} candidates...`);

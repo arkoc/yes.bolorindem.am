@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ExternalLink, X } from "lucide-react";
 
 type Candidate = {
@@ -15,6 +15,16 @@ type Candidate = {
 
 export default function CandidatesGrid({ candidates }: { candidates: Candidate[] }) {
   const [selected, setSelected] = useState<Candidate | null>(null);
+
+  // Lock body scroll while modal is open
+  useEffect(() => {
+    if (selected) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [selected]);
 
   return (
     <>
@@ -51,53 +61,59 @@ export default function CandidatesGrid({ candidates }: { candidates: Candidate[]
         ))}
       </div>
 
-      {/* Detail modal — custom overlay for reliable scroll */}
+      {/* Detail modal */}
       {selected && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80"
           onClick={() => setSelected(null)}
         >
           <div
-            className="relative w-full max-w-sm max-h-[90vh] overflow-y-auto rounded-2xl bg-background shadow-xl"
+            className="relative w-full max-w-sm rounded-2xl bg-background shadow-xl overflow-hidden flex flex-col"
+            style={{ maxHeight: "90dvh" }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close button */}
             <button
               onClick={() => setSelected(null)}
-              className="absolute top-3 right-3 z-20 h-8 w-8 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors"
+              className="absolute top-3 right-3 z-20 h-8 w-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
             >
               <X className="h-4 w-4" />
             </button>
 
-            {/* Photo */}
-            <div className="relative aspect-[4/3] bg-primary/10 shrink-0">
+            {/* Photo — fixed, never scrolls */}
+            <div className="shrink-0 w-full bg-primary/10" style={{ height: "260px" }}>
               {selected.image_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={selected.image_url}
                   alt={selected.full_name}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-full h-full flex items-center justify-center">
                   <span className="text-6xl font-bold text-primary">
                     {selected.full_name.trim().charAt(0).toUpperCase()}
                   </span>
                 </div>
               )}
-              <span className="absolute top-3 left-3 h-10 w-10 rounded-full bg-primary text-primary-foreground text-base font-bold flex items-center justify-center shadow-md z-10">
-                {selected.candidate_number}
-              </span>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/logo.svg"
-                alt=""
-                className="absolute bottom-3 left-1/2 -translate-x-1/2 w-16 opacity-90 drop-shadow-md z-10"
-              />
             </div>
 
-            {/* Details */}
-            <div className="p-5 space-y-3">
+            {/* Number badge overlaid on photo */}
+            <span className="absolute top-3 left-3 h-10 w-10 rounded-full bg-primary text-primary-foreground text-base font-bold flex items-center justify-center shadow-md z-10">
+              {selected.candidate_number}
+            </span>
+
+            {/* Logo overlaid on photo */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo.svg"
+              alt=""
+              className="absolute z-10 w-14 opacity-90 drop-shadow-md"
+              style={{ bottom: "calc(100% - 260px + 12px)", left: "50%", transform: "translateX(-50%)" }}
+            />
+
+            {/* Scrollable details */}
+            <div className="overflow-y-auto flex-1 p-5 space-y-3">
               <div className="flex items-start justify-between gap-2">
                 <h2 className="text-lg font-bold leading-tight">{selected.full_name}</h2>
                 {selected.social_url && (
