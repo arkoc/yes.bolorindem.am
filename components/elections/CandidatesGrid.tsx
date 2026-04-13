@@ -91,22 +91,6 @@ export default function CandidatesGrid({ candidates }: { candidates: Candidate[]
             {rowHasExpanded && expanded && (
               <div className="mt-3 rounded-2xl border bg-card overflow-hidden">
                 <div className="flex gap-0">
-                  {expanded.image_url && (
-                    <div className="relative shrink-0 w-32 sm:w-44 self-stretch min-h-36">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={expanded.image_url}
-                        alt={expanded.full_name}
-                        className="absolute inset-0 w-full h-full object-cover object-top"
-                      />
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src="/logo.svg"
-                        alt=""
-                        className="absolute bottom-2 left-1/2 -translate-x-1/2 w-12 opacity-90 drop-shadow-md z-10"
-                      />
-                    </div>
-                  )}
                   <div className="flex-1 min-w-0 p-4 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2 flex-wrap">
