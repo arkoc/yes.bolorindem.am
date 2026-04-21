@@ -37,6 +37,40 @@ if (!SUPABASE_URL || !SERVICE_KEY) {
   process.exit(1);
 }
 
+// Approved candidate names with their correct numbers (exact match)
+const APPROVED_CANDIDATES_MAP = new Map([
+  [1, "Կյուրեղյան Սպարտակ"],
+  [2, "Գևորգյան Իշխան"],
+  [3, "Կարապետյանց Նինա"],
+  [4, "Քոչարյան Արամ"],
+  [5, "Նահապետյան Միքայել"],
+  [6, "Քամալյան Տաթևիկ"],
+  [7, "Մանասյան Հայկ"],
+  [8, "Ղազարյան Հովսեփ"],
+  [9, "Մուրադյան Լիլիթ"],
+  [10, "Պետրոսյան Արամայիս"],
+  [11, "Ամիրբեկյան Հրաչյա"],
+  [12, "Երիցփոխյան Օլյա"],
+  [13, "Պողոսյան Ժուրեմ"],
+  [14, "Պետրոսյան Սմբատ"],
+  [15, "Խալաթյան Արփի"],
+  [16, "Մանուկյան Հարություն"],
+  [17, "Սիմոնյան Գետեոն"],
+  [18, "Մելանյա Հովհանիսյան"],
+  [19, "Մարգարյան Միքայել"],
+  [20, "Սահակյան Հայկ"],
+  [21, "Մուրադյան Սուսաննա"],
+  [22, "Աղայան Արմեն"],
+  [23, "Օհանյան Խաչիկ"],
+  [24, "Բարխուդարյան Հասմիկ"],
+  [25, "Քամալյան  Արտակ"],
+  [26, "Քալանթարյան Վարդան"],
+  [27, "Հարությունյան Կարինե"],
+  [28, "Բադալյան Արման"],
+  [29, "Պետրոսյան Դավիթ"],
+  [30, "Հարությունյան Գոհար"],
+]);
+
 function driveFileId(url: string): string | null {
   if (!url?.trim()) return null;
   const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) ?? url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
@@ -122,6 +156,18 @@ async function main() {
   const allRows = parseCSV(fs.readFileSync(csvFile, "utf-8"));
   const rows = allRows.slice(1).filter((cols: string[]) => cols[1]?.trim());
 
+  // --- 0. Clear table before importing ---
+  console.log("Clearing candidates table...");
+  const clearRes = await fetch(`${SUPABASE_URL}/rest/v1/party_candidates?id=neq.00000000-0000-0000-0000-000000000000`, {
+    method: "DELETE",
+    headers: { "apikey": SERVICE_KEY, "Authorization": `Bearer ${SERVICE_KEY}` },
+  });
+  if (!clearRes.ok) {
+    console.error("Failed to clear table:", await clearRes.text());
+    process.exit(1);
+  }
+  console.log("Table cleared.");
+
   // --- 1. Clear table ---
   console.log("Clearing existing candidates table...");
   const delRes = await fetch(`${SUPABASE_URL}/rest/v1/party_candidates?id=neq.00000000-0000-0000-0000-000000000000`, {
@@ -180,28 +226,49 @@ async function main() {
     imageUrls.push(publicUrl);
   }
 
-  // --- 4. Build and insert rows ---
-  const candidates = rows
-    .map((cols: string[], i: number) => {
-      const candidateNumber = parseInt(cols[cols.length - 1] ?? "", 10);
-      if (isNaN(candidateNumber)) {
-        console.warn(`  Skipping row ${i + 1} (${cols[1]}): invalid candidate number`);
-        return null;
-      }
-      return {
-        candidate_number: candidateNumber,
-        full_name:        cols[1]?.trim() ?? "",
-        phone:            cols[2]?.trim() || null,
-        social_url:       cols[3]?.trim() || null,
-        bio:              cols[4]?.trim() || null,
-        reason:           cols[5]?.trim() || null,
-        image_url:        imageUrls[i],
-        sort_order:       i,
-      };
-    })
-    .filter(Boolean);
+  // --- 4. Build rows and filter to approved candidates only ---
+  const candidates: any[] = [];
+  const importedNames = new Set<string>();
 
-  console.log(`\nInserting ${candidates.length} candidates...`);
+  for (const [candidateNumber, approvedName] of APPROVED_CANDIDATES_MAP) {
+    // Find this candidate in the CSV by name (ignore CSV numbers)
+    const row = rows.find((cols) => cols[1]?.trim() === approvedName);
+
+    if (!row) {
+      console.warn(`  Missing: #${candidateNumber} "${approvedName}" (not found in CSV)`);
+      continue;
+    }
+
+    importedNames.add(approvedName);
+    const fullName = row[1]?.trim() ?? "";
+
+    candidates.push({
+      candidate_number: candidateNumber,
+      full_name:        fullName,
+      phone:            row[2]?.trim() || null,
+      social_url:       row[3]?.trim() || null,
+      bio:              row[4]?.trim() || null,
+      reason:           row[5]?.trim() || null,
+      image_url:        imageUrls[rows.indexOf(row)] || null,
+      sort_order:       candidateNumber - 1,
+    });
+  };
+
+  console.log(`\nInserting ${candidates.length} candidates (approved list only)...`);
+
+  // Safety check: only 30 approved candidates should be in the final list
+  if (candidates.length !== 30) {
+    console.error(`ERROR: Expected exactly 30 candidates, but got ${candidates.length}`);
+    console.error("Missing candidates:");
+    const imported = new Map(candidates.map((c: any) => [c.candidate_number, c.full_name]));
+    for (const [num, name] of APPROVED_CANDIDATES_MAP) {
+      if (!imported.has(num)) {
+        console.error(`  - #${num} ${name}`);
+      }
+    }
+    process.exit(1);
+  }
+
   const res = await fetch(`${SUPABASE_URL}/rest/v1/party_candidates`, {
     method: "POST",
     headers: {
