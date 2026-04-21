@@ -1,12 +1,11 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import L from "@/lib/labels";
 import ExportCandidatesPdfButton from "@/components/elections/ExportCandidatesPdfButton";
+import CandidatesList from "@/components/elections/CandidatesList";
 
 export const dynamic = "force-dynamic";
 
-import { ExternalLink } from "lucide-react";
-
-type Candidate = {
+export type Candidate = {
   id: string;
   candidate_number: number;
   full_name: string;
@@ -46,46 +45,7 @@ export default async function CandidatesPage() {
             Տվյալները հասանելի կլինեն շուտով
           </div>
         ) : (
-          <div className="space-y-2">
-            {candidates.map((c) => (
-              <div key={c.id} className="flex items-center gap-3 rounded-lg border px-4 py-3 hover:bg-muted/50 transition-colors">
-                {/* Number */}
-                <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold text-sm">
-                  {c.candidate_number}
-                </div>
-                {/* Avatar */}
-                <div className="shrink-0 w-10 h-10 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center">
-                  {c.image_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={c.image_url}
-                      alt={c.full_name}
-                      className="w-full h-full object-cover object-top"
-                    />
-                  ) : (
-                    <span className="text-sm font-bold text-primary">
-                      {c.full_name.trim().charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                </div>
-                {/* Name */}
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-base">{c.full_name}</p>
-                </div>
-                {/* Social link */}
-                {c.social_url && (
-                  <a
-                    href={c.social_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="shrink-0 text-primary hover:text-primary/70 transition-colors"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
+          <CandidatesList candidates={candidates} />
         )}
 
       </div>

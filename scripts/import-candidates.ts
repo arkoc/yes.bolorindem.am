@@ -239,6 +239,19 @@ async function main() {
       continue;
     }
 
+    if (candidateNumber === 5 || candidateNumber === 26) {
+      console.log(`\nDEBUG #${candidateNumber} "${approvedName}": Row has ${row.length} columns`);
+      console.log(`  col[0] (timestamp): "${row[0]}"`);
+      console.log(`  col[1] (name): "${row[1]}"`);
+      console.log(`  col[2] (phone): "${row[2]}"`);
+      console.log(`  col[3] (social): "${row[3]}"`);
+      console.log(`  col[4] (bio): "${row[4]}"`);
+      console.log(`  col[5] (reason): "${row[5]}"`);
+      console.log(`  col[6] (image): "${row[6]}"`);
+      console.log(`  col[7]: "${row[7]}"`);
+      console.log(`  col[8] (candidate#): "${row[8]}"`);
+    }
+
     importedNames.add(approvedName);
     const fullName = row[1]?.trim() ?? "";
 
