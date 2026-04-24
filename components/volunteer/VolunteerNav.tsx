@@ -9,6 +9,7 @@ import {
   Trophy,
   Vote,
   Landmark,
+  Crown,
   User,
   Settings,
   LogOut,
@@ -21,7 +22,7 @@ const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: L.volunteer.nav.dashboard },
   { href: "/projects", icon: FolderOpen, label: L.volunteer.nav.projects },
   { href: "/voting", icon: Vote, label: L.volunteer.nav.voting },
-  { href: "/elections", icon: Landmark, label: L.volunteer.nav.elections },
+  { href: "/pm", icon: Crown, label: L.volunteer.nav.pmElections, rotate: true },
   { href: "/profile", icon: User, label: L.volunteer.nav.profile },
 ];
 
@@ -48,7 +49,7 @@ export function VolunteerNav({ role }: VolunteerNavProps) {
       {/* Mobile bottom nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
         <div className="flex items-center justify-around px-1 py-1">
-          {navItems.map(({ href, icon: Icon, label }) => {
+          {navItems.map(({ href, icon: Icon, label, rotate }) => {
             const active = pathname === href || pathname.startsWith(href + "/");
             return (
               <Link
@@ -68,7 +69,7 @@ export function VolunteerNav({ role }: VolunteerNavProps) {
                   "p-1.5 rounded-lg transition-colors",
                   active ? "bg-primary/10" : ""
                 )}>
-                  <Icon className="h-5 w-5" />
+                  <Icon className={cn("h-5 w-5", rotate && "rotate-180")} />
                 </div>
                 <span className={cn("text-[10px] font-medium leading-tight text-center", active && "font-semibold")}>{label}</span>
               </Link>
@@ -87,7 +88,7 @@ export function VolunteerNav({ role }: VolunteerNavProps) {
         </div>
 
         <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-          {navItems.map(({ href, icon: Icon, label }) => {
+          {navItems.map(({ href, icon: Icon, label, rotate }) => {
             const active = pathname === href || pathname.startsWith(href + "/");
             return (
               <Link
@@ -100,7 +101,7 @@ export function VolunteerNav({ role }: VolunteerNavProps) {
                     : "text-muted-foreground hover:bg-accent hover:text-foreground"
                 )}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className={cn("h-5 w-5", rotate && "rotate-180")} />
                 {label}
               </Link>
             );

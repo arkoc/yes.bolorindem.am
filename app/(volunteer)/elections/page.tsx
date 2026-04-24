@@ -145,6 +145,18 @@ export default async function ElectionsPage({
         )}
       </div>
 
+      {/* PM Election link */}
+      <Link
+        href="/pm"
+        className="flex items-center justify-between rounded-2xl border-2 border-primary/20 bg-primary/5 px-5 py-4 hover:bg-primary/10 transition-colors"
+      >
+        <div>
+          <p className="font-bold text-base">Վարչապետի թեկնածուներ</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Առաջադրեք ձեր թեկնածուն</p>
+        </div>
+        <ExternalLink className="h-4 w-4 text-primary shrink-0" />
+      </Link>
+
       {/* Party candidates link */}
       <Link
         href="/candidates"

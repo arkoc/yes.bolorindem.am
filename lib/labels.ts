@@ -142,6 +142,7 @@ const L = {
       profile: "Պրոֆիլ",
       voting: "Քվեարկություն",
       elections: "ԱԺ ցուցակ",
+      pmElections: "Վարչապետ",
       adminSection: "Ադմին",
       adminPanel: "Ադմին վահանակ",
       signOut: "Ելք",
