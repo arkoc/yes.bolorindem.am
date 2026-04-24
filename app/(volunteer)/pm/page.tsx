@@ -14,31 +14,32 @@ export default async function PmPage() {
     .select("nominee_name, nomination_count")
     .order("nomination_count", { ascending: false });
 
-  // Get current user and their nomination
+  // Get current user and their nomination/voter registration
   const { data: { user } } = await supabase.auth.getUser();
   let currentNomination: string | null = null;
-  let currentEmail: string | null = null;
+  let currentVoterEmail: string | null = null;
 
   if (user) {
+    // Check nomination
     const { data: nom } = await supabase
       .from("pm_nominations")
-      .select("nominee_name, nominator_email")
+      .select("nominee_name")
       .eq("user_id", user.id)
       .single();
 
     if (nom) {
       currentNomination = nom.nominee_name;
-      currentEmail = nom.nominator_email;
     }
 
-    // Also check profiles.email if no nominator_email
-    if (!currentEmail) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("email")
-        .eq("id", user.id)
-        .single();
-      currentEmail = profile?.email || null;
+    // Check voter registration
+    const { data: voter } = await supabase
+      .from("pm_voters")
+      .select("email")
+      .eq("user_id", user.id)
+      .single();
+
+    if (voter) {
+      currentVoterEmail = voter.email;
     }
   }
 
@@ -55,7 +56,7 @@ export default async function PmPage() {
       <PmPageClient
         nominees={nominees || []}
         currentNomination={currentNomination}
-        currentEmail={currentEmail}
+        currentVoterEmail={currentVoterEmail}
         isDeadlinePassed={isDeadlinePassed}
         user={user}
         deadlineFormatted={deadlineFormatted}

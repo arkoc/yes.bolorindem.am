@@ -2,14 +2,6 @@ import { createServerClient } from "@/lib/supabase/server";
 import { PM_NOMINATION_DEADLINE } from "@/lib/elections-config";
 import { NextResponse } from "next/server";
 
-function toTitleCase(str: string): string {
-  return str
-    .toLowerCase()
-    .split(/\s+/)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
 export async function POST(req: Request) {
   const supabase = await createServerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -23,35 +15,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "deadline_passed" }, { status: 403 });
   }
 
-  const { nominee_name } = await req.json();
+  const { email } = await req.json();
+  const trimmedEmail = email?.trim() || null;
 
-  // Validate nominee_name: non-empty, 2+ words
-  const trimmedName = nominee_name?.trim() || "";
-  const words = trimmedName.split(/\s+/).filter(Boolean);
-  if (words.length < 2) {
-    return NextResponse.json(
-      { error: "Անունը պետք է պարունակի առաջին և ազգանուն (մինիմում 2 բառ)" },
-      { status: 400 }
-    );
-  }
-
-  // Normalize to title case for case-insensitive matching
-  const normalizedName = toTitleCase(trimmedName);
-
-  // Upsert nomination (nominator_email will be NULL since voter registered separately)
-  const { error } = await supabase.from("pm_nominations").upsert(
+  // Upsert voter registration
+  const { error } = await supabase.from("pm_voters").upsert(
     {
       user_id: user.id,
-      nominee_name: normalizedName,
-      nominator_email: null,
+      email: trimmedEmail,
     },
     { onConflict: "user_id" }
   );
 
   if (error) {
-    console.error("Error upserting nomination:", error);
+    console.error("Error registering voter:", error);
     return NextResponse.json(
-      { error: "Failed to save nomination" },
+      { error: "Failed to register" },
       { status: 500 }
     );
   }
@@ -59,7 +38,7 @@ export async function POST(req: Request) {
   return NextResponse.json({ success: true });
 }
 
-export async function DELETE() {
+export async function DELETE(req: Request) {
   const supabase = await createServerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
 
@@ -73,14 +52,14 @@ export async function DELETE() {
   }
 
   const { error } = await supabase
-    .from("pm_nominations")
+    .from("pm_voters")
     .delete()
     .eq("user_id", user.id);
 
   if (error) {
-    console.error("Error deleting nomination:", error);
+    console.error("Error deleting voter:", error);
     return NextResponse.json(
-      { error: "Failed to delete nomination" },
+      { error: "Failed to delete" },
       { status: 500 }
     );
   }

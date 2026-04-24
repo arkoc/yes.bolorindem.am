@@ -6,50 +6,38 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { PM_NOMINATION_THRESHOLD } from "@/lib/elections-config";
 
-interface Nominee {
-  nominee_name: string;
-  nomination_count: number;
-}
-
-interface PmNominationFormProps {
-  currentNomination: string | null;
-  nomineesList: Nominee[];
+interface PmVoterFormProps {
+  currentEmail: string | null;
   isDeadlinePassed: boolean;
   isLoggedIn: boolean;
 }
 
-export default function PmNominationForm({
-  currentNomination,
-  nomineesList,
+export default function PmVoterForm({
+  currentEmail,
   isDeadlinePassed,
   isLoggedIn,
-}: PmNominationFormProps) {
+}: PmVoterFormProps) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
-  const [nomineeName, setNomineeName] = useState(currentNomination || "");
+  const [email, setEmail] = useState(currentEmail || "");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const trimmedName = nomineeName.trim();
-    const words = trimmedName.split(/\s+/).filter(Boolean);
-
-    if (words.length < 2) {
-      toast.error("Անունը պետք է պարունակի առաջին և ազգանուն");
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      toast.error("Էլ. հասցեն պետք է լինի");
       return;
     }
 
     setIsLoading(true);
     try {
-      const res = await fetch("/api/pm/nominate", {
+      const res = await fetch("/api/pm/voter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nominee_name: trimmedName,
-        }),
+        body: JSON.stringify({ email: trimmedEmail }),
       });
 
       if (!res.ok) {
@@ -57,16 +45,16 @@ export default function PmNominationForm({
         if (data.error === "deadline_passed") {
           toast.error("Ժամանակահատվածը ավարտվել է");
         } else {
-          toast.error(data.error || "Չհաջողվեց պահել թեկնածուն");
+          toast.error(data.error || "Չհաջողվեց գրանցել");
         }
         return;
       }
 
-      toast.success("Թեկնածուն առաջադրվել է հաջողությամբ");
+      toast.success("Գրանցվել եք հաջողությամբ");
       setIsEditing(false);
       router.refresh();
     } catch (error) {
-      console.error("Error submitting nomination:", error);
+      console.error("Error submitting voter registration:", error);
       toast.error("Տեղի է ունեցել սխալ");
     } finally {
       setIsLoading(false);
@@ -74,28 +62,28 @@ export default function PmNominationForm({
   };
 
   const handleCancel = async () => {
-    if (!confirm("Կուզե՞ք հեռացնել ձեր առաջադրումը")) return;
+    if (!confirm("Կուզե՞ք հեռացնել ձեր գրանցումը")) return;
 
     setIsLoading(true);
     try {
-      const res = await fetch("/api/pm/nominate", { method: "DELETE" });
+      const res = await fetch("/api/pm/voter", { method: "DELETE" });
 
       if (!res.ok) {
         const data = await res.json();
         if (data.error === "deadline_passed") {
           toast.error("Ժամանակահատվածը ավարտվել է");
         } else {
-          toast.error("Չհաջողվեց հեռացնել թեկնածուն");
+          toast.error("Չհաջողվեց հեռացնել գրանցումը");
         }
         return;
       }
 
-      toast.success("Առաջադրումը հեռացվել է");
-      setNomineeName("");
+      toast.success("Գրանցումը հեռացվել է");
+      setEmail("");
       setIsEditing(false);
       router.refresh();
     } catch (error) {
-      console.error("Error deleting nomination:", error);
+      console.error("Error deleting voter registration:", error);
       toast.error("Սխալ պահարար");
     } finally {
       setIsLoading(false);
@@ -106,7 +94,7 @@ export default function PmNominationForm({
     return (
       <div className="rounded-lg border bg-card p-6 text-center">
         <p className="text-sm text-muted-foreground mb-4">
-          Հայտնվեք ներսում՝ վարչապետի թեկնածուն առաջադրելու համար
+          Հայտնվեք ներսում՝ գրանցվելու համար
         </p>
         <Button asChild>
           <a href="/login?next=/pm">Հայտնվել</a>
@@ -119,34 +107,17 @@ export default function PmNominationForm({
     return (
       <div className="rounded-lg border bg-card p-6 text-center">
         <p className="text-sm text-muted-foreground">
-          Առաջադրությունների ժամանակահատվածը ավարտվել է
+          Գրանցման ժամանակահատվածը ավարտվել է
         </p>
       </div>
     );
   }
 
-  if (currentNomination && !isEditing) {
-    const nomineeInfo = nomineesList.find((n) => n.nominee_name === currentNomination);
-    const nominationCount = nomineeInfo?.nomination_count || 0;
-    const isOfficial = nominationCount >= PM_NOMINATION_THRESHOLD;
-
+  if (currentEmail && !isEditing) {
     return (
-      <div className="rounded-lg border bg-card p-6 space-y-4">
-        <div>
-          <p className="text-sm text-muted-foreground mb-2">Ձեր առաջադրումը</p>
-          <div className="flex items-center justify-between">
-            <p className="text-base font-semibold">{currentNomination}</p>
-            {isOfficial ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-green-600 text-white text-xs font-semibold px-3 py-1">
-                ✓ Թեկնածու է
-              </span>
-            ) : (
-              <span className="text-xs font-semibold text-muted-foreground">
-                {nominationCount}/{PM_NOMINATION_THRESHOLD}
-              </span>
-            )}
-          </div>
-        </div>
+      <div className="rounded-lg border bg-card p-6">
+        <p className="text-sm text-muted-foreground mb-2">Ձեր էլ. հասցե</p>
+        <p className="text-base font-semibold mb-4">{currentEmail}</p>
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -171,30 +142,31 @@ export default function PmNominationForm({
   return (
     <form onSubmit={handleSubmit} className="rounded-lg border bg-card p-6 space-y-4">
       <div>
-        <Label htmlFor="nominee">Վարչապետի թեկնածուի անուն</Label>
+        <Label htmlFor="voter-email">Ձեր էլ. հասցե</Label>
         <Input
-          id="nominee"
-          placeholder="Անուն Ազգանուն"
-          value={nomineeName}
-          onChange={(e) => setNomineeName(e.target.value)}
+          id="voter-email"
+          type="email"
+          placeholder="example@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           disabled={isLoading}
           autoFocus
         />
-        <p className="text-xs text-muted-foreground mt-1">Խնդրում ենք գրել հայերեն</p>
+        <p className="text-xs text-muted-foreground mt-1">Կօգտագործվի առցանց քվեարկության համար</p>
       </div>
 
       <div className="flex gap-2 pt-2">
         <Button type="submit" disabled={isLoading}>
-          {isLoading ? "Պահվում է..." : "Առաջադրել"}
+          {isLoading ? "Պահվում է..." : "Գրանցվել"}
         </Button>
-        {currentNomination && (
+        {currentEmail && (
           <Button
             type="button"
             variant="outline"
             disabled={isLoading}
             onClick={() => {
               setIsEditing(false);
-              setNomineeName(currentNomination);
+              setEmail(currentEmail);
             }}
           >
             Չեղարկել
