@@ -78,7 +78,7 @@ export default function PmPageClient({
           <div className="space-y-3">
             <h3 className="text-sm font-medium flex items-center gap-2 text-green-700">
               <CheckCircle2 className="h-4 w-4" />
-              Հաստիքային թեկնածուներ
+              Առաջադրված թեկնածուներ
             </h3>
             <div className="space-y-2">
               {officialsNominees.map((nominee) => (
