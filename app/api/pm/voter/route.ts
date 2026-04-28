@@ -10,6 +10,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
+  // Check if user is banned
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("banned")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.banned) {
+    return NextResponse.json({ error: "Դուք արգելափակվել եք" }, { status: 403 });
+  }
+
   // Check deadline
   if (new Date() >= PM_NOMINATION_DEADLINE) {
     return NextResponse.json({ error: "deadline_passed" }, { status: 403 });

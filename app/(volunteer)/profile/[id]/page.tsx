@@ -6,9 +6,10 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Trophy, Zap, CheckCircle, Award, CheckCheck, ChevronLeft, ExternalLink } from "lucide-react";
+import { Trophy, Zap, CheckCircle, Award, CheckCheck, ChevronLeft, ExternalLink, Phone } from "lucide-react";
 import L, { t } from "@/lib/labels";
 import { BadgeZoom } from "@/components/ui/badge-zoom";
+import { BanUserButton } from "@/components/admin/BanUserButton";
 
 export default async function PublicProfilePage({ params }: { params: { id: string } }) {
   const supabase = await createServerClient();
@@ -23,7 +24,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
   const [profileRes, rankRes, allBadgesRes, userBadgesRes, completionsRes] = await Promise.all([
     adminClient
       .from("profiles")
-      .select("full_name, total_points, role, created_at, bio, social_url, avatar_url")
+      .select("full_name, total_points, role, created_at, bio, social_url, avatar_url, phone, banned, ban_reason")
       .eq("id", params.id)
       .single(),
     adminClient
@@ -55,6 +56,15 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
   const earnedIds = new Set((userBadgesRes.data ?? []).map((b) => b.badge_id));
   const transactions = completionsRes.data ?? [];
 
+  // Check if current user is admin
+  const { data: { user: currentUser } } = await supabase.auth.getUser();
+  const { data: currentProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", currentUser?.id || "")
+    .single();
+  const isAdmin = currentProfile?.role === "admin" || currentProfile?.role === "leader";
+
   return (
     <div className="max-w-2xl mx-auto p-4 md:p-6 space-y-4">
       <div className="pt-2">
@@ -71,20 +81,43 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
       {/* Profile card */}
       <Card>
         <CardContent className="pt-6 pb-6">
-          <div className="flex items-center gap-4">
+          <div className="flex items-start gap-4">
             <UserAvatar name={profile.full_name} size={80} className="shrink-0" avatarUrl={(profile as { avatar_url?: string | null }).avatar_url} />
-            <div className="flex-1 min-w-0">
-              <p className="text-xl font-semibold">{profile.full_name}</p>
-              <div className="mt-2 flex items-center gap-2 flex-wrap">
-                <Badge variant={profile.role === "admin" ? "default" : profile.role === "leader" ? "secondary" : "outline"}>
-                  {profile.role}
-                </Badge>
-                <span className="text-xs text-muted-foreground">
-                  since {new Date(profile.created_at).toLocaleDateString()}
-                </span>
+            <div className="flex-1">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xl font-semibold">{profile.full_name}</p>
+                  <div className="mt-2 flex items-center gap-2 flex-wrap">
+                    <Badge variant={profile.role === "admin" ? "default" : profile.role === "leader" ? "secondary" : "outline"}>
+                      {profile.role}
+                    </Badge>
+                    {(profile as { banned?: boolean }).banned && (
+                      <Badge variant="destructive">Արգելափակ</Badge>
+                    )}
+                    <span className="text-xs text-muted-foreground">
+                      since {new Date(profile.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+                {isAdmin && (
+                  <BanUserButton
+                    userId={params.id}
+                    userName={profile.full_name}
+                    isBanned={(profile as { banned?: boolean }).banned || false}
+                  />
+                )}
               </div>
+
+              {/* Contact info */}
+              {(profile as { phone?: string | null }).phone && (
+                <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                  <Phone className="h-4 w-4 shrink-0" />
+                  <span>{(profile as { phone: string }).phone}</span>
+                </div>
+              )}
+
               {(profile as { bio?: string | null }).bio && (
-                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
                   {(profile as { bio?: string | null }).bio}
                 </p>
               )}
@@ -93,7 +126,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
                   href={(profile as { social_url: string }).social_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline mt-1"
+                  className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline mt-2"
                 >
                   <ExternalLink className="h-3.5 w-3.5 shrink-0" />
                   <span className="truncate max-w-[200px]">

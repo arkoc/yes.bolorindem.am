@@ -1,11 +1,12 @@
-import { createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient, createServerClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function DELETE(
   req: Request,
   { params }: { params: { id: string } }
 ) {
-  const supabase = createAdminClient();
+  const supabase = await createServerClient();
+  const adminClient = createAdminClient();
 
   // Get current user and check if admin
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -24,7 +25,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { error } = await supabase
+  const { error } = await adminClient
     .from("pm_nominations")
     .delete()
     .eq("id", params.id);

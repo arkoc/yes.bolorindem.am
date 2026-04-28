@@ -30,26 +30,55 @@ export async function GET(req: Request) {
   if (error) {
     console.error("Error fetching nominations:", error);
     return NextResponse.json(
-      { error: "Failed to fetch nominations" },
+      { error: `Failed to fetch nominations: ${error.message}` },
       { status: 500 }
     );
   }
 
-  // Enrich with profile names
-  const enriched = await Promise.all(
-    (nominations || []).map(async (nom) => {
-      const { data: profile } = await adminClient
-        .from("profiles")
-        .select("full_name")
-        .eq("id", nom.user_id)
-        .single();
+  if (!nominations || nominations.length === 0) {
+    return NextResponse.json([]);
+  }
 
-      return {
-        ...nom,
-        profile_name: profile?.full_name || "Unknown",
-      };
+  // Enrich with profile names and banned status
+  const enriched = await Promise.allSettled(
+    (nominations || []).map(async (nom) => {
+      try {
+        const { data: profile, error: profileError } = await adminClient
+          .from("profiles")
+          .select("full_name, banned, ban_reason")
+          .eq("id", nom.user_id)
+          .single();
+
+        if (profileError) {
+          console.error(`Error fetching profile for user ${nom.user_id}:`, profileError);
+        }
+
+        return {
+          ...nom,
+          profile_name: profile?.full_name || "Unknown",
+          banned: profile?.banned || false,
+          ban_reason: profile?.ban_reason || null,
+        };
+      } catch (err) {
+        console.error(`Error processing nomination for user ${nom.user_id}:`, err);
+        return {
+          ...nom,
+          profile_name: "Unknown",
+          banned: false,
+          ban_reason: null,
+        };
+      }
     })
   );
 
-  return NextResponse.json(enriched);
+  // Extract values from allSettled results
+  const results = enriched.map((result) => {
+    if (result.status === "fulfilled") {
+      return result.value;
+    }
+    console.error("Failed to enrich nomination:", result.reason);
+    return null;
+  }).filter((nom): nom is NonNullable<typeof nom> => nom !== null);
+
+  return NextResponse.json(results);
 }

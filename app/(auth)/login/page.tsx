@@ -16,16 +16,13 @@ import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 const RESEND_COOLDOWN = 60;
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!;
 
-type Method = "phone" | "email";
 type Step = "input" | "otp";
 
 export default function LoginPage() {
   const router = useRouter();
   const supabase = createClient();
-  const [method, setMethod] = useState<Method>("phone");
   const [step, setStep] = useState<Step>("input");
   const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -58,14 +55,10 @@ export default function LoginPage() {
   const phoneDigits = phone.replace(/\D/g, "");
   const phoneValid = phoneDigits.length === 8;
   const normalizedPhone = `+374${phoneDigits}`;
-  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-  const destination = method === "phone" ? normalizedPhone : email;
-  const inputValid = method === "phone" ? phoneValid : emailValid;
 
   async function handleSendOtp(e: React.FormEvent) {
     e.preventDefault();
-    if (!inputValid) return;
+    if (!phoneValid) return;
     if (TURNSTILE_SITE_KEY && !captchaToken) {
       toast.error("Հաստատեք, որ մարդ եք");
       return;
@@ -74,9 +67,7 @@ export default function LoginPage() {
 
     const options = captchaToken ? { captchaToken } : undefined;
 
-    const { error } = method === "phone"
-      ? await supabase.auth.signInWithOtp({ phone: normalizedPhone, options })
-      : await supabase.auth.signInWithOtp({ email, options });
+    const { error } = await supabase.auth.signInWithOtp({ phone: normalizedPhone, options });
 
     if (error) {
       toast.error(error.message);
@@ -84,7 +75,7 @@ export default function LoginPage() {
       turnstileRef.current?.reset();
       setCaptchaToken(null);
     } else {
-      toast.success(method === "phone" ? L.auth.login.codeSent : L.auth.login.codeSentEmail);
+      toast.success(L.auth.login.codeSent);
       setStep("otp");
       startCooldown();
     }
@@ -94,13 +85,11 @@ export default function LoginPage() {
   async function handleResend() {
     if (resendCooldown > 0 || loading) return;
     setLoading(true);
-    const { error } = method === "phone"
-      ? await supabase.auth.signInWithOtp({ phone: normalizedPhone })
-      : await supabase.auth.signInWithOtp({ email });
+    const { error } = await supabase.auth.signInWithOtp({ phone: normalizedPhone });
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success(method === "phone" ? L.auth.login.codeSent : L.auth.login.codeSentEmail);
+      toast.success(L.auth.login.codeSent);
       startCooldown();
     }
     setLoading(false);
@@ -109,9 +98,7 @@ export default function LoginPage() {
   async function doVerify(token: string) {
     setLoading(true);
 
-    const { data, error } = method === "phone"
-      ? await supabase.auth.verifyOtp({ phone: normalizedPhone, token, type: "sms" })
-      : await supabase.auth.verifyOtp({ email, token, type: "email" });
+    const { data, error } = await supabase.auth.verifyOtp({ phone: normalizedPhone, token, type: "sms" });
 
     if (error) {
       toast.error(error.message);
@@ -142,17 +129,6 @@ export default function LoginPage() {
   async function handleVerifyOtp(e: React.FormEvent) {
     e.preventDefault();
     await doVerify(otp);
-  }
-
-  function switchMethod(m: Method) {
-    setMethod(m);
-    setStep("input");
-    setOtp("");
-    setEmail("");
-    setResendCooldown(0);
-    setCaptchaToken(null);
-    turnstileRef.current?.reset();
-    if (timerRef.current) clearInterval(timerRef.current);
   }
 
   return (
@@ -203,110 +179,62 @@ export default function LoginPage() {
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
               {step === "input"
-                ? (method === "phone" ? L.auth.login.subtitlePhone : L.auth.login.subtitleEmail)
-                : t(L.auth.login.subtitleOtp, { dest: destination })}
+                ? L.auth.login.subtitlePhone
+                : t(L.auth.login.subtitleOtp, { dest: normalizedPhone })}
             </p>
           </div>
 
           {step === "input" ? (
-            <>
-              {/* Method tabs */}
-              <div className="flex rounded-lg border border-input p-1 mb-5 gap-1">
-                <button
-                  type="button"
-                  onClick={() => switchMethod("phone")}
-                  className={`flex-1 text-sm py-1.5 rounded-md transition-colors font-medium ${
-                    method === "phone"
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {L.auth.login.tabPhone}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => switchMethod("email")}
-                  className={`flex-1 text-sm py-1.5 rounded-md transition-colors font-medium ${
-                    method === "email"
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {L.auth.login.tabEmail}
-                </button>
+            <form onSubmit={handleSendOtp} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="phone">{L.auth.login.phoneLabel}</Label>
+                <div className={`flex h-12 rounded-md border overflow-hidden ${phone && !phoneValid ? "border-destructive" : "border-input"}`}>
+                  <span className="flex items-center px-3 bg-muted text-muted-foreground text-sm font-medium border-r border-input select-none">
+                    +374
+                  </span>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    inputMode="numeric"
+                    placeholder={L.auth.login.phonePlaceholder}
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                    maxLength={8}
+                    required
+                    autoFocus
+                    className="text-lg h-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                  />
+                </div>
+                {phone && !phoneValid && (
+                  <p className="text-xs text-destructive">{L.auth.login.phoneInvalid}</p>
+                )}
               </div>
 
-              <form onSubmit={handleSendOtp} className="space-y-4">
-                {method === "phone" ? (
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">{L.auth.login.phoneLabel}</Label>
-                    <div className={`flex h-12 rounded-md border overflow-hidden ${phone && !phoneValid ? "border-destructive" : "border-input"}`}>
-                      <span className="flex items-center px-3 bg-muted text-muted-foreground text-sm font-medium border-r border-input select-none">
-                        +374
-                      </span>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        inputMode="numeric"
-                        placeholder={L.auth.login.phonePlaceholder}
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                        maxLength={8}
-                        required
-                        autoFocus
-                        className="text-lg h-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                      />
-                    </div>
-                    {phone && !phoneValid && (
-                      <p className="text-xs text-destructive">{L.auth.login.phoneInvalid}</p>
-                    )}
-                  </div>
+              {TURNSTILE_SITE_KEY && (
+                <div className="flex items-center justify-center rounded-xl overflow-hidden bg-muted/40 py-1">
+                  <Turnstile
+                    ref={turnstileRef}
+                    siteKey={TURNSTILE_SITE_KEY}
+                    onSuccess={(token) => setCaptchaToken(token)}
+                    onExpire={() => setCaptchaToken(null)}
+                    onError={() => setCaptchaToken(null)}
+                    options={{ size: "compact", theme: "light", appearance: "interaction-only" }}
+                  />
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full h-12 text-base"
+                disabled={loading || !phoneValid || (!!TURNSTILE_SITE_KEY && !captchaToken)}
+              >
+                {loading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  <div className="space-y-2">
-                    <Label htmlFor="email">{L.auth.login.emailLabel}</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      inputMode="email"
-                      placeholder={L.auth.login.emailPlaceholder}
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value.trim())}
-                      required
-                      autoFocus
-                      className="h-12 text-base"
-                    />
-                    {email && !emailValid && (
-                      <p className="text-xs text-destructive">{L.auth.login.emailInvalid}</p>
-                    )}
-                  </div>
+                  <>{L.auth.login.sendCode} <ArrowRight className="h-5 w-5" /></>
                 )}
-
-                {TURNSTILE_SITE_KEY && (
-                  <div className="flex items-center justify-center rounded-xl overflow-hidden bg-muted/40 py-1">
-                    <Turnstile
-                      ref={turnstileRef}
-                      siteKey={TURNSTILE_SITE_KEY}
-                      onSuccess={(token) => setCaptchaToken(token)}
-                      onExpire={() => setCaptchaToken(null)}
-                      onError={() => setCaptchaToken(null)}
-                      options={{ size: "compact", theme: "light", appearance: "interaction-only" }}
-                    />
-                  </div>
-                )}
-
-                <Button
-                  type="submit"
-                  className="w-full h-12 text-base"
-                  disabled={loading || !inputValid || (!!TURNSTILE_SITE_KEY && !captchaToken)}
-                >
-                  {loading ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <>{L.auth.login.sendCode} <ArrowRight className="h-5 w-5" /></>
-                  )}
-                </Button>
-              </form>
-            </>
+              </Button>
+            </form>
           ) : (
             <form onSubmit={handleVerifyOtp} className="space-y-4">
               <div className="space-y-2">
@@ -352,7 +280,7 @@ export default function LoginPage() {
                 type="button"
                 variant="ghost"
                 className="w-full text-muted-foreground"
-                onClick={() => { setStep("input"); setOtp(""); }}
+                onClick={() => { setStep("input"); setOtp(""); setCaptchaToken(null); turnstileRef.current?.reset(); }}
               >
                 {L.auth.login.backLink}
               </Button>
